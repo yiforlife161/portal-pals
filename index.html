@@ -8546,6 +8546,10 @@ $('#mm-sparkles').addEventListener('change', function(){ state.island.sparkles =
 /* ---------- start ---------- */
 var loaded = loadAll();
 if (loaded){ state.chars = loaded.chars; state.island = loaded.island; }
+else {
+  state.chars = seedChars(); state.island = defaultIsland();
+  state.island.heroId = state.chars[0].id;
+}
 /* fossils became much rarer: on the live site everyone's Treasure Hunt progress starts over once */
 if (loaded && window.PP_SAVE_KEY && (state.island.thReset || 0) < 1){
   var I0 = state.island;
@@ -8554,10 +8558,6 @@ if (loaded && window.PP_SAVE_KEY && (state.island.thReset || 0) < 1){
   if (I0.st) Object.keys(I0.st).forEach(function(k){ if (/^th_/.test(k)) delete I0.st[k]; });
   I0.thReset = 1;
   save();
-}
-else {
-  state.chars = seedChars(); state.island = defaultIsland();
-  state.island.heroId = state.chars[0].id;
 }
 /* every time the game starts, the pal steps out of the home portal (one is added to older saves) */
 (function(){
