@@ -244,8 +244,8 @@ button{font:inherit;color:inherit}
 @keyframes fjump{0%,100%{transform:translateY(4px)}50%{transform:translateY(-4px)}}
 .mbub .pk{transform-origin:16px 28px;animation:pkswing .5s ease-in-out infinite alternate}
 @keyframes pkswing{from{transform:rotate(-38deg)}to{transform:rotate(22deg)}}
-/* while the tool bubble is up, xp and messages float above it instead of covering it */
-.mbub ~ .bubble,*:has(> .mbub) > .bubble{bottom:calc(104% + clamp(26px,calc(var(--u)*3.6),42px) + 16px)}
+/* on the skilling islands messages always float at the height above the tool bubble, so they never jump */
+[data-realm=skill] .bubble,.mbub ~ .bubble,*:has(> .mbub) > .bubble{bottom:calc(104% + clamp(26px,calc(var(--u)*3.6),42px) + 16px)}
 .bubble.special{background:var(--c);color:var(--ci);border-color:#fff}
 
 .hint{margin-top:10px;color:var(--muted);font-weight:700;font-size:14px;min-height:1.5em}
