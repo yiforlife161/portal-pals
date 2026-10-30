@@ -876,7 +876,7 @@ body{padding:0}
     <div class="cn-card"><span id="cn-wave">Wave 1 of 3</span><b id="cn-count">0 / 0</b><div class="cn-bar"><i id="cn-fill"></i></div></div>
     <div class="cn-card">Escaped<div class="cn-pips" id="cn-pips"></div></div>
   </div>
-  <button class="cn-leave" type="button" data-action="cannon-leave-ask">Leave cannon</button>
+  <button class="cn-leave" type="button" data-action="cannon-leave">Leave cannon</button>
   <div class="cn-banner" id="cn-banner" aria-live="polite"></div>
   <div class="cn-panel" id="cn-panel" hidden></div>
 </div>
@@ -3658,6 +3658,7 @@ document.addEventListener('click', function(ev){
   var t = ev.target.closest('[data-action]');
   if (!t) return;
   var a = t.dataset.action, id = t.dataset.id, sel;
+  if (t.classList.contains('cn-leave') && !leaveSure(t, a)) return;
   if (/^ss-/.test(a)){ ssAction(a, t); return; }
   switch (a){
     case 'tab': setTab(t.dataset.tab); break;
@@ -3682,13 +3683,6 @@ document.addEventListener('click', function(ev){
     case 'cannon-start': cnBegin(+t.dataset.lv || 1); break;
     case 'cannon-again': cnBegin(+t.dataset.lv || 1); break;
     case 'cannon-leave': cnClose(); break;
-    case 'cannon-leave-ask':
-      /* mid-fight a stray click should not end the run: ask for a second tap */
-      if (cn.phase !== 'play' && cn.phase !== 'banner' && cn.phase !== 'between'){ cnClose(); break; }
-      if (t.classList.contains('sure')){ t.classList.remove('sure'); t.textContent = 'Leave cannon'; cnClose(); break; }
-      t.classList.add('sure'); t.textContent = 'Tap again to leave';
-      clearTimeout(t._sureT); t._sureT = setTimeout(function(){ t.classList.remove('sure'); t.textContent = 'Leave cannon'; }, 2500);
-      break;
     case 'df-start': dfBegin(+t.dataset.lv || 1); break;
     case 'df-amode': dfSetMode(t.dataset.m); break;
     case 'th-start': thBegin(); break;
@@ -8398,6 +8392,17 @@ function tcTick(){
   var K2 = tcKeys(); if (K2) ['u', 'd', 'l', 'r'].forEach(function(k){ if (tc.dir[k]) K2[k] = true; });
 }
 setInterval(tcTick, 60);
+/* the corner Leave buttons of every minigame: mid-fight a stray tap should not end the run, so it takes a second tap */
+function leaveSure(t, a){
+  var busy = a === 'cannon-leave' ? (cn.phase === 'play' || cn.phase === 'banner' || cn.phase === 'between')
+    : a === 'df-leave' ? (df.phase === 'play' || df.phase === 'between' || df.phase === 'ending')
+    : a === 'th-leave' ? (th.phase === 'play' || th.phase === 'ending')
+    : a === 'ss-leave' ? ss.phase === 'play' : false;
+  if (!busy || t.classList.contains('sure')){ clearTimeout(t._sureT); if (t.classList.contains('sure')){ t.classList.remove('sure'); t.textContent = t.dataset.lab; } return true; }
+  t.dataset.lab = t.textContent; t.classList.add('sure'); t.textContent = 'Tap again to leave';
+  clearTimeout(t._sureT); t._sureT = setTimeout(function(){ t.classList.remove('sure'); t.textContent = t.dataset.lab; }, 2500);
+  return false;
+}
 function mmHide(){ $('#mmenu').hidden = true; tutRender(); }
 $('#mm-touch').addEventListener('change', function(){ state.island.touchUi = this.checked; save(); tcTick(); });
 $('#mm-sparkles').addEventListener('change', function(){ state.island.sparkles = this.checked; applyLook(); renderLook(); save(); });
