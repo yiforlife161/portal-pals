@@ -375,6 +375,12 @@ input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
 .tc-btn svg{width:38px;height:38px}
 .tc-btn.dig{background:radial-gradient(circle at 35% 30%,#ffe08a,#e0a52a 60%,#9a6510)}
 .tc-btn.pressed{transform:scale(.92);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.tc-aimring{position:absolute;right:max(26px,env(safe-area-inset-right));bottom:30px;width:96px;height:96px;margin:0;border-radius:50%;pointer-events:none;display:none}
+.tc-aimring::before{content:"";position:absolute;inset:-60px;border-radius:50%;border:3px dashed rgba(255,255,255,.55);background:rgba(255,80,60,.10);opacity:0;transition:opacity .12s}
+.tc-btn.aiming{opacity:.35}
+.tc.df .tc-btn.aiming~.tc-aimring{display:block}
+.tc.df .tc-btn.aiming~.tc-aimring::before{opacity:1}
+.tc-aimring i{position:absolute;inset:18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ff8a7a,#e0342a 60%,#a01818);border:3px solid #fff;box-shadow:0 0 14px #ff5a4a}
 .tc.df .tc-btn,.tc.th .tc-btn{display:flex}
 .mm-note{display:block;font-size:11px;opacity:.7;font-weight:400}
 .cn{position:fixed;inset:0;z-index:9000;background:#120c26;color:#fff;display:flex;touch-action:none;user-select:none;-webkit-user-select:none;cursor:none}
@@ -8251,9 +8257,9 @@ function tcWanted(){
 function tcBuild(){
   if (tc.el) return;
   var d = document.createElement('div'); d.className = 'tc'; d.id = 'tc';
-  d.innerHTML = '<div class="tc-stick" aria-label="Joystick"><div class="tc-knob"></div></div><button class="tc-btn" type="button" aria-label="Attack"></button>';
+  d.innerHTML = '<div class="tc-stick" aria-label="Joystick"><div class="tc-knob"></div></div><button class="tc-btn" type="button" aria-label="Attack"></button><div class="tc-aimring"><i></i></div>';
   document.body.appendChild(d);
-  tc.el = d; tc.knob = d.querySelector('.tc-knob'); tc.btn = d.querySelector('.tc-btn');
+  tc.el = d; tc.knob = d.querySelector('.tc-knob'); tc.btn = d.querySelector('.tc-btn'); tc.aimRing = d.querySelector('.tc-aimring i');
   var st = d.querySelector('.tc-stick');
   function move(ev){
     var r = st.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = r.width / 2;
@@ -8272,11 +8278,49 @@ function tcBuild(){
   st.addEventListener('pointermove', function(ev){ if (ev.pointerId === tc.sid){ ev.preventDefault(); move(ev); } });
   st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end); st.addEventListener('lostpointercapture', end);
   var b = tc.btn;
-  b.addEventListener('pointerdown', function(ev){ ev.preventDefault(); ev.stopPropagation(); try { b.setPointerCapture(ev.pointerId); } catch (e) {} tc.hold = true; b.classList.add('pressed'); tcAct(true); });
-  function up(){ tc.hold = false; b.classList.remove('pressed'); }
+  /* the attack button is a second joystick: tap = auto-aim, hold = keep auto-attacking, drag = aim yourself and let go to attack */
+  b.addEventListener('pointerdown', function(ev){
+    ev.preventDefault(); ev.stopPropagation(); try { b.setPointerCapture(ev.pointerId); } catch (e) {}
+    tc.hold = true; tc.bid = ev.pointerId; tc.bx = ev.clientX; tc.by = ev.clientY; tc.downT = Date.now(); tc.aiming = false; tc.fired = false;
+    b.classList.add('pressed');
+    var H = df.hero;
+    if (tc.mode !== 'df' || (H && H.stunN > 0)){ tc.fired = true; tcAct(true); }
+  });
+  b.addEventListener('pointermove', function(ev){
+    if (!tc.hold || ev.pointerId !== tc.bid || tc.mode !== 'df' || tc.fired && !tc.aiming) return;
+    ev.preventDefault();
+    var dx = ev.clientX - tc.bx, dy = ev.clientY - tc.by, l = Math.hypot(dx, dy), R = 60;
+    if (!tc.aiming && l < 14) return;
+    tc.aiming = true; tc.fired = true;
+    if (l > 0){ tc.ax = dx / l; tc.ay = dy / l; }
+    var k = Math.min(l, R);
+    tc.aimRing.style.transform = 'translate(' + (tc.ax * k) + 'px,' + (tc.ay * k) + 'px)';
+    b.classList.add('aiming');
+    tcAimSet();
+  });
+  function up(ev){
+    if (!tc.hold || (ev && ev.pointerId !== undefined && tc.bid !== undefined && ev.pointerId !== tc.bid)) return;
+    var wasAim = tc.aiming, fired = tc.fired;
+    tc.hold = false; tc.aiming = false; b.classList.remove('pressed', 'aiming'); tc.aimRing.style.transform = '';
+    if (tc.mode !== 'df') return;
+    if (wasAim) tcAimFire();
+    else if (!fired) tcAct(true);
+  }
   b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
   b.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   d.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+}
+/* manual aim: point from the middle of the pal the way the thumb dragged */
+function tcAimSet(){
+  var H = df.hero; if (!H) return;
+  var gk = H.giant ? 1.3 : 1, ox = H.x, oy = H.y - 22 * gk;
+  df.aim = { x: ox + tc.ax * 220, y: oy + tc.ay * 220 };
+}
+function tcAimFire(){
+  var H = df.hero;
+  if (!df.open || !H || H.ko > 0 || H.stunN > 0 || (df.phase !== 'play' && df.phase !== 'between')) return;
+  tcAimSet(); H.foe = null;
+  if (H.cool <= 0) dfAimAttack(H); else { H.buf = 0.25; tc.keepAim = 0.3; }
 }
 function tcKeys(){ return tc.mode === 'df' ? (df.keys = df.keys || {}) : tc.mode === 'th' ? (th.keys = th.keys || {}) : tc.mode === 'world' ? wkeys : null; }
 function tcSet(nd){
@@ -8337,7 +8381,11 @@ function tcTick(){
   else if (mode === 'th'){ ico = TC_SHOVEL; lab = 'Dig'; dig = true; }
   var key = mode + lab;
   if (tc.btn.dataset.k !== key){ tc.btn.dataset.k = key; tc.btn.innerHTML = ico + '<span>' + lab + '</span>'; tc.btn.classList.toggle('dig', dig); tc.btn.setAttribute('aria-label', lab); }
-  if (tc.hold) tcAct(false);
+  if (tc.hold && tc.mode === 'df'){
+    if (tc.aiming) tcAimSet();
+    else if (Date.now() - tc.downT > 220){ tc.fired = true; tcAct(false); }
+  } else if (tc.hold) tcAct(false);
+  if (tc.keepAim > 0){ tc.keepAim -= 0.06; if (tc.mode === 'df') tcAimSet(); }
   /* keep holding the keys the joystick is pressing, even after a minigame clears them */
   var K2 = tcKeys(); if (K2) ['u', 'd', 'l', 'r'].forEach(function(k){ if (tc.dir[k]) K2[k] = true; });
 }
