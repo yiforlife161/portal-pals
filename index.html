@@ -4934,6 +4934,11 @@ function dfRocketsTick(dt){
       df.rockets.push({ x: x, y: y, t: 1.4, T0: 1.4, r: 46 });
     }
   }
+  /* once the last thief of a wave is beaten, rockets still in the air fizzle out instead of landing */
+  if (df.phase !== 'play' && df.rockets.length){
+    df.rockets.forEach(function(k){ dfFx('puff', k.x, k.y, { life: 0.4, max: 0.4, col: '#fff' }); });
+    df.rockets = [];
+  }
   for (i = df.rockets.length - 1; i >= 0; i--){
     var k = df.rockets[i]; k.t -= dt;
     if (k.t > 0) continue;
@@ -5060,6 +5065,7 @@ function dfDrawTraps(g){
 }
 function dfShotsTick(dt){
   var i;
+  if (df.phase === 'ending' && df.endWon && df.eshots.length){ df.eshots.forEach(function(e){ dfFx('puff', e.x, e.y, { life: 0.3, max: 0.3, col: '#ffcf8a' }); }); df.eshots = []; }      /* a won fight cannot hurt you any more */
   for (i = df.eshots.length - 1; i >= 0; i--){
     var e = df.eshots[i];
     e.x += e.vx * dt; e.y += e.vy * dt; e.life -= dt;
