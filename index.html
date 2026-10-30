@@ -365,6 +365,18 @@ input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
   .bubble{opacity:1}
 }
 /* ---------- sky cannon minigame ---------- */
+.tc{position:fixed;inset:0;z-index:9500;pointer-events:none;display:none}
+.tc.on{display:block}
+@media (orientation:portrait){.tc.on{display:none}}
+.tc-stick{position:absolute;left:max(22px,env(safe-area-inset-left));bottom:22px;width:132px;height:132px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.10),rgba(255,255,255,.22));border:3px solid rgba(255,255,255,.55);box-shadow:0 4px 14px rgba(0,0,0,.3);pointer-events:auto;touch-action:none}
+.tc.world .tc-stick{bottom:86px}
+.tc-knob{position:absolute;left:50%;top:50%;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,#cfd8ff 55%,#8b96d8);border:3px solid #fff;box-shadow:0 3px 8px rgba(0,0,0,.35);pointer-events:none}
+.tc-btn{position:absolute;right:max(26px,env(safe-area-inset-right));bottom:30px;width:96px;height:96px;border-radius:50%;border:4px solid #fff;background:radial-gradient(circle at 35% 30%,#ff8a7a,#e0342a 60%,#a01818);color:#fff;font:700 15px/1 var(--f-display,system-ui);text-shadow:0 2px 0 rgba(0,0,0,.35);box-shadow:0 5px 0 rgba(0,0,0,.3),0 0 18px -4px #ff5a4a;pointer-events:auto;touch-action:none;display:none;align-items:center;justify-content:center;flex-direction:column;gap:2px;-webkit-user-select:none;user-select:none}
+.tc-btn svg{width:38px;height:38px}
+.tc-btn.dig{background:radial-gradient(circle at 35% 30%,#ffe08a,#e0a52a 60%,#9a6510)}
+.tc-btn.pressed{transform:scale(.92);box-shadow:0 2px 0 rgba(0,0,0,.3)}
+.tc.df .tc-btn,.tc.th .tc-btn{display:flex}
+.mm-note{display:block;font-size:11px;opacity:.7;font-weight:400}
 .cn{position:fixed;inset:0;z-index:9000;background:#120c26;color:#fff;display:flex;touch-action:none;user-select:none;-webkit-user-select:none;cursor:none}
 .cn[hidden]{display:none}
 .cn canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -766,6 +778,7 @@ body{padding:0}
       <div class="mm-card" id="mm-settings" hidden>
         <h2>Settings</h2>
         <div class="mm-row"><span>Fullscreen</span><button class="mm-small" type="button" id="mm-fs" data-action="menu-fs">Go fullscreen</button></div>
+        <label class="mm-row"><span>On-screen joystick &amp; attack button<small class="mm-note">Shows on touch screens in landscape</small></span><input type="checkbox" id="mm-touch"></label>
         <label class="mm-row"><span>Show sparkles on things I can use</span><input type="checkbox" id="mm-sparkles"></label>
         <div class="mm-row"><span>Time of day</span><div class="mm-seg" id="mm-time">
           <button type="button" data-action="menu-time" data-time="day">Day</button><button type="button" data-action="menu-time" data-time="sunset">Sunset</button><button type="button" data-action="menu-time" data-time="night">Night</button></div></div>
@@ -4426,7 +4439,7 @@ function dfIntro(){
   var h = heroChar();
   if (df.mode === 'arena'){
     dfPanel('<h2>Battle Arena</h2><p>Monsters pour in from the gates on the left and right and come straight for you. Beat every wave to win. If your health runs out, the fight is over.</p>' +
-      '<p>Aim with your mouse and <b>left-click</b> to attack in that direction. <b>Right-click</b> the ground or use <b>WASD</b> to move <b>' + esc(h.nick || h.name) + '</b>. On a touch screen, tap near your pal to attack that way and tap farther away to move. Food drops between waves, so grab it to heal.</p>' +
+      '<p>Aim with your mouse and <b>left-click</b> to attack in that direction. <b>Right-click</b> the ground or use <b>WASD</b> to move <b>' + esc(h.nick || h.name) + '</b>. On a touch screen, tap near your pal to attack that way and tap farther away to move (or turn on the joystick in Settings). Food drops between waves, so grab it to heal.</p>' +
       arenaModes() + lvButtons('df-start', 'df-leave', 'Not now'));
     return;
   }
@@ -8211,6 +8224,7 @@ function mmShow(card){
   }
   if (card === 'settings'){
     $('#mm-sparkles').checked = !!state.island.sparkles;
+    $('#mm-touch').checked = tcWanted();
     $$('#mm-time button').forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.time === (state.island.time || 'day'))); });
     $('#mm-reset').innerHTML = '<button class="mm-small danger" type="button" data-action="menu-reset">New game</button>';
   }
@@ -8227,7 +8241,109 @@ function toggleFullscreen(){
   } catch (e) { flash('Your browser blocked fullscreen here.'); }
 }
 document.addEventListener('fullscreenchange', fsLabel); document.addEventListener('webkitfullscreenchange', fsLabel);
+/* on-screen controls for phones held sideways: a joystick that drives the same WASD keys, and an attack (or dig) button */
+var tc = { el: null, knob: null, btn: null, dir: { u: false, d: false, l: false, r: false }, vx: 0, vy: 0, lx: 1, ly: 0, sid: null, hold: false, mode: '' };
+function tcWanted(){
+  var v = state.island && state.island.touchUi;
+  if (v === undefined || v === null){ try { return window.matchMedia('(pointer:coarse)').matches; } catch (e) { return 'ontouchstart' in window; } }
+  return !!v;
+}
+function tcBuild(){
+  if (tc.el) return;
+  var d = document.createElement('div'); d.className = 'tc'; d.id = 'tc';
+  d.innerHTML = '<div class="tc-stick" aria-label="Joystick"><div class="tc-knob"></div></div><button class="tc-btn" type="button" aria-label="Attack"></button>';
+  document.body.appendChild(d);
+  tc.el = d; tc.knob = d.querySelector('.tc-knob'); tc.btn = d.querySelector('.tc-btn');
+  var st = d.querySelector('.tc-stick');
+  function move(ev){
+    var r = st.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2, R = r.width / 2;
+    var x = ev.clientX - cx, y = ev.clientY - cy, l = Math.hypot(x, y);
+    if (l > R){ x = x / l * R; y = y / l * R; l = R; }
+    tc.knob.style.transform = 'translate(' + x + 'px,' + y + 'px)';
+    var on = l > R * 0.28, a = Math.atan2(y, x);
+    tc.vx = on ? Math.cos(a) : 0; tc.vy = on ? Math.sin(a) : 0;
+    if (on){ tc.lx = tc.vx; tc.ly = tc.vy; }
+    /* eight directions, like holding one or two of WASD */
+    var oct = on ? Math.round(a / (Math.PI / 4)) : null;
+    tcSet({ r: on && (oct === 0 || oct === 1 || oct === -1), d: on && (oct === 1 || oct === 2 || oct === 3), l: on && (oct === 4 || oct === -4 || oct === 3 || oct === -3), u: on && (oct === -1 || oct === -2 || oct === -3) });
+  }
+  function end(ev){ if (ev.pointerId !== tc.sid) return; tc.sid = null; tc.knob.style.transform = ''; tc.vx = tc.vy = 0; tcSet({ u: false, d: false, l: false, r: false }); }
+  st.addEventListener('pointerdown', function(ev){ ev.preventDefault(); ev.stopPropagation(); tc.sid = ev.pointerId; try { st.setPointerCapture(ev.pointerId); } catch (e) {} move(ev); });
+  st.addEventListener('pointermove', function(ev){ if (ev.pointerId === tc.sid){ ev.preventDefault(); move(ev); } });
+  st.addEventListener('pointerup', end); st.addEventListener('pointercancel', end); st.addEventListener('lostpointercapture', end);
+  var b = tc.btn;
+  b.addEventListener('pointerdown', function(ev){ ev.preventDefault(); ev.stopPropagation(); try { b.setPointerCapture(ev.pointerId); } catch (e) {} tc.hold = true; b.classList.add('pressed'); tcAct(true); });
+  function up(){ tc.hold = false; b.classList.remove('pressed'); }
+  b.addEventListener('pointerup', up); b.addEventListener('pointercancel', up); b.addEventListener('lostpointercapture', up);
+  b.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+  d.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
+}
+function tcKeys(){ return tc.mode === 'df' ? (df.keys = df.keys || {}) : tc.mode === 'th' ? (th.keys = th.keys || {}) : tc.mode === 'world' ? wkeys : null; }
+function tcSet(nd){
+  var K = tcKeys(), ch = false;
+  ['u', 'd', 'l', 'r'].forEach(function(k){ if (tc.dir[k] !== nd[k]){ ch = true; if (K) K[k] = nd[k]; } else if (K && nd[k]) K[k] = true; });
+  tc.dir = nd;
+  if (ch && tc.mode === 'world') wasdStep();
+}
+/* the attack button: aims at the closest enemy in reach, otherwise the way the joystick last pointed */
+function tcAct(first){
+  if (tc.mode === 'df'){
+    var H = df.hero;
+    if (!df.open || !H || (df.phase !== 'play' && df.phase !== 'between')) return;
+    if (H.stunN > 0){
+      if (!first) return;
+      H.stunN--;
+      dfFx('pop', H.x + (Math.random() - 0.5) * 40, H.y - 80, { life: 0.3, max: 0.3, n: '!', col: '#ffd23e' });
+      if (H.stunN <= 0){ H.stunN = 0; dfFx('ring', H.x, H.y, { life: 0.4, max: 0.4, col: '#7affc4' }); dfFx('pop', H.x, H.y - 80, { life: 0.5, max: 0.5, n: 'Free!', col: '#7affc4' }); }
+      return;
+    }
+    if (H.ko > 0) return;
+    var f = dfNearest(H.x, H.y, H.range + 140);
+    if (f) df.aim = { x: f.x, y: f.y - 10 };
+    else { var dx = tc.vx || tc.lx || H.face || 1, dy = tc.vx || tc.vy ? tc.vy : tc.ly; df.aim = { x: H.x + dx * 120, y: H.y - 22 + dy * 120 }; }
+    H.foe = null;
+    if (H.cool <= 0) dfAimAttack(H); else H.buf = 0.25;
+  } else if (tc.mode === 'th' && first){
+    if (!th.open || th.phase !== 'play' || th.digs <= 0) return;
+    var h = th.hero; if (h.dig > 0) return;
+    var best = -1, bd = 170;
+    for (var i = 0; i < th.spots.length; i++){ var s = th.spots[i]; if (s.dug) continue; var dd = Math.hypot(s.x - h.x, (s.y - h.y) * 1.2); if (dd < bd){ bd = dd; best = i; } }
+    if (best >= 0){ h.target = best; h.mv = null; }
+    else flash('Walk closer to an X to dig.');
+  }
+}
+var TC_SWORD = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M30 4l6 0 0 6-17 17-6-6z" fill="#fff"/><path d="M11 21l8 8-3 3-2-2-5 5-3-3 5-5-2-2z" fill="#ffd23e" stroke="#7a3a10" stroke-width="1.5"/></svg>';
+var TC_WAND = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M8 34L26 16" stroke="#fff" stroke-width="5" stroke-linecap="round"/><path d="M29 4l2.5 6 6 2.5-6 2.5-2.5 6-2.5-6-6-2.5 6-2.5z" fill="#ffd23e"/></svg>';
+var TC_SHOVEL = '<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M30 4l6 6-12 12-6-6z" fill="#fff" opacity=".0"/><path d="M33 5l2 2-13 13-2-2z" fill="#fff"/><path d="M19 15l6 6-6 9c-3 3-8 3-11 0s-3-8 0-11z" fill="#fff" stroke="#7a5010" stroke-width="1.5"/></svg>';
+function tcTick(){
+  var want = tcWanted(), mm = $('#mmenu'), mode = '';
+  if (want && !(mm && !mm.hidden)){
+    if (df.open){ if (df.phase === 'play' || df.phase === 'between') mode = 'df'; }
+    else if (th.open){ if (th.phase === 'play') mode = 'th'; }
+    else if (!cn.open && !ss.open && state.tab === 'island' && ui.mode === 'play') mode = 'world';
+  }
+  if (mode && !tc.el) tcBuild();
+  if (mode !== tc.mode){
+    var K = tcKeys(); if (K) ['u', 'd', 'l', 'r'].forEach(function(k){ if (tc.dir[k]) K[k] = false; });
+    if (tc.mode === 'world') wasdStep();
+    tc.mode = mode; tc.hold = false;
+    if (tc.knob) tc.knob.style.transform = '';
+    tc.dir = { u: false, d: false, l: false, r: false }; tc.vx = tc.vy = 0; tc.sid = null;
+    if (tc.el){ tc.el.className = 'tc' + (mode ? ' on ' + mode : ''); tc.btn.classList.remove('pressed'); }
+  }
+  if (!tc.el || !mode) return;
+  var lab = '', ico = '', dig = false;
+  if (mode === 'df'){ var H = df.hero; var rg = H && H.ranged; ico = rg ? TC_WAND : TC_SWORD; lab = H && H.stunN > 0 ? 'Shake!' : rg ? 'Shoot' : 'Attack'; }
+  else if (mode === 'th'){ ico = TC_SHOVEL; lab = 'Dig'; dig = true; }
+  var key = mode + lab;
+  if (tc.btn.dataset.k !== key){ tc.btn.dataset.k = key; tc.btn.innerHTML = ico + '<span>' + lab + '</span>'; tc.btn.classList.toggle('dig', dig); tc.btn.setAttribute('aria-label', lab); }
+  if (tc.hold) tcAct(false);
+  /* keep holding the keys the joystick is pressing, even after a minigame clears them */
+  var K2 = tcKeys(); if (K2) ['u', 'd', 'l', 'r'].forEach(function(k){ if (tc.dir[k]) K2[k] = true; });
+}
+setInterval(tcTick, 60);
 function mmHide(){ $('#mmenu').hidden = true; tutRender(); }
+$('#mm-touch').addEventListener('change', function(){ state.island.touchUi = this.checked; save(); tcTick(); });
 $('#mm-sparkles').addEventListener('change', function(){ state.island.sparkles = this.checked; applyLook(); renderLook(); save(); });
 
 /* ---------- start ---------- */
