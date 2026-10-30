@@ -2534,7 +2534,7 @@ function extraIslandItems(){
   return m.it;
 }
 function defaultIsland(){
-  /* a new world starts with no buildings: the junk on it pays enough to buy the first one (the Sky Cannon costs 150) */
+  /* a new world starts with no buildings: the junk on it pays enough to buy the first one (the Guard Post costs 120) */
   var portal = { id: uid(), type: 'portal', x: 146, y: 46, flip: false, sc: 1, s: 0 };
   var junk = [portal].concat(initialJunk([portal], 146, 56));
   return { wv: 9, realm: 'main', skills: cleanSkills(null), bridges: {}, picks: cleanPicks(null), axes: cleanPicks(null), rods: cleanPicks(null), shovels: cleanPicks(null), tinders: cleanPicks(null), hammers: cleanPicks(null), fans: cleanPicks(null), wands: cleanPicks(null), bag: {}, gold: 100, junkT: Date.now(), junkFill1: 1, tut: 1, fossils: {}, worldName: 'My World', cannonWins: 0, places: defaultPlaces(), time: 'day', sparkles: true, heroId: '', hx: 146, hy: 56,
@@ -8106,8 +8106,8 @@ dfDrawFoe = function(g, f){
   };
 })();
 
-var COST = { lumber:80, cottage:300, tower:450, windmill:600, shop:400, lighthouse:500, cannon:150, guard:120, tree:60, pine:50, palm:60, bush:30, flowers:15, rock:35, mushroom:30,
-  mine:80, fishhut:80, crypt:80, firecamp:80, smithy:80, kitchen:80, alchemy:80, arena:220, digsite:250, stonetable:300, portal:500, path:3, fence:10, lamp:60, bench:50, signpost:40, campfire:80, flag:40, pond:250, fountain:400, crystal:300, chest:200, sailboat:45 };
+var COST = { lumber:800, cottage:300, tower:450, windmill:600, shop:400, lighthouse:500, cannon:600, guard:120, tree:60, pine:50, palm:60, bush:30, flowers:15, rock:35, mushroom:30,
+  mine:800, fishhut:800, crypt:800, firecamp:1200, smithy:1200, kitchen:1200, alchemy:1200, arena:900, digsite:1200, stonetable:1500, portal:500, path:3, fence:10, lamp:60, bench:50, signpost:40, campfire:80, flag:40, pond:250, fountain:400, crystal:300, chest:200, sailboat:45 };
 Object.keys(ITEMS).forEach(function(k){ ITEMS[k].cost = COST[k] || 0; });
 var JUNK_KEYS = Object.keys(ITEMS).filter(function(k){ return ITEMS[k].junk; }), JUNK_CAP = 8, JUNK_START = 8, JUNK_EVERY = 900000;
 /* the most junk an island can pile up: enough to be worth a visit, not a mess */
