@@ -394,8 +394,9 @@ input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
 .cn-pips{display:flex;gap:5px;margin-top:6px;min-height:12px}
 .cn-pips i{width:12px;height:12px;border-radius:50%;background:#7bd88f;border:2px solid #0d2a14}
 .cn-pips i.off{background:#3a2f55;border-color:#1b1230}
-.cn-leave{pointer-events:auto;cursor:pointer;background:rgba(24,14,48,.85);color:#fff;border:2px solid #c9a24a;border-radius:12px;padding:8px 12px;font-weight:800;font-size:14px}
-.cn-leave:hover{background:#3a2766}
+.cn-leave{position:absolute;left:max(12px,env(safe-area-inset-left));bottom:max(12px,env(safe-area-inset-bottom));z-index:6;opacity:.8;pointer-events:auto;cursor:pointer;background:rgba(24,14,48,.85);color:#fff;border:2px solid #c9a24a;border-radius:12px;padding:8px 12px;font-weight:800;font-size:14px}
+.cn-leave:hover{background:#3a2766;opacity:1}
+.cn-leave.sure{background:#b8322a;border-color:#fff;opacity:1}
 .cn-pilot{position:absolute;left:50%;bottom:0;width:min(28vw,150px);height:min(28vw,150px);transform:translate(-50%,22%);pointer-events:none;border-radius:50%;border:6px solid var(--c);box-sizing:border-box;padding:8px;
   background:radial-gradient(circle at 40% 35%,rgba(255,255,255,.35),rgba(255,255,255,0) 60%),linear-gradient(var(--tint),var(--tint)),#2b1f5c;box-shadow:0 0 0 3px #120c26,0 0 22px var(--c),inset 0 -6px 12px rgba(0,0,0,.25)}
 .cn-pilot .mini{width:100%;height:100%;display:block}
@@ -874,8 +875,8 @@ body{padding:0}
   <div class="cn-hud">
     <div class="cn-card"><span id="cn-wave">Wave 1 of 3</span><b id="cn-count">0 / 0</b><div class="cn-bar"><i id="cn-fill"></i></div></div>
     <div class="cn-card">Escaped<div class="cn-pips" id="cn-pips"></div></div>
-    <button class="cn-leave" type="button" data-action="cannon-leave">Leave cannon</button>
   </div>
+  <button class="cn-leave" type="button" data-action="cannon-leave-ask">Leave cannon</button>
   <div class="cn-banner" id="cn-banner" aria-live="polite"></div>
   <div class="cn-panel" id="cn-panel" hidden></div>
 </div>
@@ -3681,6 +3682,13 @@ document.addEventListener('click', function(ev){
     case 'cannon-start': cnBegin(+t.dataset.lv || 1); break;
     case 'cannon-again': cnBegin(+t.dataset.lv || 1); break;
     case 'cannon-leave': cnClose(); break;
+    case 'cannon-leave-ask':
+      /* mid-fight a stray click should not end the run: ask for a second tap */
+      if (cn.phase !== 'play' && cn.phase !== 'banner' && cn.phase !== 'between'){ cnClose(); break; }
+      if (t.classList.contains('sure')){ t.classList.remove('sure'); t.textContent = 'Leave cannon'; cnClose(); break; }
+      t.classList.add('sure'); t.textContent = 'Tap again to leave';
+      clearTimeout(t._sureT); t._sureT = setTimeout(function(){ t.classList.remove('sure'); t.textContent = 'Leave cannon'; }, 2500);
+      break;
     case 'df-start': dfBegin(+t.dataset.lv || 1); break;
     case 'df-amode': dfSetMode(t.dataset.m); break;
     case 'th-start': thBegin(); break;
