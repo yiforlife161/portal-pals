@@ -2560,6 +2560,9 @@ function cleanIsland(o){
     junkT: Number(o.junkT) > 0 ? Number(o.junkT) : Date.now(),
     junkFill1: o.junkFill1 ? 1 : 0,
     tut: typeof o.tut === 'number' ? o.tut : 99,
+    lvWon: (function(a){ var out = {}; if (a && typeof a === 'object') ['cannon', 'defense', 'arena', 'stones'].forEach(function(k){ var v = parseInt(a[k], 10); if (v >= 0 && v <= 3) out[k] = v; }); return out; })(o.lvWon),
+    touchUi: typeof o.touchUi === 'boolean' ? o.touchUi : undefined,
+    thReset: Number(o.thReset) || 0,
     arenaMode: typeof o.arenaMode === 'string' ? o.arenaMode : 'classic',
     ach: (function(a){ var out = {}; if (a && typeof a === 'object') Object.keys(a).forEach(function(k){ if (/^[a-z]_[a-z0-9]{1,12}$/.test(k) && a[k]) out[k] = Number(a[k]) || 1; }); return out; })(o.ach),
     st: (function(a){ var out = {}; if (a && typeof a === 'object') Object.keys(a).forEach(function(k){ var v = Number(a[k]); if (/^[a-z]{2}_[a-z]{2,10}$/.test(k) && isFinite(v) && v > 0) out[k] = Math.min(v, 1e12); }); return out; })(o.st),
@@ -2630,7 +2633,7 @@ function defaultIsland(){
   /* a new world starts with no buildings: the junk on it pays enough to buy the first one (the Guard Post costs 120) */
   var portal = { id: uid(), type: 'portal', x: 146, y: 46, flip: false, sc: 1, s: 0 };
   var junk = [portal].concat(initialJunk([portal], 146, 56));
-  return { wv: 9, realm: 'main', skills: cleanSkills(null), bridges: {}, picks: cleanPicks(null), axes: cleanPicks(null), rods: cleanPicks(null), shovels: cleanPicks(null), tinders: cleanPicks(null), hammers: cleanPicks(null), fans: cleanPicks(null), wands: cleanPicks(null), bag: {}, gold: 100, junkT: Date.now(), junkFill1: 1, tut: 1, fossils: {}, worldName: 'My World', cannonWins: 0, places: defaultPlaces(), time: 'day', sparkles: true, heroId: '', hx: 146, hy: 56,
+  return { wv: 9, realm: 'main', skills: cleanSkills(null), bridges: {}, picks: cleanPicks(null), axes: cleanPicks(null), rods: cleanPicks(null), shovels: cleanPicks(null), tinders: cleanPicks(null), hammers: cleanPicks(null), fans: cleanPicks(null), wands: cleanPicks(null), bag: {}, gold: 100, junkT: Date.now(), junkFill1: 1, tut: 1, fossils: {}, thReset: 1, worldName: 'My World', cannonWins: 0, places: defaultPlaces(), time: 'day', sparkles: true, heroId: '', hx: 146, hy: 56,
     items: junk };
 }
 function seedChars(){
@@ -6160,10 +6163,10 @@ setInterval(tutTick, 600);
 var TH_W = 1800, TH_H = 1200, TH_CX = 900, TH_CY = 600, TH_DIGS = 10, TH_SPOTS = 20, TH_FOSSIL_CHANCE = 0.04;
 var th = { open: false, phase: 'intro', keys: {}, fx: [] };
 var TH_RARITY = {
-  common:    { label: 'Common',    w: 10,  col: '#a9b4c4' },
-  uncommon:  { label: 'Uncommon',  w: 5,   col: '#4fc36a' },
-  rare:      { label: 'Rare',      w: 2,   col: '#4a9cff' },
-  legendary: { label: 'Legendary', w: 0.7, col: '#ffb020' }
+  common:    { label: 'Common',    w: 10,  p: 0.02,   col: '#a9b4c4' },
+  uncommon:  { label: 'Uncommon',  w: 5,   p: 0.008,  col: '#4fc36a' },
+  rare:      { label: 'Rare',      w: 2,   p: 0.003,  col: '#4a9cff' },
+  legendary: { label: 'Legendary', w: 0.7, p: 0.0008, col: '#ffb020' }
 };
 var BONE = '#f3ead2', BONE_D = '#6b5a3e';
 function fpath(d, f, w){ return '<path d="' + d + '" fill="' + (f || BONE) + '" stroke="' + BONE_D + '" stroke-width="' + (w || 2.4) + '" stroke-linejoin="round" stroke-linecap="round"/>'; }
@@ -6455,12 +6458,12 @@ function thSpotAt(x, y){
 function thFxAdd(o){ th.fx.push(o); }
 /* what an X hides: very rarely a fossil you do not have yet, often some coins, otherwise nothing */
 function thRoll(){
-  var own = state.island.fossils || {}, left = FOSSILS.filter(function(f){ return !own[f.id]; });
-  if (left.length && Math.random() < TH_FOSSIL_CHANCE){
-    var tot = 0; left.forEach(function(f){ tot += TH_RARITY[f.r].w; });
-    var r = Math.random() * tot;
-    for (var i = 0; i < left.length; i++){ r -= TH_RARITY[left[i].r].w; if (r <= 0) return { k: 'fossil', f: left[i] }; }
-    return { k: 'fossil', f: left[left.length - 1] };
+  /* every rarity has its own small chance per dig, so the rare ones stay rare even when they are all that is left */
+  var own = state.island.fossils || {}, r = Math.random(), acc = 0, rar = null;
+  ['legendary', 'rare', 'uncommon', 'common'].some(function(k){ acc += TH_RARITY[k].p; if (r < acc){ rar = k; return true; } return false; });
+  if (rar){
+    var left = FOSSILS.filter(function(f){ return f.r === rar && !own[f.id]; });
+    if (left.length) return { k: 'fossil', f: left[Math.floor(Math.random() * left.length)] };
   }
   if (Math.random() < 0.55) return { k: 'coins', n: 10 + Math.floor(Math.pow(Math.random(), 1.7) * 46) };
   return { k: 'none' };
@@ -8525,6 +8528,15 @@ $('#mm-sparkles').addEventListener('change', function(){ state.island.sparkles =
 /* ---------- start ---------- */
 var loaded = loadAll();
 if (loaded){ state.chars = loaded.chars; state.island = loaded.island; }
+/* fossils became much rarer: on the live site everyone's Treasure Hunt progress starts over once */
+if (loaded && window.PP_SAVE_KEY && (state.island.thReset || 0) < 1){
+  var I0 = state.island;
+  I0.fossils = {};
+  if (I0.ach) Object.keys(I0.ach).forEach(function(k){ if (/^t_/.test(k)) delete I0.ach[k]; });
+  if (I0.st) Object.keys(I0.st).forEach(function(k){ if (/^th_/.test(k)) delete I0.st[k]; });
+  I0.thReset = 1;
+  save();
+}
 else {
   state.chars = seedChars(); state.island = defaultIsland();
   state.island.heroId = state.chars[0].id;
