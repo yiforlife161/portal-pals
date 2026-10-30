@@ -765,6 +765,7 @@ body{padding:0}
       </div>
       <div class="mm-card" id="mm-settings" hidden>
         <h2>Settings</h2>
+        <div class="mm-row"><span>Fullscreen</span><button class="mm-small" type="button" id="mm-fs" data-action="menu-fs">Go fullscreen</button></div>
         <label class="mm-row"><span>Show sparkles on things I can use</span><input type="checkbox" id="mm-sparkles"></label>
         <div class="mm-row"><span>Time of day</span><div class="mm-seg" id="mm-time">
           <button type="button" data-action="menu-time" data-time="day">Day</button><button type="button" data-action="menu-time" data-time="sunset">Sunset</button><button type="button" data-action="menu-time" data-time="night">Night</button></div></div>
@@ -3644,7 +3645,8 @@ document.addEventListener('click', function(ev){
     case 'up-reset': resetUpgrades(); break;
     case 'menu-play': mmHide(); break;
     case 'menu-open': mmShow('main'); break;
-    case 'menu-settings': mmShow('settings'); break;
+    case 'menu-settings': mmShow('settings'); fsLabel(); break;
+    case 'menu-fs': toggleFullscreen(); break;
     case 'menu-back': mmShow('main'); break;
     case 'menu-quit': save(); mmShow('quit'); try { window.close(); } catch (e) {} break;
     case 'menu-time': state.island.time = t.dataset.time; applyLook(); renderLook(); save(); mmShow('settings'); break;
@@ -8213,6 +8215,18 @@ function mmShow(card){
     $('#mm-reset').innerHTML = '<button class="mm-small danger" type="button" data-action="menu-reset">New game</button>';
   }
 }
+/* fullscreen: the standard API with the webkit fallback (Android Chrome, Samsung Internet, desktop) */
+function fsActive(){ return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function fsLabel(){ var b = $('#mm-fs'); if (!b) return; var can = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen); b.textContent = !can ? 'Not supported here' : fsActive() ? 'Exit fullscreen' : 'Go fullscreen'; b.disabled = !can; }
+function toggleFullscreen(){
+  var el = document.documentElement;
+  try {
+    if (fsActive()){ (document.exitFullscreen || document.webkitExitFullscreen).call(document); return; }
+    var p = el.requestFullscreen ? el.requestFullscreen({ navigationUI: 'hide' }) : el.webkitRequestFullscreen && el.webkitRequestFullscreen();
+    if (p && p.catch) p.catch(function(){ flash('Your browser blocked fullscreen here.'); });
+  } catch (e) { flash('Your browser blocked fullscreen here.'); }
+}
+document.addEventListener('fullscreenchange', fsLabel); document.addEventListener('webkitfullscreenchange', fsLabel);
 function mmHide(){ $('#mmenu').hidden = true; tutRender(); }
 $('#mm-sparkles').addEventListener('change', function(){ state.island.sparkles = this.checked; applyLook(); renderLook(); save(); });
 
