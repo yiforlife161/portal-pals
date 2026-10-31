@@ -4066,7 +4066,7 @@ function cnShape(g, el, t, big){
 }
 function cnDrawBullet(g, el, x, y, r, ang, t, big){
   g.save(); g.translate(x, y); g.scale(r, r);
-  if (el !== 'tech' && el !== 'magic' && el !== 'undead') g.rotate(ang);
+  if (el !== 'tech' && el !== 'magic' && el !== 'undead') g.rotate(ang + Math.PI);      /* the round head leads, the pointed tail trails behind */
   cnShape(g, el, t, big);
   g.restore();
 }
