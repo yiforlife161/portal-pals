@@ -7230,9 +7230,9 @@ function updateSkills(){
 }
 
 
-/* ---------- skilling pets: a 1 in 30,000 find per action in each skilling area. A pet adds 2 actions to every tap there
+/* ---------- skilling pets: a 1 in 20,000 find per action in each skilling area. A pet adds 2 actions to every tap there
    and follows you around its own area ---------- */
-var PET_RATE = 30000, PET_BONUS = 2;
+var PET_RATE = 20000, PET_BONUS = 2;
 function petEye(x, y, r){ return '<circle cx="' + x + '" cy="' + y + '" r="' + (r || 3.2) + '" fill="#1e1530"/><circle cx="' + (x + 1) + '" cy="' + (y - 1.1) + '" r="1.1" fill="#fff"/>'; }
 var PETS = {
   mine: { name: 'Digger the Mole', note: 'A tiny mole in a miner’s helmet who sniffs out ore.', art: function(){
