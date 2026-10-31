@@ -156,26 +156,26 @@ button{font:inherit;color:inherit}
 /* element looks on decorations: a pal touches it, it takes on that pal's element */
 .fxa{position:absolute;inset:0;pointer-events:none;z-index:2;--h:calc(var(--u)*var(--w)*var(--k));--p:max(calc(var(--u)*var(--k)*1.7),calc(var(--h)*.13))}
 .fxa i{position:absolute;left:var(--x);top:var(--y);width:var(--p);height:var(--p);margin:calc(var(--p)*-.5);opacity:0;animation-delay:var(--dl)!important}
-.item.fx-fire .art{filter:drop-shadow(0 0 calc(var(--u)*1)) #ff7a2a) saturate(1.15) brightness(1.04)}
+.item.fx-fire .art{filter:sepia(.75) saturate(2.3) hue-rotate(-18deg) brightness(1.03) drop-shadow(0 0 calc(var(--u)*1) #ff7a2a)}
 .fxa[data-el="fire"] i{border-radius:50%;background:radial-gradient(circle,#fff6b0 0,#ffb030 40%,#ff4d1a 75%,transparent 76%);animation:fxRise 1.5s ease-out infinite}
-.item.fx-water .art{filter:drop-shadow(0 0 calc(var(--u)*1)) #4aa8ff) saturate(1.1) hue-rotate(-8deg)}
+.item.fx-water .art{filter:sepia(.75) saturate(1.9) hue-rotate(166deg) brightness(1.02) drop-shadow(0 0 calc(var(--u)*1) #4aa8ff)}
 .fxa[data-el="water"] i{border-radius:50% 0 50% 50%;transform:rotate(-45deg);background:linear-gradient(135deg,#d8f0ff,#2f86f0);width:calc(var(--p)*.75);height:calc(var(--p)*.75);animation:fxDrip 1.3s ease-in infinite}
 .fxa[data-el="water"] i:nth-child(even){border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,rgba(120,190,255,.35) 45%,rgba(47,134,240,.6) 70%,transparent 72%);animation:fxRise 2s ease-out infinite}
-.item.fx-air .art{filter:drop-shadow(0 0 calc(var(--u)*.9)) #dff4ff) brightness(1.08);animation:fxSway 2.2s ease-in-out infinite}
+.item.fx-air .art{filter:sepia(.7) saturate(1.2) hue-rotate(152deg) brightness(1.16) drop-shadow(0 0 calc(var(--u)*.9) #e6f7ff);animation:fxSway 2.2s ease-in-out infinite}
 .fxa[data-el="air"] i{height:calc(var(--p)*.28);width:calc(var(--p)*2.6);border-radius:9px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.95),transparent);animation:fxBlow 1.8s ease-in-out infinite}
-.item.fx-earth .art{filter:drop-shadow(0 0 calc(var(--u)*.9) #c08040) sepia(.6) saturate(1.4) hue-rotate(-8deg)}
+.item.fx-earth .art{filter:sepia(.75) saturate(1.5) hue-rotate(-8deg) brightness(.95) drop-shadow(0 0 calc(var(--u)*.9) #c08040)}
 .fxa[data-el="earth"] i{top:auto;bottom:calc(var(--y) * .2);border-radius:30%;width:calc(var(--p)*.75);height:calc(var(--p)*.65);background:linear-gradient(#d8a66a,#6a4220);box-shadow:0 1px 0 #3a2410;animation:fxHop 1.4s ease-out infinite}
 .fxa[data-el="earth"] i:nth-child(3n){border-radius:50%;width:calc(var(--p)*1.6);height:calc(var(--p)*.9);background:radial-gradient(ellipse,rgba(200,150,90,.75),rgba(160,110,60,.3) 55%,transparent 72%);box-shadow:none;animation:fxDust 1.8s ease-out infinite}
 @keyframes fxDust{0%{opacity:0;transform:scale(.4)}30%{opacity:.9}100%{opacity:0;transform:scale(1.5) translateY(calc(var(--p)*-.6))}}
-.item.fx-life .art{filter:drop-shadow(0 0 calc(var(--u)*1)) #6ee35a) saturate(1.35)}
+.item.fx-life .art{filter:sepia(.75) saturate(2.1) hue-rotate(72deg) drop-shadow(0 0 calc(var(--u)*1) #6ee35a)}
 .fxa[data-el="life"] i{border-radius:0 80% 0 80%;background:linear-gradient(135deg,#a8f080,#2f9a2a);animation:fxLeaf 2.4s ease-in-out infinite}
 .fxa[data-el="life"] i:nth-child(3n){border-radius:50%;width:calc(var(--p)*.5);height:calc(var(--p)*.5);background:radial-gradient(circle,#fff 0,#ffe0f0 40%,#ff7ab8 70%,transparent 72%);animation:fxTwinkle 1.6s ease-in-out infinite}
-.item.fx-tech .art{filter:drop-shadow(0 0 calc(var(--u)*1)) #ffb040) contrast(1.08);animation:fxBuzz 2.6s steps(2) infinite}
+.item.fx-tech .art{filter:grayscale(.3) sepia(.75) saturate(1.3) hue-rotate(-4deg) contrast(1.18) brightness(1.06) drop-shadow(0 0 calc(var(--u)*1) #ffb040);animation:fxBuzz 2.6s steps(2) infinite}
 .fxa[data-el="tech"] i{width:calc(var(--p)*.7);height:calc(var(--p)*.7);background:#fff3a0;clip-path:polygon(40% 0,100% 0,60% 40%,95% 40%,20% 100%,40% 55%,5% 55%);filter:drop-shadow(0 0 3px #ff9a20);animation:fxZap 1.1s steps(1) infinite}
 .fxa[data-el="tech"] i:nth-child(even){clip-path:none;border-radius:2px;width:calc(var(--p)*.32);height:calc(var(--p)*.32);background:#ffd060;animation:fxSpark .9s ease-out infinite}
-.item.fx-undead .art{filter:drop-shadow(0 0 calc(var(--u)*1.1)) #a86ae8) grayscale(.45) brightness(.92)}
+.item.fx-undead .art{filter:grayscale(.3) sepia(.75) saturate(1.7) hue-rotate(222deg) brightness(.92) drop-shadow(0 0 calc(var(--u)*1.1) #a86ae8)}
 .fxa[data-el="undead"] i{border-radius:50% 50% 40% 40%;width:calc(var(--p)*1.2);height:calc(var(--p)*1.5);background:radial-gradient(ellipse at 50% 40%,rgba(220,190,255,.9),rgba(140,80,210,.5) 50%,transparent 72%);filter:blur(1px);animation:fxWisp 2.6s ease-in-out infinite}
-.item.fx-magic .art{filter:drop-shadow(0 0 calc(var(--u)*1.1)) #ffd84a) drop-shadow(0 0 calc(var(--u)*.3) #ff9af0)}
+.item.fx-magic .art{filter:sepia(.75) saturate(1.9) hue-rotate(12deg) brightness(1.12) drop-shadow(0 0 calc(var(--u)*1.1) #ffd84a) drop-shadow(0 0 calc(var(--u)*.3) #ff9af0)}
 .fxa[data-el="magic"] i{background:linear-gradient(#fff6c0,#f6c928);clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);animation:fxTwinkle 1.5s ease-in-out infinite}
 .fxa[data-el="magic"] i:nth-child(even){background:linear-gradient(#ffe0ff,#c870ff)}
 @keyframes fxRise{0%{opacity:0;transform:translateY(0) scale(1)}15%{opacity:1}100%{opacity:0;transform:translateY(calc(var(--h)*-.38)) scale(.35)}}
