@@ -7539,7 +7539,7 @@ function areaTick(){
       }
       if (i.s < ITEMS[i.type].n) return;
       if (!(i.dt > 0) || i.dt > now) i.dt = now;
-      if (now - i.dt >= 2000){ i.s = 0; delete i.dt; refreshItem(i); var e = itemEls[i.id]; if (e){ e.classList.remove('pulse'); void e.offsetWidth; e.classList.add('pulse'); } back++; }
+      if (now - i.dt >= RESPAWN_MS){ i.s = 0; delete i.dt; refreshItem(i); var e = itemEls[i.id]; if (e){ e.classList.remove('pulse'); void e.offsetWidth; e.classList.add('pulse'); } back++; }
     });
     if (back) save();
     return;     /* both work areas keep a fixed set of nodes per tier, they only grow back */
@@ -7862,7 +7862,7 @@ function pkEquip(key){
   P0.eq = key; save(); pkRender();
 }
 /* working a rock or tree takes as long as the equipped tool: the pal stands still with the tool swinging in a bubble, then the node is spent */
-var mining = null, NODE_LIFE = 30000;
+var mining = null, NODE_LIFE = 40000;
 function cancelMining(){
   if (mining){ clearTimeout(mining.timer); mining = null; }
   if (heroEl) $$('.mbub', heroEl).forEach(function(b){ b.remove(); });
@@ -7993,7 +7993,7 @@ function finishMining(it, d){
     if (ui.pr === 'bag') renderBag();
     save(); return;
   }
-  if (m.area !== 'fish' && !it.exp) it.exp = Date.now() + NODE_LIFE;      /* rocks and trees last 30 s after the first hit, fishing spots never run dry */
+  if (m.area !== 'fish' && !it.exp) it.exp = Date.now() + NODE_LIFE;      /* rocks, trees and bone piles last 40 s after the first hit, fishing spots never run dry */
   refreshItem(it);
   var rid = resIdOf(m.area || 'mine', m.kind);
   bagAdd(rid, 1);
