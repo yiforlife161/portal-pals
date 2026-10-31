@@ -6751,7 +6751,7 @@ function thBuildBg(){
   cg.addColorStop(0, '#a87650'); cg.addColorStop(0.5, '#7a4d2e'); cg.addColorStop(1, '#4a2c19');
   g.fillStyle = cg;
   for (i = 9; i >= 0; i--){ thShapePath(g, 1 - i * 0.012, 14 + i * 9); g.fill(); }
-  g.save(); thShapePath(g, 1, 100); g.clip();
+  g.save(); g.globalCompositeOperation = 'source-atop';      /* cracks only on the rock, never in the sky */
   g.strokeStyle = 'rgba(40,22,12,.4)'; g.lineWidth = 3;
   for (i = 0; i < 40; i++){ var kx = TH_CX + (rnd() * 2 - 1) * th.shape.rx, ky = TH_CY + th.shape.ry * (0.3 + rnd() * 0.9);
     g.beginPath(); g.moveTo(kx, ky); g.lineTo(kx + (rnd() - 0.5) * 30, ky + 20); g.lineTo(kx + (rnd() - 0.5) * 40, ky + 44); g.stroke(); }
