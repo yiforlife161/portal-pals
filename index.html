@@ -5078,10 +5078,13 @@ function dfRocketsTick(dt){
     if (df.rockT <= 0){
       df.rockT = DF_ROCKET_EVERY[df.lv || 1] / (1 + 0.35 * (df.wave - 1)) * (0.7 + Math.random() * 0.6);
       var x, y, tries = 0;      /* every rocket is aimed right where you stand: move out of the red circle before it lands */
-      var tgts = dfPlayers().filter(function(q){ return q && !(q.ko > 0); }), tq = tgts[Math.floor(Math.random() * tgts.length)] || H0;
-      if (tq){ x = tq.x; y = tq.y; }
-      else do { x = 120 + Math.random() * 760; y = 180 + Math.random() * 330; } while (!dfInIsland(x, y) && ++tries < 20);
-      df.rockets.push({ x: x, y: y, t: 1.4, T0: 1.4, r: 46 });
+      /* in co-op a rocket comes down on each pal at the same moment */
+      var tgts = dfPlayers().filter(function(q){ return q && !(q.ko > 0); });
+      if (tgts.length) tgts.forEach(function(tq){ df.rockets.push({ x: tq.x, y: tq.y, t: 1.4, T0: 1.4, r: 46 }); });
+      else {
+        do { x = 120 + Math.random() * 760; y = 180 + Math.random() * 330; } while (!dfInIsland(x, y) && ++tries < 20);
+        df.rockets.push({ x: x, y: y, t: 1.4, T0: 1.4, r: 46 });
+      }
     }
   }
   /* once the last thief of a wave is beaten, rockets still in the air fizzle out instead of landing */
