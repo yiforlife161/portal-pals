@@ -7452,9 +7452,21 @@ function leaveArea(area){
   var isl = state.island;
   switchRealm('main');
   var b = isl.items.filter(function(i){ return ITEMS[i.type].game === area; })[0];
-  var t = b ? { x: b.x, y: b.y + 3.5 } : { x: MAIN_ISLES[0].cx, y: MAIN_ISLES[0].cy + 5 };
-  var q = nearestWalkable(t);
+  /* step out right in front of the building you went in through, on that building's own island */
+  var q = b ? exitSpot(b) : { x: MAIN_ISLES[0].cx, y: MAIN_ISLES[0].cy + 5 };
   teleport(q.x, q.y);
+}
+function exitSpot(b){
+  var idx = itemIsle(b), r, a, k, x, y, angs = [90, 60, 120, 30, 150, 0, 180, -30, -150, -60, -120, -90];
+  if (idx < 0) idx = 0;
+  for (r = 3.5; r <= 14; r += 1.5){
+    for (k = 0; k < angs.length; k++){
+      a = angs[k] * Math.PI / 180; x = b.x + Math.cos(a) * r; y = b.y + Math.sin(a) * r * ASPECT;
+      if (inIsleIn(MAIN_ISLES, idx, x, y, WALK_S * 0.92)) return { x: x, y: y };
+    }
+  }
+  var I = MAIN_ISLES[idx];
+  return { x: I.cx, y: I.cy };
 }
 /* pickaxes: bought from the table on the mining island, shared by every pal; the equipped one sets how long a rock takes */
 /* tools: a table on each work island sells them (pickaxes in the mine, axes in the forest); shared by every pal.
