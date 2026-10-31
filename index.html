@@ -4609,14 +4609,78 @@ function dfHitPal(p, amt){
 var COOP_HP = 1.4;      /* two pals fight together, so monsters are a bit tougher */
 var coopFxKeep = { pop: 1, boom: 1, ring: 1, slash: 1, puff: 1, gem: 1 };
 function coopNum(v){ return Math.round(v * 10) / 10; }
+var coopIds = 0;
+/* guest smoothing: snapshots are kept with the host's clock and drawn a short moment behind,
+   blending between two of them, so late or bunched-up packets no longer make things jump */
+function coopBufPush(C, S){
+  var now = Date.now(), d = now - (+S.t || now);
+  C.dl = C.dl || []; C.dl.push(d); if (C.dl.length > 40) C.dl.shift();
+  var mn = Infinity, sum = 0; C.dl.forEach(function(v){ if (v < mn) mn = v; sum += v; });
+  C.off = mn;
+  var spread = sum / C.dl.length - mn;
+  C.delay = Math.max(90, Math.min(250, 70 + spread * 1.5));
+  var e = { t: +S.t || now, foes: {}, m: S.h ? [S.h[0], S.h[1]] : null, shots: S.shots || [], es: S.es || [] };
+  (S.foes || []).forEach(function(a){ e.foes[a[0]] = [a[2], a[3]]; });
+  C.buf = C.buf || [];
+  if (C.buf.length && e.t <= C.buf[C.buf.length - 1].t) return;      /* stale or repeated packet */
+  C.buf.push(e); if (C.buf.length > 60) C.buf.shift();
+}
+function coopLerp(p0, p1, a){ return [p0[0] + (p1[0] - p0[0]) * a, p0[1] + (p1[1] - p0[1]) * a]; }
+function coopInterp(dt){
+  var C = df.coop; if (!C || !C.buf || !C.buf.length) return false;
+  var B = C.buf, rt = Date.now() - (C.off || 0) - (C.delay || 120), i = -1, j;
+  for (j = B.length - 1; j >= 0; j--){ if (B[j].t <= rt){ i = j; break; } }
+  if (i > 1){ B.splice(0, i - 1); i = 1; }
+  var s0 = i >= 0 ? B[i] : null, s1 = B[i + 1] || null, sp = i > 0 ? B[i - 1] : null, last = B[B.length - 1];
+  var a = s0 && s1 ? Math.max(0, Math.min(1, (rt - s0.t) / Math.max(1, s1.t - s0.t))) : 0;
+  var ex = s0 && !s1 ? Math.min(0.15, (rt - s0.t) / 1000) : 0;
+  function at(get){
+    var p0 = s0 && get(s0), p1 = s1 && get(s1);
+    if (p0 && p1) return coopLerp(p0, p1, a);
+    if (p0 && !s1){ var pp = sp && get(sp); if (pp && s0.t > sp.t && ex > 0){ var k = ex * 1000 / (s0.t - sp.t); return [p0[0] + (p0[0] - pp[0]) * k, p0[1] + (p0[1] - pp[1]) * k]; } return p0; }
+    return p0 || p1 || get(last);
+  }
+  df.foes.forEach(function(f){ var q = at(function(s){ return s.foes[f.id]; }); if (q){ f.x = q[0]; f.y = q[1]; } });
+  var m = df.buddy;
+  if (m){ var ox = m.x, q = at(function(s){ return s.m; }); if (q){ m.x = q[0]; m.y = q[1]; if (Math.abs(m.x - ox) > 0.3) m.bob += dt * 12; } }
+  /* shots fly in straight lines, so they glide on from the last known spot with their speed */
+  var base = s0 || B[0], tt = Math.max(0, Math.min(0.2, (rt - base.t) / 1000));
+  function find(s, id, k){ if (!s) return null; for (var n = 0; n < s.length; n++) if (s[n][k] === id) return s[n]; return null; }
+  df.shots = [];
+  base.shots.forEach(function(sh){
+    if (sh[7]) return;      /* my own shots are already drawn here the moment I fire */
+    var nx = s1 && find(s1.shots, sh[4], 4), x, y;
+    if (nx){ x = sh[0] + (nx[0] - sh[0]) * a; y = sh[1] + (nx[1] - sh[1]) * a; } else { x = sh[0] + (sh[5] || 0) * tt; y = sh[1] + (sh[6] || 0) * tt; }
+    df.shots.push({ x: x, y: y, ang: sh[2], p: { c: { element: EL[sh[3]] ? sh[3] : 'fire' } } });
+  });
+  df.eshots = [];
+  base.es.forEach(function(e){
+    var nx = s1 && find(s1.es, e[4], 4), x, y;
+    if (nx){ x = e[0] + (nx[0] - e[0]) * a; y = e[1] + (nx[1] - e[1]) * a; } else { x = e[0] + e[2] * tt; y = e[1] + e[3] * tt; }
+    df.eshots.push({ x: x, y: y, vx: e[2], vy: e[3] });
+  });
+  /* my own ranged shots: drawn right away, they vanish on the first monster they touch */
+  C.ghost = C.ghost || [];
+  for (j = C.ghost.length - 1; j >= 0; j--){
+    var g = C.ghost[j], st = g.v * dt; g.x += g.dx * st; g.y += g.dy * st; g.life -= dt;
+    var hit = df.foes.some(function(f){ return f.T && Math.hypot(f.x - g.x, f.y - f.T.r * 0.5 - g.y) < f.T.r + 10; });
+    if (hit || g.life <= 0 || Math.hypot(g.x - g.ox, g.y - g.oy) >= g.max){ C.ghost.splice(j, 1); continue; }
+    df.shots.push({ x: g.x, y: g.y, ang: g.ang, p: { c: { element: g.el } } });
+  }
+  /* hits and puffs show up in step with the delayed picture */
+  C.fxq = C.fxq || [];
+  while (C.fxq.length && (C.fxq[0].t <= rt || C.fxq.length > 30)){ var q0 = C.fxq.shift(); q0.l.forEach(function(e){ dfFx(e.k, e.x, e.y, e.o); }); }
+  return true;
+}
 /* host: everything the other device needs to draw this moment */
 function coopSnap(){
   var C = df.coop; if (!C) return null;
   var b = df.buddy, h = df.hero;
   var snap = { t: Date.now(), ph: df.phase, wave: df.wave, kills: df.kills, left: df.queue.length + df.foes.filter(function(f){ return !f.dead; }).length, lv: df.lv, am: df.amode,
     foes: df.foes.filter(function(f){ return !f.dead; }).map(function(f){ return [f.id, f.k, coopNum(f.x), coopNum(f.y), Math.round(f.hp), Math.round(f.max), f.dir, f.hit > 0 ? 1 : 0, coopNum(f.wind || 0), coopNum(f.windMax || 0), f.atkType || '', coopNum(f.sx || 0), coopNum(f.sy || 0), coopNum(f.sr || 0), coopNum(f.slam || 0), coopNum(f.dash || 0)]; }),
-    shots: df.shots.map(function(q){ return [coopNum(q.x), coopNum(q.y), coopNum(q.ang || 0), q.p && q.p.c ? q.p.c.element : 'fire']; }),
-    es: (df.eshots || []).map(function(e){ return [coopNum(e.x), coopNum(e.y), coopNum(e.vx), coopNum(e.vy)]; }),
+    shots: df.shots.map(function(q){ if (!q.nid) q.nid = ++coopIds; var sv = q.aimed ? [q.dx * q.v, q.dy * q.v] : [Math.cos(q.ang || 0) * (q.v || 0), Math.sin(q.ang || 0) * (q.v || 0)];
+      return [coopNum(q.x), coopNum(q.y), coopNum(q.ang || 0), q.p && q.p.c ? q.p.c.element : 'fire', q.nid, Math.round(sv[0]), Math.round(sv[1]), q.aimed && q.p === df.buddy ? 1 : 0]; }),
+    es: (df.eshots || []).map(function(e){ if (!e.nid) e.nid = ++coopIds; return [coopNum(e.x), coopNum(e.y), coopNum(e.vx), coopNum(e.vy), e.nid]; }),
     food: (df.food || []).map(function(q){ return [q.k, coopNum(q.x), coopNum(q.y), coopNum(q.drop || 0)]; }),
     trap: df.trap ? { ph: df.trap.ph, ang: coopNum(df.trap.ang || 0) } : null,
     h: h ? [coopNum(h.x), coopNum(h.y), h.face, Math.round(h.hp), Math.round(h.maxhp), coopNum(h.ko), h.swing > 0 ? 1 : 0, (h.zapT || 0) > 0 ? 1 : 0, (h.walkT || 0) > 0 ? 1 : 0] : null,
@@ -4658,8 +4722,7 @@ function coopApply(S){
     f.wind = a[8]; f.windMax = a[9] || 1; f.atkType = a[10]; f.sx = a[11]; f.sy = a[12]; f.sr = a[13]; f.slam = a[14]; f.dash = a[15]; f.arena = true;
     return f;
   });
-  df.shots = (S.shots || []).map(function(a){ return { x: a[0], y: a[1], ang: a[2], p: { c: { element: EL[a[3]] ? a[3] : 'fire' } } }; });
-  df.eshots = (S.es || []).map(function(a){ return { x: a[0], y: a[1], vx: a[2], vy: a[3] }; });
+  coopBufPush(C, S);
   df.food = (S.food || []).map(function(a){ return { k: a[0], x: a[1], y: a[2], drop: a[3], ph: 0 }; });
   if (S.trap && df.trap){ df.trap.ph = S.trap.ph; df.trap.ang = S.trap.ang; }
   var m = df.buddy;
@@ -4674,7 +4737,7 @@ function coopApply(S){
     if (h.ko > 0){ h.mv = null; }
     if ((S.b[3] || 0) > (C.kbN || 0)){ C.kbN = S.b[3]; h.x += S.b[4]; h.y += S.b[5]; h.mv = null; var cl = dfClampIsland(h.x, h.y); h.x = cl.x; h.y = cl.y; }
   }
-  (S.fx || []).forEach(function(e){ dfFx(e.k, e.x, e.y, e.o); });
+  if (S.fx && S.fx.length){ C.fxq = C.fxq || []; C.fxq.push({ t: +S.t || 0, l: S.fx }); }
   (S.ban || []).forEach(function(b0){ dfBanner(b0[0], b0[1], b0[2]); });
   dfHud();
   if (S.end && !C.done){
@@ -4704,10 +4767,10 @@ function dfGuestUpdate(dt){
       }
     }
   }
-  var k = Math.min(1, dt * 12);
-  df.foes.forEach(function(f){ if (f.tx !== undefined){ f.x += (f.tx - f.x) * k; f.y += (f.ty - f.y) * k; } });
+  var smooth = coopInterp(dt), k = Math.min(1, dt * 12);
+  if (!smooth) df.foes.forEach(function(f){ if (f.tx !== undefined){ f.x += (f.tx - f.x) * k; f.y += (f.ty - f.y) * k; } });
   var m = df.buddy;
-  if (m && m.tx !== undefined){ var ox = m.x; m.x += (m.tx - m.x) * k; m.y += (m.ty - m.y) * k; if (Math.abs(m.x - ox) > 0.3) m.bob += dt * 12; m.swing = Math.max(0, (m.swing || 0) - dt); m.zapT = Math.max(0, (m.zapT || 0) - dt); m.walkT = Math.max(0, (m.walkT || 0) - dt); }
+  if (m && m.tx !== undefined){ var ox = m.x; if (!smooth){ m.x += (m.tx - m.x) * k; m.y += (m.ty - m.y) * k; if (Math.abs(m.x - ox) > 0.3) m.bob += dt * 12; } m.swing = Math.max(0, (m.swing || 0) - dt); m.zapT = Math.max(0, (m.zapT || 0) - dt); m.walkT = Math.max(0, (m.walkT || 0) - dt); }
   for (i = df.fx.length - 1; i >= 0; i--){ df.fx[i].life -= dt; if (df.fx[i].life <= 0) df.fx.splice(i, 1); }
   if (df.trap && df.amode === 'blades' && (df.phase === 'play' || df.phase === 'between')) df.trap.ang += BLADE_SPIN[df.lv || 1] * dt * 0.15;
 }
@@ -5142,7 +5205,7 @@ function dfAimAttack(p){
   p.cool = p.cd; p.buf = 0; p.face = A.face;
   if (df.coop && df.coop.role === 'guest' && p === df.hero){
     df.coop.atkN++; df.coop.atkOut.push([df.coop.atkN, coopNum(ang)]); if (df.coop.atkOut.length > 12) df.coop.atkOut.shift();
-    if (p.ranged) p.zapT = 0.2; else { p.swing = 0.22; dfFx('slash', bx, by, { life: 0.22, max: 0.22, col: EL[p.c.element].c, ang: ang, R: p.range + 14 }); }
+    if (p.ranged){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: 600, ang: ang, life: 2, el: p.c.element }); } else { p.swing = 0.22; dfFx('slash', bx, by, { life: 0.22, max: 0.22, col: EL[p.c.element].c, ang: ang, R: p.range + 14 }); }
     return;
   }
   if (p.ranged){
@@ -9986,13 +10049,13 @@ async function coopLink(key, role, name, partner, lv, am){
     CO.timer = setInterval(() => {
       if (!G().coopRole()){ if (++CO.idle > 30) coopStop(); return; }
       const snap = G().coopSnap(); if (snap) rt.set(rt.ref(rdb, base + '/h'), snap).catch(e => console.warn(e));
-    }, 100);
+    }, 50);      /* 20 pictures a second for the friend */
   } else {
     CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/h'), sn => { const v = sn.val(); if (v) G().coopApply(v); }));
     CO.timer = setInterval(() => {
       if (!G().coopRole()){ if (++CO.idle > 10) coopStop(); return; }
       const o = G().coopOut(); if (o) rt.set(rt.ref(rdb, base + '/g'), o).catch(e => console.warn(e));
-    }, 100);
+    }, 66);
   }
 }
 window.ppCoop = {
