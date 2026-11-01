@@ -9621,7 +9621,7 @@ dfDrawFoe = function(g, f){
 var COST = { lumber:800, cottage:300, tower:450, windmill:600, shop:400, lighthouse:500, cannon:600, guard:120, tree:60, pine:50, palm:60, bush:30, flowers:15, rock:35, mushroom:30,
   mine:800, fishhut:800, crypt:800, firecamp:1200, smithy:1200, kitchen:1200, alchemy:1200, arena:900, raid:2000, digsite:1200, stonetable:1500, portal:500, path:3, fence:10, lamp:60, bench:50, signpost:40, campfire:80, flag:40, pond:250, fountain:400, crystal:300, chest:200, sailboat:45 };
 Object.keys(ITEMS).forEach(function(k){ ITEMS[k].cost = COST[k] || 0; });
-var JUNK_KEYS = Object.keys(ITEMS).filter(function(k){ return ITEMS[k].junk; }), JUNK_CAP = 8, JUNK_START = 8, JUNK_EVERY = 900000;
+var JUNK_KEYS = Object.keys(ITEMS).filter(function(k){ return ITEMS[k].junk; }), JUNK_CAP = 8, JUNK_START = 8, JUNK_EVERY = 1800000;
 /* the most junk an island can pile up: enough to be worth a visit, not a mess */
 function junkCap(i){ return i === 0 ? 12 : 8; }
 function isJunk(it){ return !!ITEMS[it.type].junk; }
@@ -9691,7 +9691,7 @@ function junkTick(){
     var c0 = counts();
     c0.forEach(function(c, q){ var want = q === 0 ? 12 : 6; for (var k = c, tries = 0; k < want && tries < 40; tries++){ if (add(q)) k++; } });
   }
-  /* every island regrows its own junk: one new piece per island every 15 minutes, up to that island's cap */
+  /* every island regrows its own junk: one new piece per island every 30 minutes, up to that island's cap */
   var n = Math.min(8, Math.floor((now - isl.junkT) / JUNK_EVERY));
   if (n > 0){
     isl.junkT = n >= 8 ? now : isl.junkT + n * JUNK_EVERY;
