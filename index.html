@@ -5604,7 +5604,7 @@ function dfEnd(won){
     if (sb) giveReward(sb, 0);
     var sst = '<div class="cn-stats"><div><b>' + sw + '</b><span>' + (df.mode === 'raid' ? 'Bosses beaten' : 'Waves survived') + '</span></div><div><b>' + df.kills + '</b><span>' + (dfAr() ? 'Monsters' : 'Thieves') + ' beaten</span></div><div><b>+' + sg + '</b><span>Gold</span></div><div><b>+' + sx + '</b><span>XP</span></div></div>';
     dfPanel('<h2>Survival over!</h2><p>' + (dfAr() ? 'You fell' : 'The thieves took every gem') + ' on ' + (df.mode === 'raid' ? 'boss #' : 'wave ') + df.wave + '. ' + (snb ? 'New best!' : 'Best: ' + survBest(df.mode) + (df.mode === 'raid' ? ' bosses.' : ' waves.')) + ' Survival bonus: <b>+' + sb + ' gold</b>.</p>' + sst +
-      (dfAr() ? arenaModes() : '') + lvButtons('df-start', 'df-leave', 'Leave'));
+      (dfAr() ? arenaModes() : '') + lvButtons('df-start', 'df-leave', 'Leave') + coopBox());
     dfHud(); save();
     return;
   }
@@ -5620,24 +5620,24 @@ function dfEnd(won){
   save();
   var stats = '<div class="cn-stats"><div><b>' + df.kills + '</b><span>Monsters beaten</span></div><div><b>+' + g + '</b><span>Gold</span></div><div><b>+' + (x * XP_MULT) + '</b><span>XP</span></div></div>';
   if (df.mode === 'raid'){
-    dfPanel(won ? '<h2>Boss defeated!</h2><p>' + (MG_LEVELS[df.lv - 1] || MG_LEVELS[0]).name + ' raid won in ' + Math.round(df.runT || 0) + ' seconds.</p>' + stats + lvButtons('df-start', 'df-leave', 'Leave')
-      : '<h2>Defeat!</h2><p>The boss was too strong this time. You still keep the gold and xp you earned.</p>' + stats + lvButtons('df-start', 'df-leave', 'Leave'));
+    dfPanel(won ? '<h2>Boss defeated!</h2><p>' + (MG_LEVELS[df.lv - 1] || MG_LEVELS[0]).name + ' raid won in ' + Math.round(df.runT || 0) + ' seconds.</p>' + stats + lvButtons('df-start', 'df-leave', 'Leave') + coopBox()
+      : '<h2>Defeat!</h2><p>The boss was too strong this time. You still keep the gold and xp you earned.</p>' + stats + lvButtons('df-start', 'df-leave', 'Leave') + coopBox());
     dfHud();
     return;
   }
   if (dfAr()){
-    dfPanel(won ? '<h2>Champion!</h2><p>Level ' + df.lv + ': all ' + DF_WAVES.length + ' waves beaten. The crowd goes wild!</p>' + stats + arenaModes() + lvButtons('df-start', 'df-leave', 'Leave')
-      : '<h2>Defeat!</h2><p>You fell on wave ' + df.wave + ' of ' + DF_WAVES.length + ' after beating ' + df.kills + ' monsters. You still earn gold for the ' + (df.cleared || 0) + ' wave' + ((df.cleared || 0) === 1 ? '' : 's') + ' you cleared.</p>' + stats + arenaModes() + lvButtons('df-start', 'df-leave', 'Leave'));
+    dfPanel(won ? '<h2>Champion!</h2><p>Level ' + df.lv + ': all ' + DF_WAVES.length + ' waves beaten. The crowd goes wild!</p>' + stats + arenaModes() + lvButtons('df-start', 'df-leave', 'Leave') + coopBox()
+      : '<h2>Defeat!</h2><p>You fell on wave ' + df.wave + ' of ' + DF_WAVES.length + ' after beating ' + df.kills + ' monsters. You still earn gold for the ' + (df.cleared || 0) + ' wave' + ((df.cleared || 0) === 1 ? '' : 's') + ' you cleared.</p>' + stats + arenaModes() + lvButtons('df-start', 'df-leave', 'Leave') + coopBox());
     dfHud();
     return;
   }
   dfPanel(won
     ? '<h2>Treasure protected!</h2><p>Level ' + df.lv + ': all ' + DF_WAVES.length + ' waves beaten. ' + df.gems + ' of ' + DF_GEMS + ' gems are still safe.</p>' +
       '<div class="cn-stats"><div><b>' + df.kills + '</b><span>Thieves beaten</span></div><div><b>+' + g + '</b><span>Gold</span></div><div><b>+' + (x * XP_MULT) + '</b><span>XP</span></div></div>' +
-      lvButtons('df-start', 'df-leave', 'Leave')
+      lvButtons('df-start', 'df-leave', 'Leave') + coopBox()
     : '<h2>The treasure is gone!</h2><p>The thieves ran off with every gem. You beat ' + df.kills + ' of them and cleared ' + df.cleared + ' of ' + DF_WAVES.length + ' waves — you still keep what you earned.</p>' +
       '<div class="cn-stats"><div><b>' + df.kills + '</b><span>Thieves beaten</span></div><div><b>+' + g + '</b><span>Gold</span></div><div><b>+' + (x * XP_MULT) + '</b><span>XP</span></div></div>' +
-      lvButtons('df-start', 'df-leave', 'Leave'));
+      lvButtons('df-start', 'df-leave', 'Leave') + coopBox());
   dfHud();
 }
 
@@ -10183,7 +10183,7 @@ async function friendsStart(user){
   setInterval(() => { if (F.open) friendsUi(); }, 30000);      /* keep "seen 3 min ago" fresh */
   F.unsub.push(fs.onSnapshot(fs.collection(db, 'users', me.uid, 'invites'), qs => {
     const list = []; qs.forEach(x => list.push(Object.assign({ id: x.id }, x.data())));
-    pvInvites(list);
+    F.lastInv = list; pvInvites(list);
   }, e => console.warn(e)));
   setInterval(pvWatchdog, 5000);
   friendsUi();
@@ -10289,13 +10289,14 @@ async function pvCancel(){
   pvStop(); pvShow('');
   try { await fs.updateDoc(mref(mid), { st: 'cancel' }); await fs.deleteDoc(uref(other, 'invites', me.uid)); } catch (e){}
 }
+const invDone = {};
 function pvInvites(list){
-  const now = nowS(), fresh = list.filter(x => now - (x.at || 0) < 65000).sort((a, b) => b.at - a.at);
+  const now = nowS(), fresh = list.filter(x => !invDone[x.id + ':' + x.at] && now - (x.at || 0) < 65000).sort((a, b) => b.at - a.at);
   list.filter(x => now - (x.at || 0) >= 65000).forEach(x => fs.deleteDoc(uref(me.uid, 'invites', x.id)).catch(() => {}));
   const inv = fresh[0];
   if (!inv){ if (PV.inv){ PV.inv = null; if (!PV.mid) pvShow(''); } return; }
   if (PV.inv && PV.inv.id === inv.id && PV.inv.at === inv.at) return;
-  if (PV.mid && PV.started && !PV.ended) return;      /* already playing */
+  if (PV.mid && PV.started && !PV.ended && !(CO.key && !G().coopRole())) return;      /* already playing (a finished co-op game does not count) */
   PV.inv = inv;
   const AM = { classic: 'Classic', fire: 'Fire Pit', blades: 'Blade Ring' };
   if (inv.game === 'arena' && inv.md === 'raid') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to a Boss Raid!</b><small>Co-op · ' + (inv.lv === 4 ? 'Survival' : 'Level ' + (inv.lv || 1)) + '. You both get the full gold and xp.</small>' +
@@ -10309,12 +10310,14 @@ function pvInvites(list){
   document.getElementById('pv-dec').onclick = () => pvDecline(inv);
 }
 async function pvDecline(inv){
+  invDone[inv.id + ':' + inv.at] = 1;
   PV.inv = null; pvShow('');
   try { await fs.updateDoc(mref(inv.mid), { st: 'declined' }); } catch (e){}
   fs.deleteDoc(uref(me.uid, 'invites', inv.id)).catch(() => {});
 }
 async function pvAccept(inv){
   if (G().busy && G().busy() && !(inv.game === 'arena' && G().arenaOpen && G().arenaOpen())){ G().flash('Finish your game first.'); return; }
+  invDone[inv.id + ':' + inv.at] = 1;
   if (inv.game === 'arena') return coopAccept(inv);
   const deck = (G().ssDeck && G().ssDeck()) || [];
   if (deck.length !== 5){ G().flash('Put 5 stones in your Starstones deck first.'); return; }
@@ -10331,7 +10334,7 @@ async function pvAccept(inv){
 function pvStop(){ if (PV.unsub) PV.unsub(); Object.assign(PV, { mid: '', other: '', role: '', unsub: null, started: false, moves: [], ended: false }); }
 function pvWatch(mid, other, name, role){
   pvStop();
-  Object.assign(PV, { mid: mid, other: other, otherName: name, role: role, last: Date.now() });
+  Object.assign(PV, { mid: mid, other: other, otherName: name, role: role, last: Date.now(), gen: (PV.gen || 0) + 1 });
   PV.unsub = fs.onSnapshot(mref(mid), snap => {
     if (!snap.exists() || PV.mid !== mid) return;
     const m = snap.data();
@@ -10406,6 +10409,7 @@ async function coopInvite(fid, lv, am, md){
   const B = { arena: ['arena', 'Build a Battle Arena on your island to invite friends.'], defense: ['guard', 'Build a Guard Post on your island to invite friends.'], raid: ['raid', 'Build a Boss Raid on your island to invite friends.'] }[md];
   if (G().hasBuilding && !G().hasBuilding(B[0])){ G().flash(B[1]); return; }
   if (!(await rtReady())){ G().flash('Co-op is not set up yet.'); return; }
+  if (CO.key) coopStop();      /* a finished game's link closes before the new invite */
   const mid = pairId(fid), name = friendName(fid);
   try {
     const old = await fs.getDoc(mref(mid)), n = old.exists() ? (old.data().n || 0) : 0;
@@ -10433,14 +10437,16 @@ function coopStop(){
   clearInterval(CO.timer); CO.timer = 0;
   if (CO.key && CO.role === 'host' && rt) setTimeout(() => rt.remove(rt.ref(rdb, 'coop/' + CO.key)).catch(() => {}), 3000);
   CO.key = ''; CO.role = '';
-  pvStop();
+  if (CO.gen && PV.gen === CO.gen && PV.started) pvStop();      /* only end the match this co-op belonged to, never a fresh invite */
+  CO.gen = 0;
+  if (F.lastInv) setTimeout(() => pvInvites(F.lastInv), 0);      /* an invite that came in during the last game shows now */
 }
 async function coopLink(key, role, name, partner, lv, am, md){
   if (!(await rtReady())){ G().flash('Co-op is not set up yet.'); pvStop(); return; }
   const ok = G().coopStart({ role: role, name: name, partner: partner, lv: lv, am: am, md: md });
   if (!ok){ pvStop(); return; }
   coopStop(); PV.started = true;
-  CO.key = key; CO.role = role; CO.idle = 0;
+  CO.key = key; CO.role = role; CO.idle = 0; CO.gen = PV.gen;
   const base = 'coop/' + key;
   if (role === 'host'){
     CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/g'), sn => { const v = sn.val(); if (v) G().coopInput(v); }));
