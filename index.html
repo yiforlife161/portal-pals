@@ -9722,6 +9722,10 @@ const CHUNK = 700000;
 const box = document.getElementById('mm-acct');
 let auth = null, db = null, fs = null, au = null, me = null, ready = false, timer = 0, busy = false, lastUp = 0, status = '';
 
+/* device clocks can be minutes apart: times shared between players use the server's clock */
+let skew = 0;
+function nowS(){ return Date.now() + skew; }
+function toMs(v){ return v && typeof v.toMillis === 'function' ? v.toMillis() : typeof v === 'number' ? v : 0; }
 function lsGet(k){ try { return localStorage.getItem(k); } catch (e) { return null; } }
 function lsSet(k, v){ try { localStorage.setItem(k, v); return true; } catch (e) { return false; } }
 function lsDel(k){ try { localStorage.removeItem(k); } catch (e) {} }
@@ -9782,7 +9786,7 @@ async function pullNewer(){
     const cloud = await download(me.uid);
     if (!cloud || !cloud.data){ pulling = false; return false; }
     keepLocal('before cloud');      /* this device's world stays in Settings > Backups */
-    window.ppNoSave = true; lsSet(SAVE_KEY, cloud.data);
+    window.ppNoSave = true; lsSet(SAVE_KEY, cloud.data); lsSet('pp.syncT.' + me.uid, String(cloud.t));
     sessionStorage.setItem('pp.pulled', String(cloud.t));
     G().flash('Loading your newer world from your other device…');
     setTimeout(() => location.reload(), 1200);
@@ -9807,7 +9811,7 @@ async function upload(force){
     for (let i = 0; i < n; i++) batch.set(fs.doc(db, 'saves', me.uid, 'parts', 'p' + i), { d: raw.slice(i * CHUNK, (i + 1) * CHUNK) });
     batch.set(fs.doc(db, 'saves', me.uid), { t: t, n: n, size: raw.length, at: fs.serverTimestamp() });
     await batch.commit();
-    lastUp = t; status = '';
+    lastUp = t; status = ''; lsSet('pp.syncT.' + me.uid, String(t));
     shareIsland();
   } catch (e){ status = 'error'; console.warn('cloud save failed', e); }
   busy = false; render();
@@ -9825,19 +9829,20 @@ async function onUser(user){
   }
   render();
   try {
-    const cloud = await download(user.uid), localT = localStamp();
+    const cloud = await download(user.uid), localT = localStamp(), syncT = +(lsGet('pp.syncT.' + user.uid) || 0);
     if (lsGet('pp.needPull') === user.uid){
       lsDel('pp.needPull');
       const carry = lsGet('pp.guestCarry'); lsDel('pp.guestCarry');
-      if (cloud && cloud.data){ keepLocal('before cloud'); window.ppNoSave = true; lsSet(SAVE_KEY, cloud.data); location.reload(); return; }
+      if (cloud && cloud.data){ keepLocal('before cloud'); window.ppNoSave = true; lsSet(SAVE_KEY, cloud.data); lsSet('pp.syncT.' + user.uid, String(cloud.t)); location.reload(); return; }
       const guest = lsGet('portalPals.live');
       if (carry && guest){ window.ppNoSave = true; lsSet(SAVE_KEY, guest); location.reload(); return; }      /* a world played before signing in moves into the account */
-    } else if (cloud && cloud.t > localT + 500 && cloud.data && sessionStorage.getItem('pp.pulled') !== String(cloud.t)){
+    } else if (cloud && cloud.data && (syncT ? cloud.t !== syncT : cloud.t > localT + 500) && cloud.t !== localT && sessionStorage.getItem('pp.pulled') !== String(cloud.t)){
       sessionStorage.setItem('pp.pulled', String(cloud.t));
-      keepLocal('before cloud'); window.ppNoSave = true; lsSet(SAVE_KEY, cloud.data); location.reload(); return;      /* a newer world from another device */
+      keepLocal('before cloud'); window.ppNoSave = true; lsSet(SAVE_KEY, cloud.data); lsSet('pp.syncT.' + user.uid, String(cloud.t)); location.reload(); return;      /* another device saved since this one last synced */
     }
     ready = true; lastUp = cloud ? cloud.t : 0;
-    if (!cloud || localStamp() > cloud.t) await upload(true);
+    if (cloud && localStamp() === cloud.t) lsSet('pp.syncT.' + user.uid, String(cloud.t));
+    if (!cloud || localStamp() !== cloud.t) await upload(true);
   } catch (e){ status = 'error'; console.warn('cloud load failed', e); ready = true; }
   render();
   friendsStart(user);
@@ -9943,11 +9948,11 @@ function friendsToggle(v){
 }
 function fmtCode(c){ return c ? 'PAL-' + c : ''; }
 function cleanCode(t){ return String(t || '').toUpperCase().replace(/^PAL-?/, '').replace(/[^A-Z0-9]/g, ''); }
-function online(p){ return p && p.last && Date.now() - p.last < 150000; }
+function online(p){ return p && p.last && Math.abs(nowS() - p.last) < 150000; }
 function seen(p){
   if (!p || !p.last) return 'Offline';
   if (online(p)) return 'Online now';
-  const m = Math.round((Date.now() - p.last) / 60000);
+  const m = Math.max(1, Math.round((nowS() - p.last) / 60000));
   return m < 60 ? 'Seen ' + m + ' min ago' : m < 1440 ? 'Seen ' + Math.round(m / 60) + ' h ago' : 'Seen ' + Math.round(m / 1440) + ' days ago';
 }
 function playedText(ms){ const m = Math.floor(ms / 60000), h = Math.floor(m / 60); return 'Played ' + (h ? h + ' h ' + (m % 60) + ' min' : m + ' min'); }
@@ -10012,7 +10017,7 @@ function wire(){
 function uref(...p){ return fs.doc(db, 'users', ...p); }
 function profileData(){
   const g = G().profile() || {};
-  return { name: F.name, code: F.code, last: Date.now(), pal: g.pal || null, world: g.world || '', playMs: g.playMs || 0, lb: lbNow() };
+  return { name: F.name, code: F.code, last: nowS(), pal: g.pal || null, world: g.world || '', playMs: g.playMs || 0, lb: lbNow() };
 }
 async function ensureCode(){
   for (let i = 0; i < 6; i++){
@@ -10028,7 +10033,11 @@ async function friendsStart(user){
     const snap = await fs.getDoc(uref(user.uid)), d = snap.exists() ? snap.data() : {};
     F.name = d.name || String(user.displayName || 'Player').split(' ')[0].slice(0, 20);
     F.code = d.code || await ensureCode();
-    await fs.setDoc(uref(user.uid), profileData(), { merge: true });
+    const t0 = Date.now();
+    await fs.setDoc(uref(user.uid), Object.assign(profileData(), { srv: fs.serverTimestamp() }), { merge: true });
+    const t1 = Date.now();
+    try { const sv = toMs(((await fs.getDoc(uref(user.uid))).data() || {}).srv); if (sv) skew = sv - (t0 + t1) / 2; } catch (e) {}
+    if (Math.abs(skew) > 5000) fs.updateDoc(uref(user.uid), { last: nowS() }).catch(() => {});
     shareIsland(true);
   } catch (e){ console.warn('friends setup failed', e); F.err = true; friendsUi(); return; }
   F.unsub.push(fs.onSnapshot(fs.collection(db, 'users', me.uid, 'requests'), qs => {
@@ -10043,7 +10052,7 @@ async function friendsStart(user){
     Object.keys(now).forEach(id => { if (!F.funsub[id]) F.funsub[id] = fs.onSnapshot(uref(id), s2 => { F.prof[id] = s2.exists() ? s2.data() : {}; friendsUi(); }, e => console.warn(e)); });
     F.friends = now; friendsUi();
   }, e => console.warn(e)));
-  const beat = () => { if (me){ const g = G().profile() || {}; fs.updateDoc(uref(me.uid), { last: Date.now(), pal: g.pal || null, world: g.world || '', playMs: g.playMs || 0, lb: lbNow() }).catch(() => {}); } };
+  const beat = () => { if (me){ const g = G().profile() || {}; fs.updateDoc(uref(me.uid), { last: nowS(), pal: g.pal || null, world: g.world || '', playMs: g.playMs || 0, lb: lbNow() }).catch(() => {}); } };
   F.beat = setInterval(beat, 60000);
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') beat(); });
   setInterval(() => { if (F.open) friendsUi(); }, 30000);      /* keep "seen 3 min ago" fresh */
@@ -10077,7 +10086,7 @@ async function sendReq(){
     const uid = cs.data().uid;
     if (F.friends[uid]){ G().flash('You are already friends!'); return; }
     if (F.reqs.some(r => r.id === uid)){ await accept(uid); return; }      /* they already asked you */
-    await fs.setDoc(uref(uid, 'requests', me.uid), { name: F.name, code: F.code, at: Date.now() });
+    await fs.setDoc(uref(uid, 'requests', me.uid), { name: F.name, code: F.code, at: nowS() });
     inp.value = ''; G().flash('Friend request sent!');
   } catch (e){ console.warn(e); G().flash('Could not send the request. Try again.'); }
 }
@@ -10141,8 +10150,8 @@ async function challenge(fid){
   const mid = pairId(fid), name = friendName(fid);
   try {
     const old = await fs.getDoc(mref(mid)), n = old.exists() ? (old.data().n || 0) : 0;
-    await fs.setDoc(mref(mid), { game: 'stones', a: me.uid, b: fid, nameA: F.name, nameB: name, st: 'invite', n: n, deckA: deck, deckB: [], first: '', moves: [], winner: '', why: '', at: Date.now(), turnAt: 0 });
-    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name, at: Date.now() });
+    await fs.setDoc(mref(mid), { game: 'stones', a: me.uid, b: fid, nameA: F.name, nameB: name, st: 'invite', n: n, deckA: deck, deckB: [], first: '', moves: [], winner: '', why: '', at: nowS(), turnAt: 0 });
+    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name, at: nowS() });
   } catch (e){ console.warn(e); G().flash('Could not send the challenge. Try again.'); return; }
   friendsToggle(false);
   pvWatch(mid, fid, name, 'a');
@@ -10156,7 +10165,7 @@ async function pvCancel(){
   try { await fs.updateDoc(mref(mid), { st: 'cancel' }); await fs.deleteDoc(uref(other, 'invites', me.uid)); } catch (e){}
 }
 function pvInvites(list){
-  const now = Date.now(), fresh = list.filter(x => now - (x.at || 0) < 65000).sort((a, b) => b.at - a.at);
+  const now = nowS(), fresh = list.filter(x => now - (x.at || 0) < 65000).sort((a, b) => b.at - a.at);
   list.filter(x => now - (x.at || 0) >= 65000).forEach(x => fs.deleteDoc(uref(me.uid, 'invites', x.id)).catch(() => {}));
   const inv = fresh[0];
   if (!inv){ if (PV.inv){ PV.inv = null; if (!PV.mid) pvShow(''); } return; }
@@ -10228,7 +10237,7 @@ function pvWatch(mid, other, name, role){
 }
 /* if your friend stops answering (closed the game, lost connection) you win after a while */
 function pvWatchdog(){
-  if (!PV.mid){ if (PV.inv && Date.now() - PV.inv.at > 65000){ PV.inv = null; pvShow(''); } return; }
+  if (!PV.mid){ if (PV.inv && nowS() - PV.inv.at > 65000){ PV.inv = null; pvShow(''); } return; }
   if (!PV.started){ if (PV.role === 'a' && Date.now() - PV.waitT > 60000){ const nm = PV.otherName; pvCancel(); G().flash(nm + ' did not answer.'); } return; }
   if (PV.ended || !G().pvpActive()) return;
   if (!G().pvpMyTurn() && Date.now() - PV.last > 75000){
@@ -10272,8 +10281,8 @@ async function coopInvite(fid, lv, am, md){
   const mid = pairId(fid), name = friendName(fid);
   try {
     const old = await fs.getDoc(mref(mid)), n = old.exists() ? (old.data().n || 0) : 0;
-    await fs.setDoc(mref(mid), { game: 'arena', a: me.uid, b: fid, nameA: F.name, nameB: name, st: 'invite', n: n, lv: lv, am: am, md: md, charA: G().coopChar(), charB: null, moves: [], first: '', winner: '', why: '', at: Date.now(), turnAt: 0 });
-    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name, at: Date.now(), game: 'arena', lv: lv, am: am, md: md });
+    await fs.setDoc(mref(mid), { game: 'arena', a: me.uid, b: fid, nameA: F.name, nameB: name, st: 'invite', n: n, lv: lv, am: am, md: md, charA: G().coopChar(), charB: null, moves: [], first: '', winner: '', why: '', at: nowS(), turnAt: 0 });
+    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name, at: nowS(), game: 'arena', lv: lv, am: am, md: md });
   } catch (e){ console.warn(e); G().flash('Could not send the invite. Try again.'); return; }
   pvWatch(mid, fid, name, 'a');
   PV.waitT = Date.now();
@@ -10394,7 +10403,7 @@ async function chatSend(){
   const inp = document.getElementById('ch-in'); if (!inp || chBusy) return;
   const text = inp.value.replace(/\s+/g, ' ').trim().slice(0, 300);
   if (!text || !CH.with) return;
-  const id = CH.with, mid = pairId(id), t = Date.now();
+  const id = CH.with, mid = pairId(id), t = nowS();
   const m = { from: me.uid, text: text, t: t };
   chBusy = true; inp.value = '';
   CH.msgs = (CH.msgs || []).concat([m]); chatRender();
