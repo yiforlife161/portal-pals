@@ -624,6 +624,9 @@ body.visiting #dock-l{display:none}
 .upg-s,.upg-w{font-style:normal;font-size:10px;font-weight:900;padding:0 6px;border-radius:99px;margin-left:4px;vertical-align:middle}.upg-s{background:#2fbf6a;color:#fff}.upg-w{background:#e0952a;color:#fff}.upg-c{font-size:11px;color:var(--muted);margin-left:6px;font-weight:800}
 .upg-pts{display:flex;justify-content:space-between;align-items:center;padding:6px 10px;border-radius:12px;background:var(--surface-2);font-weight:800}.upg-pts b{color:var(--accent);font-size:18px}
 .upg-p{display:flex;gap:3px}.upg-p i{width:14px;height:6px;border-radius:3px;background:var(--line)}.upg-p i.on{background:var(--accent)}
+/* a hat sits on top of the pal: name tag and health bar move up to clear it */
+.dfp.hat .dfp-you{top:-36px}.dfp.hat .dfp-hp{top:-46px}
+.dfp.hat.pimg .dfp-you{top:-50px}.dfp.hat.pimg .dfp-hp{top:-60px}
 .dfp-you.dfp-mate{background:#7a3fd0;color:#fff;border-color:#fff;white-space:nowrap}
 .dfp.gone{opacity:.25}
 .dfp-you{position:absolute;left:50%;top:-16px;transform:translateX(-50%);background:#fff;color:#14102a;border:2px solid var(--c);border-radius:99px;font:900 10px/1.4 system-ui,sans-serif;padding:0 7px}
@@ -4697,7 +4700,7 @@ function dfMakeTeam(){
   layer.innerHTML = '';
   df.team = list.map(function(c, i){
     var el = document.createElement('div');
-    el.className = 'dfp' + (i === 0 ? ' me' : '') + (c.style === 'ranged' ? ' ranged' : '');
+    el.className = 'dfp' + (i === 0 ? ' me' : '') + (c.style === 'ranged' ? ' ranged' : '') + (HATS[c.hat] ? ' hat' : '') + (c.img ? ' pimg' : '');
     el.setAttribute('style', EL[c.element].vars);
     el.innerHTML = '<div class="dfp-shadow"></div><div class="dfp-body">' + palFigure(c) + '</div>' + (i === 0 ? '<div class="dfp-you">YOU</div>' : '<div class="dfp-you dfp-mate" data-notr>' + esc(df.coop ? df.coop.name : '') + '</div>') + '<div class="dfp-hp"><i></i></div>';
     layer.appendChild(el);
@@ -6975,7 +6978,7 @@ function thMateEl(){
   var C = th.coop; if (!C) return null;
   if (C.el && $('#th-pals').contains(C.el)) return C.el;
   var p = C.partner, el = document.createElement('div');
-  el.className = 'dfp mate';
+  el.className = 'dfp mate' + (HATS[p.hat] ? ' hat' : '') + (p.img ? ' pimg' : '');
   el.setAttribute('style', EL[p.element].vars);
   el.innerHTML = '<div class="dfp-shadow"></div><div class="dfp-body">' + palFigure(p) + '</div><div class="dfp-you dfp-mate" data-notr>' + esc(C.name) + '</div>' +
     '<div class="thbub" hidden><svg viewBox="0 0 32 32" aria-hidden="true"><g class="shv"><path d="M16 4V20" stroke="#8a5a34" stroke-width="3.4" stroke-linecap="round"/><path d="M11 4H21" stroke="#8a5a34" stroke-width="3" stroke-linecap="round"/><path d="M10 19H22L21 26Q16 31 11 26Z" fill="#aab0c4" stroke="#4a5068" stroke-width="1.8" stroke-linejoin="round"/></g></svg></div>';
