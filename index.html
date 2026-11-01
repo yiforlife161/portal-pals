@@ -154,10 +154,12 @@ button{font:inherit;color:inherit}
 .item.pulse svg{transform-origin:50% 90%;animation:wiggle .55s ease}
 .item.disco .art{animation:hue 2.4s linear infinite}
 /* element looks on decorations: a pal touches it, it takes on that pal's element */
-.fxa{position:absolute;inset:0;pointer-events:none;z-index:2;--h:calc(var(--u)*var(--w)*var(--k));--p:max(calc(var(--u)*var(--k)*1.7),calc(var(--h)*.13))}
+.fxa{position:absolute;inset:0;pointer-events:none;z-index:2;--h:calc(var(--u)*var(--w)*var(--k));--p:max(calc(var(--u)*var(--k)*1.15),calc(var(--h)*.085))}
 .fxa i{position:absolute;left:var(--x);top:var(--y);width:var(--p);height:var(--p);margin:calc(var(--p)*-.5);opacity:0;animation-delay:var(--dl)!important}
 .item.fx-fire .art{filter:sepia(.75) saturate(2.3) hue-rotate(-18deg) brightness(1.03) drop-shadow(0 0 calc(var(--u)*1) #ff7a2a)}
-.fxa[data-el="fire"] i{border-radius:50%;background:radial-gradient(circle,#fff6b0 0,#ffb030 40%,#ff4d1a 75%,transparent 76%);animation:fxRise 1.5s ease-out infinite}
+.fxa[data-el="fire"] i{width:calc(var(--p)*.9);height:calc(var(--p)*1.35);border-radius:50% 50% 45% 45% / 65% 65% 35% 35%;background:radial-gradient(ellipse at 50% 75%,#fff6b0 0,#ffc23a 35%,#ff6a1a 70%,rgba(255,60,20,0) 72%);transform-origin:50% 100%;animation:fxFlame .45s ease-in-out infinite alternate}
+.fxa[data-el="fire"] i:nth-child(3){width:calc(var(--p)*.35);height:calc(var(--p)*.35);border-radius:50%;background:radial-gradient(circle,#fff6b0,#ff8a2a 60%,transparent 70%);animation:fxRise 1.6s ease-out infinite}
+@keyframes fxFlame{0%{opacity:.85;transform:scale(.9,.85) skewX(-4deg)}100%{opacity:1;transform:scale(1.05,1.15) skewX(5deg)}}
 .item.fx-water .art{filter:sepia(.75) saturate(1.9) hue-rotate(166deg) brightness(1.02) drop-shadow(0 0 calc(var(--u)*1) #4aa8ff)}
 .fxa[data-el="water"] i{border-radius:50% 0 50% 50%;transform:rotate(-45deg);background:linear-gradient(135deg,#d8f0ff,#2f86f0);width:calc(var(--p)*.75);height:calc(var(--p)*.75);animation:fxDrip 1.3s ease-in infinite}
 .fxa[data-el="water"] i:nth-child(even){border-radius:50%;background:radial-gradient(circle at 35% 35%,#fff,rgba(120,190,255,.35) 45%,rgba(47,134,240,.6) 70%,transparent 72%);animation:fxRise 2s ease-out infinite}
@@ -1508,7 +1510,7 @@ function def(key, label, cat, w, svg, o){
 var DECO_CATS = { buildings: 1, nature: 1, town: 1, fun: 1 };
 function isDeco(d){ return !!(d && DECO_CATS[d.cat] && !d.game && !d.junk && !d.mine && !d.ground); }
 var FX_SAY = { fire: 'Fiery!', water: 'Splashy!', air: 'Breezy!', earth: 'Rocky!', life: 'Blooming!', tech: 'Powered up!', undead: 'Spooky!', magic: 'Magical!' };
-var FX_SPOTS = [[22, 30], [70, 22], [45, 12], [82, 52], [15, 60], [55, 45], [35, 72], [75, 78]];
+var FX_SPOTS = [[30, 24], [70, 20], [50, 10]];      /* three small touches near the top, not a cloud of particles */
 function fxLayer(el, fx){
   var old = el.querySelector('.fxa');
   ELEMENTS.forEach(function(e){ el.classList.toggle('fx-' + e.key, fx === e.key); });
