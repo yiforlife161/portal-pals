@@ -6261,7 +6261,8 @@ function dfDraw(){
     df.petPos.x += (tx0 - df.petPos.x) * 0.1; df.petPos.y += (ty0 - df.petPos.y) * 0.1;
     var pw = psz * 0.62, ppx = df.ox + df.petPos.x * df.sc, ppy = df.oy + df.petPos.y * df.sc;
     pe.style.width = pw + 'px'; pe.style.zIndex = Math.round(df.petPos.y);
-    pe.style.transform = 'translate(' + (ppx - pw / 2).toFixed(1) + 'px,' + (ppy - pw * 0.9).toFixed(1) + 'px) scaleX(' + (tx0 > df.petPos.x + 2 ? 1 : tx0 < df.petPos.x - 2 ? -1 : (pe.dataset.f || 1)) + ')';
+    if (tx0 > df.petPos.x + 2) pe.dataset.dir = 1; else if (tx0 < df.petPos.x - 2) pe.dataset.dir = -1;
+    pe.style.transform = 'translate(' + (ppx - pw / 2).toFixed(1) + 'px,' + (ppy - pw * 0.9).toFixed(1) + 'px) scaleX(' + petFlip(pe.dataset.k, +(pe.dataset.dir || 1)) + ')';
     pe.classList.toggle('walk', Math.hypot(tx0 - df.petPos.x, ty0 - df.petPos.y) > 6);
   }
 }
@@ -7491,7 +7492,8 @@ function thDraw(){
     th.petPos.x += (ttx - th.petPos.x) * 0.1; th.petPos.y += (tty - th.petPos.y) * 0.1;
     var tpw = ps * 0.6, tpx = W / 2 + (th.petPos.x - th.cam.x) * th.sc, tpy = H / 2 + (th.petPos.y - th.cam.y) * th.sc;
     tpe.style.width = tpw + 'px';
-    tpe.style.transform = 'translate(' + (tpx - tpw / 2).toFixed(1) + 'px,' + (tpy - tpw * 0.9).toFixed(1) + 'px) scaleX(' + (ttx >= th.petPos.x ? 1 : -1) + ')';
+    if (ttx > th.petPos.x + 2) tpe.dataset.dir = 1; else if (ttx < th.petPos.x - 2) tpe.dataset.dir = -1;
+    tpe.style.transform = 'translate(' + (tpx - tpw / 2).toFixed(1) + 'px,' + (tpy - tpw * 0.9).toFixed(1) + 'px) scaleX(' + petFlip(tpe.dataset.k, +(tpe.dataset.dir || 1)) + ')';
     tpe.classList.toggle('walk', Math.hypot(ttx - th.petPos.x, tty - th.petPos.y) > 6);
   }
   var C = th.coop;
@@ -7860,6 +7862,9 @@ PETS.dig = { name: 'Pip the Baby Dino', note: 'Hatched from a fossil egg. In the
     '<ellipse cx="14" cy="34" rx="10" ry="8" fill="#6ac85a" stroke="#2a6a1f" stroke-width="2.2"/>' + petEye(13, 32, 2.6) +
     '<path d="M6 37Q9 39 12 37" stroke="#2a6a1f" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="30" cy="45" rx="8" ry="5" fill="#c8f0a0"/>' +
     '<path d="M38 52L46 48" stroke="#ede6d2" stroke-width="3" stroke-linecap="round"/><circle cx="46" cy="48" r="1.8" fill="#ede6d2"/>'; } };
+/* pets drawn looking to the left get flipped the other way when they walk */
+var PET_LEFT = { fire: 1, cannon: 1, stones: 1, dig: 1, forest: 1, grave: 1 };
+function petFlip(k, dir){ return (PET_LEFT[k] ? -1 : 1) * (dir < 0 ? -1 : 1); }
 function petName(k){ return PETS[k] ? PETS[k].name : ''; }
 function mgPetRoll(g){
   if (!PETS[g] || hasPet(g) || VISIT) return;
@@ -7944,7 +7949,8 @@ function petTick(){
   if (d > 14){ petPos.x = tx; petPos.y = ty; }
   else if (d > 0.4){ petPos.x += dx * 0.12; petPos.y += dy * 0.12; }
   petEl.classList.toggle('walk', d > 0.8);
-  petEl.style.setProperty('--pf', dx < -0.2 ? -1 : dx > 0.2 ? 1 : (petEl.style.getPropertyValue('--pf') || 1));
+  if (dx < -0.2 || dx > 0.2) petEl.dataset.dir = dx < 0 ? -1 : 1;
+  petEl.style.setProperty('--pf', petFlip(petEl.dataset.area, +(petEl.dataset.dir || 1)));
   placeToken(petEl, petPos.x, petPos.y);
 }
 setInterval(petTick, 50);
