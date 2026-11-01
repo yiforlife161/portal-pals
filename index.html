@@ -3987,7 +3987,7 @@ document.addEventListener('click', function(ev){
     case 'df-start': if (lvOpen(df.mode, +t.dataset.lv || 1)) dfBegin(+t.dataset.lv || 1); break;
     case 'df-amode': dfSetMode(t.dataset.m); break;
     case 'th-start': thBegin(); break;
-    case 'th-surv': thBegin(true); break;
+    case 'th-surv': if (survOpen('dig')) thBegin(true); break;
     case 'th-claim': thClaim(); break;
     case 'tut-next': tutSet(2); break;
     case 'tut-skip': tutSet(99); break;
@@ -5015,7 +5015,7 @@ function coopList(){
   var box = $('#coop-list'); if (!box || !window.ppCoop) return;
   if (th.open){
     var fr0 = window.ppCoop.friends();
-    box.innerHTML = fr0.length ? fr0.map(function(x){ return '<div class="coop-fr"><b data-notr>' + esc(x.name) + '</b><span><button class="btn sm" type="button" data-action="coop-inv" data-uid="' + esc(x.uid) + '" data-lv="1">Invite</button><button class="btn sm" type="button" data-action="coop-inv" data-uid="' + esc(x.uid) + '" data-lv="' + SURV_LV + '">Survival</button></span></div>'; }).join('') : '<p class="small">None of your friends are online right now.</p>';
+    box.innerHTML = fr0.length ? fr0.map(function(x){ return '<div class="coop-fr"><b data-notr>' + esc(x.name) + '</b><span><button class="btn sm" type="button" data-action="coop-inv" data-uid="' + esc(x.uid) + '" data-lv="1">Invite</button>' + (survOpen('dig') ? '<button class="btn sm" type="button" data-action="coop-inv" data-uid="' + esc(x.uid) + '" data-lv="' + SURV_LV + '">Survival</button>' : '') + '</span></div>'; }).join('') : '<p class="small">None of your friends are online right now.</p>';
     return;
   }
   var fr = window.ppCoop.friends();
@@ -7141,7 +7141,10 @@ function thIntroPanel(){
     '<div class="row"><button class="btn primary" type="button" data-action="th-start">Start digging</button><button class="btn" type="button" data-action="th-leave">Leave</button></div>' +
     thSurvBtn() + thCoopBox() + thBookHtml());
 }
-function thSurvBtn(){ return '<div class="lvpick lvpick-s"><button class="btn lvb lvS" type="button" data-action="th-surv"><b>Survival</b><small>Island after island, stop when you like &middot; best ' + survBest('dig') + '</small></button></div>'; }
+function thSurvBtn(){
+  if (!survOpen('dig')){ var L0 = ACH_DEFS.filter(function(d){ return d.g === 'dig'; }), got = L0.filter(function(d){ return (state.island.ach || {})[d.id]; }).length;
+    return '<div class="lvpick lvpick-s"><button class="btn lvb lvS" type="button" disabled><b>Survival (locked)</b><small>Finish every achievement here to unlock &middot; ' + got + '/' + L0.length + '</small></button></div>'; }
+  return '<div class="lvpick lvpick-s"><button class="btn lvb lvS" type="button" data-action="th-surv"><b>Survival</b><small>Island after island, stop when you like &middot; best ' + survBest('dig') + '</small></button></div>'; }
 function thPanel(html){ var p = $('#th-panel'); if (html && html.indexOf('th-leave') >= 0) html += achHtml('dig'); p.hidden = !html; p.innerHTML = html || ''; p.scrollTop = 0; }
 function thBanner(t, sub, ms){
   var b = $('#th-banner');
