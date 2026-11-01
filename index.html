@@ -3769,7 +3769,7 @@ function renderHeroInfo(){
     '<div class="hero-line" style="' + vars(c.element) + '">' + artBox(c, 52) +
       '<div style="min-width:0"><div class="nm">' + esc(c.nick || c.name) + '</div><div class="row" style="gap:6px"><span class="pill">' + EL[c.element].label + '</span><span class="stag">' + styleLabel(c.style, c) + '</span><span class="muted small" style="font-weight:800">Lv ' + c.level + '</span></div></div></div>' +
     upgradesHtml(c) +
-    '<div class="acts"><button class="btn sm" data-action="change-pal">Change pal</button><button class="btn sm" data-action="edit-hero">Edit pal</button><button class="btn sm primary" data-action="hats-open">Hats ' + hatCount() + '/' + HAT_ORDER.length + '</button><button class="btn sm primary" data-action="pets-open">Pets ' + petCount() + '/' + Object.keys(PETS).length + '</button></div>';
+    '<div class="acts"><button class="btn sm primary" data-action="hats-open">Hats ' + hatCount() + '/' + HAT_ORDER.length + '</button><button class="btn sm primary" data-action="pets-open">Pets ' + petCount() + '/' + Object.keys(PETS).length + '</button></div>';
 }
 function renderLook(){
   var isl = state.island, pl = place(ui.focus);
