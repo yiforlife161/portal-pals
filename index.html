@@ -7103,7 +7103,7 @@ function thBookHtml(){
 /* ---------- Treasure Hunt co-op: both pals dig the same island (25 X marks), each with their own digs ---------- */
 function thCoopBox(){
   if (!window.ppCoop || !window.ppCoop.ready()) return '';
-  return '<div class="coop-box"><p class="lvpick-t">Dig with friends</p><p class="small">Invite up to 3 friends. Everyone lands on the same island with more X marks (' + TH_COOP_SPOTS + ' for 2 players, ' + (TH_COOP_SPOTS + 14) + ' for 4) and gets their own digs. Whoever digs an X first gets what is inside.</p>' +
+  return '<div class="coop-box"><p class="lvpick-t">Dig with friends</p><p class="small">Invite up to 3 friends. Everyone lands on the same island with more X marks (' + TH_COOP_SPOTS + ' for 2 players, ' + TH_PARTY_SPOTS[4] + ' for 4) and gets their own digs. Whoever digs an X first gets what is inside.</p>' +
     '<div class="row"><button class="btn" type="button" data-action="coop-list">Invite friends</button></div><div id="coop-list"></div></div>';
 }
 function thCoopStart(o){
@@ -7127,8 +7127,9 @@ function thCoopStart(o){
 /* everyone stands in their own spot by the boat: the host is slot 0 */
 var TH_SLOT_X = [-30, 30, -70, 70];
 function thSlotX(n){ return TH_SLOT_X[n] || 0; }
-/* more players, more X marks: 25 for 2, 32 for 3, 39 for 4 */
-function thCoopSpots(){ var n = th.coop ? th.coop.mates.length + 1 : 1; return n < 2 ? TH_SPOTS : TH_COOP_SPOTS + (n - 2) * 7; }
+/* more players, more X marks: 25 for 2, 40 for 3, 52 for 4 (with the hat everyone has 12 digs) */
+var TH_PARTY_SPOTS = [0, 0, 25, 40, 52];
+function thCoopSpots(){ var n = th.coop ? th.coop.mates.length + 1 : 1; return n < 2 ? TH_SPOTS : TH_PARTY_SPOTS[Math.min(4, n)]; }
 function thMate(n){ n = +n || 0; var L = th.coop ? th.coop.mates : []; for (var i = 0; i < L.length; i++) if (L[i].slot === n) return L[i]; return null; }
 function thMatesDone(){ return !th.coop || th.coop.mates.every(function(m){ return m.done || m.gone; }); }
 function thMateEl(C){
@@ -7252,8 +7253,8 @@ function thGen(seed){
   var sp = { x: TH_CX + (R() - 0.5) * 120, y: TH_CY + (R() - 0.5) * 80 };
   th.spawn = sp;
   th.spots = [];
-  for (var t = 0; t < 9000 && th.spots.length < NS; t++){
-    var gap = t < 4000 ? 150 : t < 6500 ? 125 : 100;      /* a small island packs its X marks a little closer */
+  for (var t = 0; t < 14000 && th.spots.length < NS; t++){
+    var gap = t < 4000 ? 150 : t < 6500 ? 125 : t < 9000 ? 100 : 82;      /* a small island (or a big party) packs its X marks a little closer */
     var x = TH_CX + (R() * 2 - 1) * th.shape.rx, y = TH_CY + (R() * 2 - 1) * th.shape.ry;
     if (!thInside(x, y, 0.8)) continue;
     if (Math.hypot(x - sp.x, y - sp.y) < 150) continue;
