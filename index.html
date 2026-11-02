@@ -4987,7 +4987,7 @@ function coopStart(o){
   if (!df.open) dfOpen(md);
   else if (df.mode !== md){ dfClose(); dfOpen(md); }
   if (!df.open) return false;
-  df.coop = { role: o.role, name: String(o.name || 'Friend').slice(0, 20), partner: partner, partnerPets: (o.partner && Array.isArray(o.partner.mgp) ? o.partner.mgp : []).filter(function(k){ return MG_PET_GAMES[k]; }), fxOut: [], banOut: [], atkOut: [], atkN: 0, atkSeen: 0, lastIn: Date.now(), kbN: 0 };
+  df.coop = { role: o.role, name: String(o.name || 'Friend').slice(0, 20), partner: partner, partnerPm: o.partner && typeof o.partner.pm === 'string' && PETS[o.partner.pm] ? o.partner.pm : '', partnerPets: (o.partner && Array.isArray(o.partner.mgp) ? o.partner.mgp : []).filter(function(k){ return MG_PET_GAMES[k]; }), fxOut: [], banOut: [], atkOut: [], atkN: 0, atkSeen: 0, lastIn: Date.now(), kbN: 0 };
   df.amode = md === 'arena' && ARENA_MODES[o.am] ? o.am : 'classic';
   if (o.role === 'host'){ dfBegin(o.lv); }
   else {
@@ -6279,6 +6279,15 @@ function dfDraw(){
     pe.style.transform = 'translate(' + (ppx - pw / 2).toFixed(1) + 'px,' + (ppy - pw * 0.9).toFixed(1) + 'px) scaleX(' + petFlip(pe.dataset.k, +(pe.dataset.dir || 1)) + ')';
     pe.classList.toggle('walk', Math.hypot(tx0 - df.petPos.x, ty0 - df.petPos.y) > 6);
   }
+  var bd = df.buddy, bk = bd && df.coop ? partnerPet(df.coop, df.mode) : '', be = petNode($('#df-pals'), bk, 'mgpet matepet');
+  if (be && bd){
+    df.mpet = df.mpet || {};
+    var btx = bd.x - (bd.face || 1) * 36, bty = bd.y + 10, bp = petFollow(be, df.mpet, btx, bty);
+    var bw = psz * 0.62, bpx = df.ox + bp.x * df.sc, bpy = df.oy + bp.y * df.sc;
+    be.style.width = bw + 'px'; be.style.zIndex = Math.round(bp.y);
+    be.style.transform = 'translate(' + (bpx - bw / 2).toFixed(1) + 'px,' + (bpy - bw * 0.9).toFixed(1) + 'px) scaleX(' + petFlip(be.dataset.k, +(be.dataset.dir || 1)) + ')';
+    be.classList.toggle('walk', Math.hypot(btx - bp.x, bty - bp.y) > 6);
+  }
 }
 function dfLoop(ts){
   if (!df.open) return;
@@ -7063,7 +7072,7 @@ function thCoopStart(o){
   partner.img = '';
   if (!th.open) thOpen();
   if (!th.open) return false;
-  th.coop = { role: o.role, name: String(o.name || 'Friend').slice(0, 20), partner: partner, seed: (parseInt(o.am, 10) || 1) >>> 0, lastIn: Date.now(), mateDone: false, gone: false };
+  th.coop = { role: o.role, name: String(o.name || 'Friend').slice(0, 20), partner: partner, partnerPm: o.partner && typeof o.partner.pm === 'string' && PETS[o.partner.pm] ? o.partner.pm : '', partnerPets: (o.partner && Array.isArray(o.partner.mgp) ? o.partner.mgp : []).filter(function(k){ return MG_PET_GAMES[k]; }), seed: (parseInt(o.am, 10) || 1) >>> 0, lastIn: Date.now(), mateDone: false, gone: false };
   th.surv = o.lv === SURV_LV ? { n: 1, bonus: 0, seed: th.coop.seed } : null;
   thGen(th.coop.seed); th.used = true;
   thMakeHero();
@@ -7572,6 +7581,15 @@ function thDraw(){
     C.el.style.setProperty('--f', C.face || 1);
     C.el.classList.toggle('walking', !!C.walk);
     var mb = C.el.querySelector('.thbub'); if (mb) mb.hidden = !C.dig;
+    var tk = partnerPet(C, 'dig'), te = petNode($('#th-pals'), tk, 'mgpet matepet');
+    if (te){
+      C.pet = C.pet || {};
+      var mtx = C.x - (C.face || 1) * 40, mty = C.y + 8, mp = petFollow(te, C.pet, mtx, mty), mw = ps * 0.6;
+      var mpx = W / 2 + (mp.x - th.cam.x) * th.sc, mpy = H / 2 + (mp.y - th.cam.y) * th.sc;
+      te.style.width = mw + 'px';
+      te.style.transform = 'translate(' + (mpx - mw / 2).toFixed(1) + 'px,' + (mpy - mw * 0.9).toFixed(1) + 'px) scaleX(' + petFlip(te.dataset.k, +(te.dataset.dir || 1)) + ')';
+      te.classList.toggle('walk', Math.hypot(mtx - mp.x, mty - mp.y) > 6);
+    }
   }
 }
 function thLoop(ts){
@@ -7929,7 +7947,7 @@ PETS.dig = { name: 'Pip the Baby Dino', note: 'Hatched from a fossil egg. In the
     '<path d="M20 52V57M28 53V57M34 53V57M40 52V57" stroke="#2a6a1f" stroke-width="3.4" stroke-linecap="round"/>' +
     '<ellipse cx="14" cy="34" rx="10" ry="8" fill="#6ac85a" stroke="#2a6a1f" stroke-width="2.2"/>' + petEye(13, 32, 2.6) +
     '<path d="M6 37Q9 39 12 37" stroke="#2a6a1f" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="30" cy="45" rx="8" ry="5" fill="#c8f0a0"/>' +
-    '<path d="M38 52L46 48" stroke="#ede6d2" stroke-width="3" stroke-linecap="round"/><circle cx="46" cy="48" r="1.8" fill="#ede6d2"/>'; } };
+    '<g transform="rotate(-24 44 50)"><rect x="37" y="48.6" width="12" height="3.4" rx="1.5" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="37" cy="48.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="37" cy="51.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="49" cy="48.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="49" cy="51.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><rect x="37" y="49.2" width="12" height="2.2" fill="#f4efe0"/></g>'; } };
 /* pets drawn looking to the left get flipped the other way when they walk */
 var PET_LEFT = { fire: 1, cannon: 1, stones: 1, dig: 1, forest: 1, grave: 1 };
 function petFlip(k, dir){ return (PET_LEFT[k] ? -1 : 1) * (dir < 0 ? -1 : 1); }
@@ -7943,9 +7961,26 @@ function mgPetRoll(g){
 }
 /* which pet keeps you company: the minigame's own pet if you have it, otherwise the one you picked */
 function petFor(g){ if (g && hasPet(g)) return g; var m = state.island.petMain; return m && hasPet(m) ? m : ''; }
+/* the pet your co-op friend brings: their minigame pet if they have it, otherwise the one that follows them */
+function partnerPet(C, g){ if (!C) return ''; if ((C.partnerPets || []).indexOf(g) >= 0) return g; return C.partnerPm && PETS[C.partnerPm] ? C.partnerPm : ''; }
+function petNode(host, k, cls){
+  if (!host) return null;
+  var el = host.querySelector('.' + cls.split(' ').join('.'));
+  if (!k){ if (el) el.remove(); return null; }
+  if (!el || el.dataset.k !== k){ if (el) el.remove(); el = document.createElement('div'); el.className = cls; el.dataset.k = k; el.innerHTML = petSvg(k); host.appendChild(el); }
+  return el;
+}
+/* moves a pet element after its owner, in screen pixels */
+function petFollow(el, pos, ox, oy, sc, size){
+  if (!el) return;
+  if (!pos.p || Math.hypot(ox - pos.p.x, oy - pos.p.y) > 400) pos.p = { x: ox, y: oy };
+  var dx = ox - pos.p.x; pos.p.x += dx * 0.1; pos.p.y += (oy - pos.p.y) * 0.1;
+  if (dx > 2) el.dataset.dir = 1; else if (dx < -2) el.dataset.dir = -1;
+  return pos.p;
+}
 function petCompanion(host, g, cls){
   if (!host) return null;
-  var k = petFor(g), el = host.querySelector('.' + cls);
+  var k = petFor(g), el = host.querySelector('.' + cls + ':not(.matepet)');
   if (!k){ if (el) el.remove(); return null; }
   if (!el || el.dataset.k !== k){ if (el) el.remove(); el = document.createElement('div'); el.className = cls; el.dataset.k = k; el.innerHTML = petSvg(k); host.appendChild(el); }
   return el;
@@ -10309,7 +10344,7 @@ window.ppGame = {
   coopStart: coopStart, coopSnap: coopSnap, coopInput: coopInput, coopOut: coopOut, coopApply: coopApply,
   coopRole: function(){ return th.open && th.coop && !(th.coop.endAt && Date.now() - th.coop.endAt > 3000) ? th.coop.role : df.open && df.coop ? df.coop.role : ''; },
   coopEnded: function(){ return !!(df.coop && df.coop.endOut); },
-  coopChar: function(){ var h = heroChar(); return h ? { id: h.id, name: h.name, nick: h.nick, element: h.element, level: h.level, style: h.style, giant: h.giant, up: h.up, hat: h.hat || '', mgp: Object.keys(MG_PET_GAMES).filter(hasPet) } : null; },
+  coopChar: function(){ var h = heroChar(); return h ? { id: h.id, name: h.name, nick: h.nick, element: h.element, level: h.level, style: h.style, giant: h.giant, up: h.up, hat: h.hat || '', mgp: Object.keys(MG_PET_GAMES).filter(hasPet), pm: state.island.petMain && hasPet(state.island.petMain) ? state.island.petMain : '' } : null; },
   arenaOpen: function(){ return !!((df.open && !df.coop && (df.phase === 'intro' || df.phase === 'end')) || (th.open && (!th.coop || th.coop.endAt) && (th.phase === 'intro' || th.phase === 'end'))); },
   pvpForfeit: function(){ if (ss.pvp && ss.phase === 'play') pvpFinish(true, 'left'); },
   pvpActive: function(){ return !!(ss.pvp && ss.phase === 'play'); },
