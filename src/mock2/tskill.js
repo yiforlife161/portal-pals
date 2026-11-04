@@ -3,7 +3,7 @@ const {chromium}=require('playwright');const fs=require('fs');const path=require
 const db=require('./server.js'), rt=require('./rt.js');
 const html=fs.readFileSync(path.join(__dirname,'coopx.html'),'utf8');
 async function player(b,uid,name){
-  const ctx=await b.newContext({viewport:{width:1000,height:680}});
+  const ctx=await b.newContext(process.env.PHONE?{viewport:{width:400,height:780},deviceScaleFactor:2,isMobile:true,hasTouch:true}:{viewport:{width:1000,height:680}});
   await ctx.route(/fonts\.g/,r=>r.abort());
   await ctx.route('https://pp.test/**',r=>r.fulfill({body:html,contentType:'text/html; charset=utf-8'}));
   await ctx.route('https://www.gstatic.com/**',r=>{const f=r.request().url().split('/').pop().replace('firebase-','').replace('firestore','fs');return r.fulfill({body:fs.readFileSync(path.join(__dirname,f),'utf8'),contentType:'application/javascript'});});
@@ -31,7 +31,7 @@ await B.click('[data-fr-acc]');await B.waitForTimeout(1200);
 await A.evaluate(()=>document.getElementById('btn-friends').click());await B.evaluate(()=>document.getElementById('btn-friends').click());
 console.log('trees differ before:',(await trees(A))!==(await trees(B)));
 await A.evaluate(()=>window.__enterArea('forest'));await A.waitForTimeout(1500);
-console.log('invite button shown:',await A.evaluate(()=>!document.getElementById('skpinv').hidden));
+await A.screenshot({path:path.join(__dirname,'sk0.png')});console.log('invite button shown:',await A.evaluate(()=>!document.getElementById('skpinv').hidden));
 await A.click('#skpinv');await A.waitForTimeout(300);
 await A.click('[data-action=skp-inv]');await A.waitForTimeout(1500);
 console.log('A pop:',await A.evaluate(()=>document.querySelector('.pv-pop').innerText.replace(/\n/g,' | ')));
