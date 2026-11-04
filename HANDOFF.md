@@ -61,6 +61,7 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - Lobby is in cloud.js (`PT`, `ptLobby`, `ptGo`, `coopInvite`, `coopAccept`). Invites are one Firestore `matches/{pairId}` doc per pair, with states invite → joined → go (with `key`, `slot`, `roster`), or cancel/left/declined.
   - Guests smooth with a snapshot buffer (`coopBufPush` / `coopInterp`).
   - If 3–4 player games freeze at the start while 2-player games work, check the Realtime Database rules allow writes to `g2`/`g3` under `coop/$key`.
+- **Skilling together (`SKP`, md `skill`):** the "Skill with friends" button (`#skpinv`, bottom-left on the skilling islands) invites through the normal party lobby. Guests take over the host's gathering nodes (mine, forest, grave, fish; `skpLayout`, kept afterwards) and follow their state from the host (`N`: used up / timer left); a guest's first hit on a tree is sent as `hit` so the host starts its 40 s timer. Everyone's actions, loot, xp and rolls stay on their own device. Snapshots ~8/s (`SKP_RATE`), layout and pal looks every 3 s or when a guest asks (`nl`). Leaving the skilling islands, the Leave button or 15 s without data ends it. Test: `node mock2/tskill.js`.
 - **Saves:**
   - Local slot per signed-in user. Cloud sync uses a `pp.syncT.{uid}` stamp and a device id (`DEV`).
   - A BroadcastChannel pauses duplicate tabs.
