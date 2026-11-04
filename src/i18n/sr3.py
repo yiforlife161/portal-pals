@@ -159,6 +159,7 @@ SRT = {
 "Your rank: #§ · §": "Tvoje mesto: #§ · §",
 "Co-op · § · Level §. You both get the full gold and xp.": "Saradnja · § · Nivo §. Oboje dobijate puno zlato i xp.",
 "Co-op · Level §. You both get the full gold and xp.": "Saradnja · Nivo §. Oboje dobijate puno zlato i xp.",
+"§ / § skills at 99": "§ / § veština na 99",
 "Capes §/§": "Ogrtači §/§", "Level § / §": "Nivo § / §", "+2 §, +§ xp": "+2 §, +§ xp",
 "Wear it in Pal > Capes: §.": "Nosi ga (Drugar > Ogrtači): §.", "§ while you wear it.": "§ dok ga nosiš.",
 "Cape: an extra ore! §": "Ogrtač: dodatna ruda! §", "Cape: an extra fish! §": "Ogrtač: dodatna riba! §", "Cape: an extra log! §": "Ogrtač: dodatni trupac! §",
