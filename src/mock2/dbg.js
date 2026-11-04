@@ -1,0 +1,11 @@
+const {chromium}=require('playwright');const fs=require('fs');const path=require('path');
+const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+(async()=>{const b=await chromium.launch();const ctx=await b.newContext();
+await ctx.route(/fonts\.g/,r=>r.abort());
+await ctx.route('https://pp.test/**',r=>r.fulfill({body:html,contentType:'text/html'}));
+await ctx.route('https://www.gstatic.com/**',r=>{const f=r.request().url().split('/').pop().replace('firebase-','').replace('firestore','fs');return r.fulfill({body:fs.readFileSync(path.join(__dirname,f),'utf8'),contentType:'application/javascript'});});
+await ctx.exposeFunction('__db',async()=>null);
+const pg=await ctx.newPage();pg.on('pageerror',e=>console.log('ERR',e.message));pg.on('console',m=>console.log(m.type(),m.text().slice(0,200)));
+await pg.goto('https://pp.test/');await pg.waitForTimeout(2000);
+console.log(await pg.evaluate(()=>[!!window.ppGame,!!document.getElementById('dock-r'),!!document.getElementById('btn-friends'),document.getElementById('mm-acct').innerText]));
+await b.close();})();

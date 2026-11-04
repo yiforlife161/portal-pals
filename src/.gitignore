@@ -1,0 +1,8 @@
+index.html
+chk_main.js
+mock2/*.html
+*.png
+!fav32.png
+!fav192.png
+!previews/*.png
+__pycache__/

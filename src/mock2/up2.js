@@ -1,0 +1,22 @@
+const {chromium}=require('playwright');const fs=require('fs');const path=require('path');
+const db=require('./server.js');
+const OLD=process.argv[2]||'old168.html';
+let html=fs.readFileSync(path.join(__dirname,OLD),'utf8');
+(async()=>{const b=await chromium.launch();const ctx=await b.newContext({viewport:{width:1000,height:700}});
+await ctx.route(/fonts\.g/,r=>r.abort());
+await ctx.route('https://pp.test/**',r=>r.fulfill({body:html,contentType:'text/html'}));
+await ctx.route('https://www.gstatic.com/**',r=>{const f=r.request().url().split('/').pop().replace('firebase-','').replace('firestore','fs');return r.fulfill({body:fs.readFileSync(path.join(__dirname,f),'utf8'),contentType:'application/javascript'});});
+await ctx.exposeFunction('__db',(op,u,a)=>db(op,u,a));
+await ctx.addInitScript(()=>{localStorage.setItem('mock.want',JSON.stringify({uid:'uidA',displayName:'Ana'}));});
+const pg=await ctx.newPage();pg.on('console',m=>{if(/LOADFAIL/.test(m.text()))console.log(m.text().slice(0,600))});pg.on('pageerror',e=>console.log('ERR',e.message));
+await pg.goto('https://pp.test/');await pg.waitForTimeout(1200);
+await pg.click('#pp-signin');await pg.waitForTimeout(4000);
+// give progress
+await pg.evaluate(()=>{const k=window.PP_SAVE_KEY;const o=JSON.parse(localStorage.getItem(k));o.island.gold=54321;o.island.tut=99;o.island.cannonWins=9;o.island.ach={c_first:1};o.island.fossils={ammonite:1};o.t=Date.now();localStorage.setItem(k,JSON.stringify(o));});
+await pg.reload();await pg.waitForTimeout(3000);
+const st=()=>pg.evaluate(()=>{const o=JSON.parse(localStorage.getItem(window.PP_SAVE_KEY)||'null');return o&&{gold:o.island.gold,tut:o.island.tut,cw:o.island.cannonWins,items:o.island.items.length,key:window.PP_SAVE_KEY}});
+console.log('old version',await pg.evaluate(()=>document.querySelector('.hud').innerText.replace(/\n/g,' ')),await st(), 'cloud t', (db.DB['saves/uidA']||{}).t);
+html=fs.readFileSync(path.join(__dirname,'dbg.html'),'utf8');
+await pg.reload();await pg.waitForTimeout(4000);console.log('mm',await pg.evaluate(()=>[!document.getElementById('mmenu').hidden, document.getElementById('mm-acct').innerText]));await pg.evaluate(()=>{const b=document.querySelector('[data-action=menu-play]');bawait pg.reload();await pg.waitForTimeout(4000);await pg.reload();await pg.waitForTimeout(4000);b.click();});await pg.waitForTimeout(25000);
+console.log('new version',await st(), await pg.evaluate(()=>document.querySelector('.hud')&&document.querySelector('.hud').innerText.replace(/\n/g,' ')));
+await b.close();})();

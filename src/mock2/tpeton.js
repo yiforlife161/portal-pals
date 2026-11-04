@@ -1,0 +1,14 @@
+const {chromium}=require('playwright');const fs=require('fs');const path=require('path');
+(async()=>{const b=await chromium.launch();const pg=await b.newPage();
+const html=fs.readFileSync(path.join(__dirname,'coopx.html'),'utf8');
+await pg.route('https://pp.test/**',r=>r.fulfill({body:html,contentType:'text/html'}));await pg.route(/gstatic|fonts/,r=>r.abort());
+pg.on('pageerror',e=>console.log('ERR',e.message));
+await pg.goto('https://pp.test/');await pg.waitForTimeout(1500);
+await pg.evaluate(()=>{const b=document.querySelector('[data-action=menu-play]');b&&b.click();const I=window.__st.island;I.tut=99;I.pets={arena:1,dig:1,forest:1};I.petMain='dig';});
+const r=await pg.evaluate(()=>({arena:window.__petOn('arena'),dig:window.__petOn('dig'),forest:window.__petOn('forest'),follow:window.__petFor('arena')}));
+console.log('dig equipped:',JSON.stringify(r));
+await pg.evaluate(()=>window.__dfOpen('arena'));await pg.waitForTimeout(600);
+console.log('arena pet shown:',await pg.evaluate(()=>[...document.querySelectorAll('#df-pals .mgpet')].map(e=>e.dataset.k).join(',')));
+await pg.evaluate(()=>{window.__st.island.petMain='arena';});await pg.waitForTimeout(400);
+console.log('after equipping arena:',await pg.evaluate(()=>window.__petOn('arena')+' shown '+[...document.querySelectorAll('#df-pals .mgpet')].map(e=>e.dataset.k).join(',')));
+await b.close();})();
