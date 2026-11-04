@@ -77,6 +77,7 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - **A pet only helps while it is the one following you** (`petOn(k)`, `state.island.petMain`).
   - In co-op, only a friend's equipped pet shows and helps.
 - **Hats:** skilling hats drop 1 in 3,000 per action, minigame hats come from 30 wins, plus the hat shop. Data is `c.hat`.
+- **Capes:** one per skill (`CAPES`, keyed by skill key), unlocked when that skill hits 99 (`capeOwned`, derived from skill level, no extra save data). Worn per pal like hats (`c.cape`, kept by `cleanChar`, sent in `coopChar`). `capeLuck(skill)` = 20% roll, only when the hero wears that skill's cape. Gathering skills (mining, fishing, woodcutting, gravedigging) get +1 resource; making skills (potionmaking, cooking, smithing, firemaking) keep their materials. Drawn behind the body by `capeBack` in `palFigure`. Panel: `capesOpen` (Pal > Capes).
 - **Decorations:**
   - Defined with `def(key, label, cat, w, svgFn, {n, say})`. Each needs an entry in both `BUILD_LIMIT` and `COST`.
   - Categories: buildings, nature, town, fun, themed ("Elements and skills").
