@@ -8018,34 +8018,42 @@ function quBegin(lv, seed, coop){
   qu.P = [me].concat(mates.map(function(m){ var p = quMakePal(m.partner, m.slot, m.name, false); p.mi = m; return p; }));
   qu.hero = me; qu.cp = 0;
   qu.P.forEach(function(p){ var s = quCpSpot(p.slot); p.x = p.tx = s.x; p.y = p.ty = s.y; });
-  qu.fx = []; qu.bolts = []; qu.esh = []; qu.coins = 0; qu.found = []; qu.chests = 0; qu.kills = 0; qu.kos = 0; qu.t = 0; qu.runT = 0; qu.keys = {};
+  qu.fx = []; qu.bolts = []; qu.esh = []; qu.runGold = 0; qu.runXp = 0; qu.lastG = 0; qu.lastX = 0; qu.coins = 0; qu.found = []; qu.chests = 0; qu.kills = 0; qu.kos = 0; qu.t = 0; qu.runT = 0; qu.keys = {};
   qu.cam = { x: me.x, y: me.y };
   quPanel(''); qu.phase = 'play';
   quBanner('Level ' + qu.lv + ': ' + qu.L.land.name, (coop ? 'With ' + coopNames(mates) + '. ' : '') + 'Find the keys and bombs, open both chests, reach the flag!', 2800);
   quHud();
+}
+function quAward(){
+  if (!(qu.runGold || qu.runXp)) return;
+  var g = Math.round(qu.runGold * MG_PAY), x = Math.round(qu.runXp * MG_PAY);
+  qu.runGold = 0; qu.runXp = 0; qu.lastG += g; qu.lastX += x * XP_MULT;
+  giveReward(g, x * XP_MULT);
 }
 function quFinish(won){
   if (qu.phase === 'end') return;
   qu.phase = 'end'; qu.P.forEach(function(p){ p.mv = null; });
   var C = qu.coop;
   if (C){ if (C.role === 'host') C.endAt = Date.now(); else { qu.coop = null; if (window.ppCoop && window.ppCoop.left) window.ppCoop.left(); } }
-  var gold = 0, xp = 0, nb = '';
+  var gold = 0, nb = '';
+  quAward();      /* the monsters' gold and xp, win or not */
   if (won){
-    gold = QU_WIN_GOLD[qu.lv]; xp = QU_WIN_XP[qu.lv];
+    gold = QU_WIN_GOLD[qu.lv];
     state.island.questWins = (state.island.questWins || 0) + 1;
-    giveReward(gold, xp); mgPetRoll('quest'); hatCheck();
+    giveReward(gold, 0); mgPetRoll('quest'); hatCheck();
     achCheck({ g: 'quest', won: true, lv: qu.lv, kos: qu.kos, chests: qu.chests, time: qu.runT });
   }
   save(); updateHud();
   var fl = qu.found.map(function(id){ var f = GOLD_BY[id]; return '<div class="fmini" style="--rc:' + TH_RARITY[f.r].col + '">' + goldSvg(f) + '<b>' + esc(f.name) + '</b></div>'; }).join('');
   quPanel('<h2>' + (won ? 'Quest complete!' : 'Quest over') + '</h2><p>' + (won ? 'You reached the flag on ' + esc(qu.L.land.name) + ' (level ' + qu.lv + ').' : 'The connection to your friend was lost.') + '</p>' +
-    '<div class="cn-stats"><div><b>+' + (gold + qu.coins) + '</b><span>Coins</span></div><div><b>' + qu.chests + ' / ' + qu.L.chests.length + '</b><span>Chests</span></div><div><b>' + qu.kills + '</b><span>Monsters</span></div></div>' +
+    '<div class="cn-stats"><div><b>+' + (gold + qu.coins + qu.lastG) + '</b><span>Coins</span></div><div><b>+' + qu.lastX + '</b><span>XP</span></div><div><b>' + qu.chests + ' / ' + qu.L.chests.length + '</b><span>Chests</span></div><div><b>' + qu.kills + '</b><span>Monsters</span></div></div>' +
     (fl ? '<div class="fminis">' + fl + '</div>' : '') + quMenuHtml());
   quHud();
 }
 function quClose(){
   qu.keys = {};
   if (!qu.open) return;
+  if (qu.phase === 'play' || qu.phase === 'ending') quAward();
   qu.open = false;
   if (qu.coop){ qu.coop = null; if (window.ppCoop && window.ppCoop.left) window.ppCoop.left(); }
   cancelAnimationFrame(qu.raf);
@@ -8144,7 +8152,7 @@ function quHitFoe(f, p){
   if (f.hp <= 0){
     qu.L.foes.splice(qu.L.foes.indexOf(f), 1);
     quFx({ k: 'poof', x: f.x, y: f.y - 14, t: 0.5, T: 0.5, c: QU_FOES[f.k].col });
-    quFx({ k: 'kill', s: p.slot, t: 0, T: 0 });
+    quFx({ k: 'kill', s: p.slot, f: f.k, t: 0, T: 0 });
     if (Math.random() < 0.25){ var FD = DF_FOOD[Math.floor(Math.random() * DF_FOOD.length)]; qu.L.items.push({ id: 'h' + (++qu.hN || (qu.hN = 1)), k: 'food', fk: FD.k, heal: FD.heal, x: f.x, y: f.y, by: -1, ph: Math.random() * 6, drop: 0.6 }); }
   }
 }
@@ -8325,7 +8333,7 @@ function quUpdate(dt){
   qu.cam.x += (gx - qu.cam.x) * Math.min(1, dt * 6); qu.cam.y += (gy - qu.cam.y) * Math.min(1, dt * 6);
   for (var i = qu.fx.length - 1; i >= 0; i--){
     var f = qu.fx[i]; f.t -= dt;
-    if (f.k === 'kill'){ if (f.s === (me.slot || 0)){ qu.kills++; achAdd('qu_kills'); } qu.fx.splice(i, 1); continue; }
+    if (f.k === 'kill'){ if (f.s === (me.slot || 0)){ qu.kills++; achAdd('qu_kills'); } var KT = QU_FOES[f.f]; if (KT){ qu.runGold += KT.gold; qu.runXp += KT.xp; } qu.fx.splice(i, 1); continue; }
     if (f.vx !== undefined){ f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 600 * dt; }
     if (f.t <= 0) qu.fx.splice(i, 1);
   }
