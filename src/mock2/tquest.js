@@ -39,12 +39,12 @@ const st=pg=>pg.evaluate(()=>{const q=window.__qu,C=q.coop;if(!q.hero)return {op
 for(const p of P) console.log(JSON.stringify(await st(p)));
 console.log('same level:',new Set(await Promise.all(P.map(p=>p.evaluate(()=>JSON.stringify(window.__qu.L.isl.map(i=>[Math.round(i.x),Math.round(i.y)])))))).size===1);
 await Promise.all(P.map(p=>p.evaluate(()=>window.__qbot())));
-await P[1].evaluate(()=>{window.__warnSeen=0;window.__fbSeen=0;setInterval(()=>{const q=window.__qu;if(q.L.foes.some(f=>f.wind>0))window.__warnSeen++;if((q.esh||[]).length)window.__fbSeen++;},100);});
+await P[1].evaluate(()=>{window.__warnSeen=0;window.__fbSeen=0;window.__foodSeen={};setInterval(()=>{const q=window.__qu;if(q.L.foes.some(f=>f.wind>0))window.__warnSeen++;if((q.esh||[]).length)window.__fbSeen++;q.L.items.forEach(i=>{if(i.k==='food')window.__foodSeen[i.fk]=1;});},100);});
 for(let t=0;t<(+process.env.SECS||240);t+=10){ await A.waitForTimeout(10000); const s=await Promise.all(P.map(st)); console.log(t+10,s.map(x=>x.ph+' '+x.open+' ch'+x.ch+' k'+x.kills+' foes'+x.foes+' me'+x.me+' ko'+x.kos+' hp'+x.hp+' isl'+x.at).join(' | ')); if(s.every(x=>x.ph==='end')) break; }
 await A.screenshot({path:path.join(__dirname,'qco1.png')});await P[1].screenshot({path:path.join(__dirname,'qco2.png')});
 const g1=await Promise.all(P.map(p=>p.evaluate(()=>window.__st.island.gold)));
 console.log('gold gained',g1.map((g,i)=>g-g0[i]).join(' '),'wins',(await Promise.all(P.map(p=>p.evaluate(()=>window.__st.island.questWins)))).join(' '),'found',(await Promise.all(P.map(p=>p.evaluate(()=>window.__qu.found.join(','))))).join(' | '));
 await A.waitForTimeout(5000);
-console.log('guest saw warnings',await P[1].evaluate(()=>window.__warnSeen),'fireballs',await P[1].evaluate(()=>window.__fbSeen));
+console.log('guest saw warnings',await P[1].evaluate(()=>window.__warnSeen),'fireballs',await P[1].evaluate(()=>window.__fbSeen),'food',await P[1].evaluate(()=>Object.keys(window.__foodSeen).join(',')));
 console.log('links closed:',(await Promise.all(P.map(p=>p.evaluate(()=>!window.__qu.coop)))).join(' '));
 await b.close();})();

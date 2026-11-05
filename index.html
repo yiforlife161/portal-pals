@@ -8148,7 +8148,7 @@ function quHitFoe(f, p){
     qu.L.foes.splice(qu.L.foes.indexOf(f), 1);
     quFx({ k: 'poof', x: f.x, y: f.y - 14, t: 0.5, T: 0.5, c: QU_FOES[f.k].col });
     quFx({ k: 'kill', s: p.slot, t: 0, T: 0 });
-    if (Math.random() < 0.22) qu.L.items.push({ id: 'h' + (++qu.hN || (qu.hN = 1)), k: 'heart', x: f.x, y: f.y, by: -1 });
+    if (Math.random() < 0.25){ var FD = DF_FOOD[Math.floor(Math.random() * DF_FOOD.length)]; qu.L.items.push({ id: 'h' + (++qu.hN || (qu.hN = 1)), k: 'food', fk: FD.k, heal: FD.heal, x: f.x, y: f.y, by: -1, ph: Math.random() * 6, drop: 0.6 }); }
   }
 }
 /* the closest pal standing on (or right by) this monster's island */
@@ -8253,7 +8253,14 @@ function quHostTick(dt){
       var d = Math.hypot(it.x - p.x, it.y - p.y);
       if (it.noP === p.slot){ if (d > 80) it.noP = -1; return; }      /* what you just put down stays put until you step away */
       if (d > 46) return;
-      if (it.k === 'heart'){ if (p.hp < p.maxhp){ p.hp = Math.min(p.maxhp, p.hp + p.maxhp * 0.3); L.items.splice(L.items.indexOf(it), 1); quFx({ k: 'txt', x: p.x, y: p.y - 90, t: 1, T: 1, s: '+Health', c: '#7affc4' }); } return; }
+      if (it.k === 'food'){
+        if (it.drop > 0 || d > 30) return;
+        var amt = Math.round(p.maxhp * (it.heal || 0.2)), got = Math.max(0, Math.round(Math.min(amt, p.maxhp - p.hp)));
+        p.hp = Math.min(p.maxhp, p.hp + amt); L.items.splice(L.items.indexOf(it), 1);
+        quFx({ k: 'txt', x: it.x, y: it.y - 40, t: 0.8, T: 0.8, s: got > 0 ? '+' + got + ' HP' : 'Full HP', c: '#2fbf6a' });
+        quFx({ k: 'ring', x: it.x, y: it.y, t: 0.4, T: 0.4, c: '#7affc4' });
+        return;
+      }
       if (held && held.k === it.k) return;
       if (held){ held.by = -1; held.x = it.x; held.y = it.y; held.noP = p.slot; }      /* swap: what you held is left where the new one lay */
       it.by = p.slot; p.carry = it.id; held = it;
@@ -8271,6 +8278,7 @@ function quHostTick(dt){
     L.chests.forEach(function(ch, i){ if (!ch.op && Math.hypot(ch.x - p.x, ch.y - p.y) < 62){ ch.op = 1; quFx({ k: 'ring', x: ch.x, y: ch.y - 20, t: 0.6, T: 0.6, c: '#ffe58a' }); quChestReward(i); } });
     if (qu.phase === 'play' && Math.hypot(L.flag.x - p.x, L.flag.y - p.y) < 64){ qu.phase = 'ending'; qu.endT = 1.4; qu.won = true; quBanner('Flag reached!', (p.me ? 'You' : p.name) + ' made it to the end.', 1600); }
   });
+  L.items.forEach(function(it){ if (it.drop > 0) it.drop = Math.max(0, it.drop - dt); });
   L.br.forEach(function(b){
     if (!(b.fuse > 0)) return;
     b.fuse -= dt;
@@ -8501,11 +8509,11 @@ function quDraw(){
   L.chests.forEach(function(ch){ list.push({ y: ch.y, d: function(){ quDrawChest(g, ch); } }); });
   list.push({ y: L.flag.y, d: function(){ quDrawFlag(g, L.flag); } });
   L.items.forEach(function(it){ if (it.by >= 0) return; var bob = Math.sin(qu.t * 4 + it.x) * 4;
+    if (it.k === 'food'){ list.push({ y: it.y, d: function(){ var kf = df.food, kt = df.t; df.food = [{ k: it.fk, x: it.x, y: it.y, ph: it.ph || 0, drop: it.drop || 0 }]; df.t = qu.t; try { dfDrawFood(g); } finally { df.food = kf; df.t = kt; } } }); return; }
     list.push({ y: it.y, d: function(){
       g.fillStyle = 'rgba(20,30,10,.25)'; g.beginPath(); g.ellipse(it.x, it.y + 2, 16, 5, 0, 0, 7); g.fill();
       g.fillStyle = 'rgba(255,240,170,.35)'; g.beginPath(); g.arc(it.x, it.y - 20 + bob, 26, 0, 7); g.fill();
-      if (it.k === 'key') quDrawKey(g, it.x, it.y - 20 + bob); else if (it.k === 'bomb') quDrawBomb(g, it.x, it.y - 20 + bob);
-      else { g.fillStyle = '#ff5a7a'; g.strokeStyle = '#8a1a30'; g.lineWidth = 2.4; g.beginPath(); var hx = it.x, hy = it.y - 16 + bob; g.moveTo(hx, hy + 10); g.bezierCurveTo(hx - 18, hy - 2, hx - 10, hy - 16, hx, hy - 6); g.bezierCurveTo(hx + 10, hy - 16, hx + 18, hy - 2, hx, hy + 10); g.fill(); g.stroke(); }
+      if (it.k === 'key') quDrawKey(g, it.x, it.y - 20 + bob); else quDrawBomb(g, it.x, it.y - 20 + bob);
     } }); });
   L.foes.forEach(function(f){ if (vis(f.x)) list.push({ y: f.y, d: function(){ quDrawFoe(g, f); } }); });
   list.sort(function(a, b){ return a.y - b.y; }).forEach(function(o){ o.d(); });
@@ -8609,7 +8617,7 @@ function quSnap(){
     P: qu.P.map(function(p){ var it = p.carry ? quItem(p.carry) : null; return [p.slot, coopNum(p.x), coopNum(p.y), p.face, Math.round(p.hp), Math.round(p.maxhp), p.ko > 0 ? coopNum(p.ko) : 0, p.swing > 0 ? 1 : 0, p.zap > 0 ? 1 : 0, p.walkT > 0 ? 1 : 0, it ? it.k : '', p.gone ? 1 : 0, p.respawnN || 0]; }),
     F: L.foes.map(function(f){ return [f.id, f.k, coopNum(f.x), coopNum(f.y), Math.round(f.hp), f.max, f.dir, f.hit > 0 ? 1 : 0, f.wind > 0 ? Math.round(f.wind / (f.windMax || 1) * 100) / 100 : 0, f.atkType || '', coopNum(f.sx || 0), coopNum(f.sy || 0), coopNum(f.sr || 0)]; }),
     E: (qu.esh || []).map(function(e){ return [coopNum(e.x), coopNum(e.y), coopNum(e.vx), coopNum(e.vy)]; }),
-    I: L.items.map(function(it){ return [it.id, it.k, coopNum(it.x), coopNum(it.y), it.by]; }),
+    I: L.items.map(function(it){ return [it.id, it.k, coopNum(it.x), coopNum(it.y), it.by, it.fk || '']; }),
     B: L.br.map(function(b){ return b.st ? 1 : b.fuse > 0 ? 2 : 0; }),
     O: L.chests.map(function(c){ return c.op ? 1 : 0; }),
     Z: (qu.bolts || []).map(function(b){ return [coopNum(b.x), coopNum(b.y), b.col]; }),
@@ -8639,7 +8647,8 @@ function quApply(S){
   var old = {}; L.foes.forEach(function(f){ old[f.id] = f; });
   L.foes = (S.F || []).map(function(a){ var f = old[a[0]] || { id: a[0], k: a[1], x: a[2], y: a[3], ph: Math.random() * 6, isl: 0 }; f.k = QU_FOES[a[1]] ? a[1] : 'goblin'; f.tx = a[2]; f.ty = a[3]; f.hp = a[4]; f.max = a[5]; f.dir = a[6]; f.hit = a[7] ? 0.1 : 0; f.wind = +a[8] || 0; f.windMax = 1; f.atkType = a[9] || ''; f.sx = a[10]; f.sy = a[11]; f.sr = a[12]; return f; });
   qu.esh = (S.E || []).map(function(a){ return { x: a[0], y: a[1], vx: a[2], vy: a[3] }; });
-  L.items = (S.I || []).map(function(a){ return { id: a[0], k: a[1], x: a[2], y: a[3], by: a[4] }; });
+  var oldI = {}; L.items.forEach(function(it){ oldI[it.id] = it; });
+  L.items = (S.I || []).map(function(a){ var o = oldI[a[0]]; return { id: a[0], k: a[1], x: a[2], y: a[3], by: a[4], fk: a[5] || '', ph: o ? o.ph : Math.random() * 6, drop: o ? o.drop : (a[1] === 'food' ? 0.6 : 0) }; });
   (S.B || []).forEach(function(v, i){ var b = L.br[i]; if (!b) return; b.st = v === 1 ? 1 : 0; b.fuse = v === 2 ? (b.fuse > 0 ? b.fuse : 1.5) : 0; });
   (S.O || []).forEach(function(v, i){ var ch = L.chests[i]; if (ch && v && !ch.op){ ch.op = 1; quChestReward(i); } });
   qu.bolts = (S.Z || []).map(function(a){ return { x: a[0], y: a[1], col: a[2] }; });
@@ -8666,6 +8675,7 @@ function quGuestTick(dt){
   (qu.esh || []).forEach(function(e){ e.x += e.vx * dt; e.y += e.vy * dt; });
   qu.P.forEach(function(p){ if (p.mate && p.tx !== undefined){ p.x += (p.tx - p.x) * k; p.y += (p.ty - p.y) * k; } });
   qu.L.br.forEach(function(b){ if (b.fuse > 0) b.fuse = Math.max(0.01, b.fuse - dt); });
+  qu.L.items.forEach(function(it){ if (it.drop > 0) it.drop = Math.max(0, it.drop - dt); });
 }
 
 /* ---------- input ---------- */
