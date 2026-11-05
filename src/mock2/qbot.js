@@ -17,6 +17,10 @@ window.__qbot = function(){
       var want = carrying.k === 'key' ? 'gate' : 'wall';
       var b = L.br.filter(function(b){ return b.st === 0 && b.fuse <= 0 && b.lock === want && (reach[b.a] || reach[b.b]); })[0];
       if (b) goal = { x: b.mx - b.ux * 60 * (reach[b.a] ? 1 : -1), y: b.my - b.uy * 60 * (reach[b.a] ? 1 : -1), isl: reach[b.a] ? b.a : b.b, end: true };
+      else { // holding the wrong thing: swap it for one that opens a lock we can reach
+        var sw = L.items.filter(function(i){ return i.by < 0 && i.k !== 'heart' && i.k !== carrying.k && reach[isAt(i)] && L.br.some(function(b2){ return b2.st === 0 && b2.lock === (i.k === 'key' ? 'gate' : 'wall') && (reach[b2.a] || reach[b2.b]); }); })[0];
+        if (sw) goal = { x: sw.x, y: sw.y, isl: isAt(sw) };
+      }
     } else {
       var it = L.items.filter(function(i){ return i.by < 0 && i.k !== 'heart' && reach[isAt(i)] && L.br.some(function(b){ return b.st === 0 && b.lock === (i.k === 'key' ? 'gate' : 'wall'); }); })[0];
       if (it) goal = { x: it.x, y: it.y, isl: isAt(it) };
