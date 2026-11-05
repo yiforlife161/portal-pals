@@ -73,6 +73,9 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - Levels 1–3 plus Survival (`SURV_LV = 4`, locked behind achievements).
   - In Survival, every 5 waves = +1 win (every boss in Raid Survival), via `dfSurvWins`. Treasure Hunt Survival counts each island.
   - 30 wins unlock a game's hat.
+- **Island Quest (`qu`, game key `quest`, building `questgate`):** a seeded chain of islands (`quGen(seed, lv, players)`: 5/7/9 main islands for levels 1–3, 2 side islands with chests, bridges between them). Some bridges are locked by a gate (needs a key) or a wall (needs a bomb, 1.5 s fuse); each key/bomb is placed on an island before its lock, so every level can be finished. One carried item at a time, shown over the pal's head (`.qcarry`). Monsters (`QU_FOES`: blob, beetle, wisp) stay on their own island. Knocked-out pals get back up at the furthest main island reached (`qu.cp`). Chests roll a golden treasure (`GOLDS`, 12, a book like the fossils, `state.island.golds`/`goldN`) or coins, per device. Reaching the flag wins for everyone: `questWins`, 30-win hat `h_quest`, pet `PETS.quest`, achievements `q_*`. Movement is limited by `quWalk` (islands + bridges, closed locks block the bridge middle) and slides along edges (`quMove`).
+  - Co-op (md `quest`, seed passed as `am`): the host runs monsters, items, locks and chests (`quSnap`); guests send position and attacks (`quOut` → `quIn`) and roll their own chest rewards when they see a chest open (`quApply`).
+  - Tests: `node mock2/tquest.js 2 1` (players, level) runs bots (`mock2/qbot.js`) through a co-op quest; `node mock2/tquest.js 4 2` for a full party.
 - **Pets:**
   - Skilling pets: 1 in 20,000 per action. Minigame pets: 1 in 300 per win.
   - **A pet only helps while it is the one following you** (`petOn(k)`, `state.island.petMain`).
