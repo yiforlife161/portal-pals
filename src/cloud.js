@@ -300,6 +300,7 @@ function friendsUi(){
       return '<div class="fr-item"><div class="fr-ic">' + (el ? G().palIcon(el, 32) : '') + '<i class="fr-dot' + (online(p) ? ' on' : '') + '"></i></div>' +
         '<div class="fr-who"><b data-notr>' + esc(p.name || F.friends[id].name || 'Player') + '</b><small>' + palLine(p) + '</small><small>' + seen(p) + '</small>' + (p.playMs >= 60000 ? '<small>' + playedText(p.playMs) + '</small>' : '') + '</div>' +
         '<div class="fr-acts"><button class="btn sm primary" type="button" data-fr-visit="' + id + '">Visit</button>' +
+        (online(p) ? '<button class="btn sm" type="button" data-fr-trade="' + id + '">Trade</button>' : '') +
         '<button class="btn sm fr-chat" type="button" data-fr-chat="' + id + '">Chat' + (chUnread(id) ? '<span class="fr-badge">' + chUnread(id) + '</span>' : '') + '</button>' +
         '<button class="btn sm fr-x' + (F.sure === id ? ' sure' : '') + '" type="button" data-fr-rem="' + id + '">' + (F.sure === id ? 'Tap again' : 'Remove') + '</button></div></div>';
     }).join('') : '<p class="fr-empty">No friends yet. Share your code or add a friend\'s code above.</p>') + '</div></div>';
@@ -328,6 +329,7 @@ function wire(){
   fwin.querySelectorAll('[data-fr-rem]').forEach(b => b.onclick = () => removeFriend(b.dataset.frRem));
   fwin.querySelectorAll('[data-fr-visit]').forEach(b => b.onclick = () => visitFriend(b.dataset.frVisit, b));
   fwin.querySelectorAll('[data-fr-chat]').forEach(b => b.onclick = () => chatOpen(b.dataset.frChat));
+  fwin.querySelectorAll('[data-fr-trade]').forEach(b => b.onclick = () => { friendsToggle(false); trInvite(b.dataset.frTrade); });
 }
 function uref(...p){ return fs.doc(db, 'users', ...p); }
 function profileData(){
@@ -376,6 +378,7 @@ async function friendsStart(user){
     F.lastInv = list; pvInvites(list);
   }, e => console.warn(e)));
   setInterval(pvWatchdog, 5000);
+  setTimeout(trResume, 3000);
   friendsUi();
 }
 function friendsStop(){
@@ -486,10 +489,12 @@ function pvInvites(list){
   const inv = fresh[0];
   if (!inv){ if (PV.inv){ PV.inv = null; if (!PV.mid) pvShow(''); } return; }
   if (PV.inv && PV.inv.id === inv.id && PV.inv.at === inv.at) return;
-  if ((PV.mid && PV.started && !PV.ended) || (CO.key && G().coopRole()) || (PT.on && !PT.started)) return;      /* already playing or waiting in a co-op lobby (a finished co-op game does not count) */
+  if ((PV.mid && PV.started && !PV.ended) || (CO.key && G().coopRole()) || (PT.on && !PT.started) || (TR.mid && inv.game === 'trade')) return;      /* already playing or waiting in a co-op lobby (a finished co-op game does not count) */
   PV.inv = inv;
   const AM = { classic: 'Classic', fire: 'Fire Pit', blades: 'Blade Ring' };
-  if (inv.game === 'arena' && inv.md === 'quest') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to an Island Quest!</b><small>' + (inv.lv === 4 ? 'Co-op survival · level after level, stop when you like.' : 'Co-op · Level ' + (inv.lv || 1) + '. Carry keys and bombs, open the chests, reach the flag together.') + '</small>' +
+  if (inv.game === 'trade') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> wants to trade cards!</b><small>You both pick cards to give, then both press Ready to swap.</small>' +
+    '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
+  else if (inv.game === 'arena' && inv.md === 'quest') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to an Island Quest!</b><small>' + (inv.lv === 4 ? 'Co-op survival · level after level, stop when you like.' : 'Co-op · Level ' + (inv.lv || 1) + '. Carry keys and bombs, open the chests, reach the flag together.') + '</small>' +
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
   else if (inv.game === 'arena' && inv.md === 'skill') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to skill together!</b><small>Join their skilling islands. You share the trees and rocks, and you keep everything you gather.</small>' +
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
@@ -512,6 +517,7 @@ async function pvDecline(inv){
   fs.deleteDoc(uref(me.uid, 'invites', inv.id)).catch(() => {});
 }
 async function pvAccept(inv){
+  if (inv.game === 'trade') return trAccept(inv);
   if (G().busy && G().busy() && !(inv.game === 'arena' && G().arenaOpen && G().arenaOpen())){ G().flash('Finish your game first.'); return; }
   invDone[inv.id + ':' + inv.at] = 1;
   if (inv.game === 'arena') return coopAccept(inv);
@@ -563,7 +569,7 @@ function pvWatch(mid, other, name, role){
 }
 /* if your friend stops answering (closed the game, lost connection) you win after a while */
 function pvWatchdog(){
-  ptWatchdog();
+  ptWatchdog(); trWatchdog();
   if (!PV.mid){ if (PV.inv && nowS() - PV.inv.at > 65000){ PV.inv = null; pvShow(''); } return; }
   if (!PV.started){ if (PV.role === 'a' && Date.now() - PV.waitT > 60000){ const nm = PV.otherName; pvCancel(); G().flash(nm + ' did not answer.'); } return; }
   if (PV.ended || !G().pvpActive()) return;
@@ -587,6 +593,141 @@ window.ppPvp = {
   },
   rematch(uid){ challenge(uid || PV.other); },
   challenge(uid){ challenge(uid); }
+};
+
+
+/* ---------- card trades: one match document per pair (game 'trade'), both players edit their own offer.
+   An offer change clears both Ready marks; each Ready mark is the exact pair of offers it agreed to, so the swap
+   only happens when both marks match the current offers. Each side then swaps its own cards once (td in the save). ---------- */
+const TR = { mid: '', other: '', name: '', role: '', n: 0, unsub: null, st: '', my: [], their: [], okMe: '', okThem: '', sig: '', applied: false, waitT: 0, lastThem: 0, hbSeen: 0, uiKey: '' };
+function trSig(d){ return JSON.stringify([d.offA || [], d.offB || []]); }
+function trList(a){ return (Array.isArray(a) ? a : []).filter(x => x && Number.isFinite(+x.k) && +x.n > 0).slice(0, 20).map(x => ({ k: +x.k, n: Math.min(999, +x.n) })); }
+function trUi(force){
+  const T = { st: TR.st, name: TR.name, mine: TR.my, theirs: TR.their, meOk: !!TR.okMe && TR.okMe === TR.sig, themOk: !!TR.okThem && TR.okThem === TR.sig };
+  const key = JSON.stringify(T);
+  if (!force && key === TR.uiKey) return;
+  TR.uiKey = key;
+  if (G().kdTradeUi) G().kdTradeUi(T);
+}
+function trStop(){ if (TR.unsub) TR.unsub(); TR.unsub = null; TR.mid = ''; TR.st = ''; }
+function trEnd(msg){ trStop(); if (G().kdTradeUi) G().kdTradeUi({ st: 'closed', msg: msg || '' }); }
+async function trInvite(fid){
+  if (!me || !fid) return;
+  if (G().visiting && G().visiting()){ G().flash('Go back to your own world to trade cards.'); return; }
+  if (TR.mid){ G().flash('You are already trading.'); return; }
+  const mid = pairId(fid), name = friendName(fid);
+  if (PT.on && !PT.started && PT.mem.some(m => m.uid === fid)){ G().flash('Finish the game invite with ' + name + ' first.'); return; }
+  try {
+    const old = await fs.getDoc(mref(mid)), n = (old.exists() ? (old.data().n || 0) : 0) + 1;
+    Object.assign(TR, { mid: mid, other: fid, name: name, role: 'a', n: n, st: 'wait', my: [], their: [], okMe: '', okThem: '', sig: '', applied: false, waitT: Date.now(), lastThem: Date.now(), uiKey: '' });
+    await fs.setDoc(mref(mid), { game: 'trade', a: me.uid, b: fid, nameA: F.name, nameB: name, st: 'invite', n: n, offA: [], offB: [], okA: '', okB: '', hbA: nowS(), hbB: 0, at: nowS() });
+    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name, at: nowS(), game: 'trade' });
+    trWatch();
+    trUi(true);
+  } catch (e){ console.warn(e); trStop(); G().flash('Could not send the trade invite. Try again.'); }
+}
+async function trAccept(inv){
+  invDone[inv.id + ':' + inv.at] = 1;
+  PV.inv = null; pvShow('');
+  fs.deleteDoc(uref(me.uid, 'invites', inv.id)).catch(() => {});
+  if (G().visiting && G().visiting()){ G().flash('Go back to your own world to trade cards.'); fs.updateDoc(mref(inv.mid), { st: 'declined' }).catch(() => {}); return; }
+  if (TR.mid) trCancel();
+  try {
+    const s2 = await fs.getDoc(mref(inv.mid)), m = s2.exists() ? s2.data() : null;
+    if (!m || m.game !== 'trade' || m.st !== 'invite' || m.a !== inv.id){ G().flash('That trade is no longer open.'); return; }
+    Object.assign(TR, { mid: inv.mid, other: inv.id, name: inv.name || m.nameA || 'Friend', role: 'b', n: m.n || 0, st: 'open', my: [], their: [], okMe: '', okThem: '', sig: '', applied: false, waitT: Date.now(), lastThem: Date.now(), uiKey: '' });
+    await fs.updateDoc(mref(inv.mid), { st: 'open', nameB: F.name, hbB: nowS() });
+    trWatch();
+    trUi(true);
+  } catch (e){ console.warn(e); trStop(); G().flash('Could not join the trade. Try again.'); }
+}
+function trWatch(){
+  const mid = TR.mid, n = TR.n, A = TR.role === 'a';
+  if (TR.unsub) TR.unsub();
+  TR.unsub = fs.onSnapshot(mref(mid), snap => {
+    if (TR.mid !== mid || TR.n !== n) return;
+    const d = snap.exists() ? snap.data() : null;
+    if (!d || d.game !== 'trade' || d.n !== n){ if (!TR.applied) trEnd('The trade was called off.'); return; }
+    TR.my = trList(A ? d.offA : d.offB); TR.their = trList(A ? d.offB : d.offA);
+    TR.okMe = (A ? d.okA : d.okB) || ''; TR.okThem = (A ? d.okB : d.okA) || ''; TR.sig = trSig(d);
+    const hb = A ? d.hbB : d.hbA;
+    if (hb && hb !== TR.hbSeen){ TR.hbSeen = hb; TR.lastThem = Date.now(); }
+    if (d.st === 'declined'){ trEnd(TR.name + ' said no this time.'); return; }
+    if (d.st === 'cancel'){ trEnd(d.by === me.uid ? '' : TR.name + ' called off the trade.'); return; }
+    if (d.st === 'open' && TR.st === 'wait'){ TR.st = 'open'; TR.lastThem = Date.now(); }
+    if ((d.st === 'open' || d.st === 'done') && d.okA && d.okA === d.okB && d.okA === TR.sig){ trApply(d); return; }
+    trUi();
+  }, e => console.warn(e));
+}
+function trApply(d){
+  if (TR.applied) return;
+  TR.applied = true;
+  const A = TR.role === 'a', give = trList(A ? d.offA : d.offB), get = trList(A ? d.offB : d.offA), name = TR.name;
+  if (G().kdTradeApply) G().kdTradeApply(give, get, TR.mid + ':' + TR.n);
+  fs.updateDoc(mref(TR.mid), { st: 'done' }).catch(() => {});
+  trStop();
+  if (G().kdTradeUi) G().kdTradeUi({ st: 'done', name: name, mine: give, theirs: get });
+}
+function trCancel(){
+  const mid = TR.mid, other = TR.other, applied = TR.applied, st = TR.st;
+  trStop();
+  if (G().kdPend) G().kdPend(null);
+  if (mid && !applied){
+    fs.updateDoc(mref(mid), { st: 'cancel', by: me.uid }).catch(() => {});
+    if (st === 'wait') fs.deleteDoc(uref(other, 'invites', me.uid)).catch(() => {});
+  }
+  if (G().kdTradeUi) G().kdTradeUi({ st: 'closed', msg: '' });
+}
+function trOffer(list){
+  if (!TR.mid || TR.st !== 'open') return;
+  const A = TR.role === 'a', clean = trList(list), up = { okA: '', okB: '' };
+  up[A ? 'offA' : 'offB'] = clean;
+  TR.my = clean; TR.okMe = ''; TR.okThem = '';
+  if (G().kdPend) G().kdPend(null);
+  fs.updateDoc(mref(TR.mid), up).catch(e => console.warn(e));
+}
+function trReady(on){
+  if (!TR.mid || TR.st !== 'open') return;
+  if (on && !TR.my.length && !TR.their.length){ G().flash('Add some cards first.'); return; }
+  if (on && G().kdCanGive && !G().kdCanGive(TR.my)){ G().flash('You no longer have all the cards you offered.'); return; }
+  const A = TR.role === 'a', up = {};
+  up[A ? 'okA' : 'okB'] = on ? TR.sig : '';
+  TR.okMe = on ? TR.sig : '';
+  /* remember the Ready in the save: if the game closes before the swap, it finishes the next time you sign in */
+  if (G().kdPend) G().kdPend(on ? { mid: TR.mid, n: TR.n, role: TR.role, sig: TR.sig } : null);
+  fs.updateDoc(mref(TR.mid), up).catch(e => console.warn(e));
+  trUi(true);
+}
+/* a trade you said Ready to while the game closed: finish it if your friend also said Ready to the same offers */
+async function trResume(){
+  const p = G().kdPendGet && G().kdPendGet();
+  if (!p || !me) return;
+  try {
+    const s2 = await fs.getDoc(mref(p.mid)), d = s2.exists() ? s2.data() : null;
+    if (d && d.game === 'trade' && d.n === p.n && d.okA && d.okA === d.okB && d.okA === trSig(d) && d.okA === p.sig){
+      const A = p.role === 'a', give = trList(A ? d.offA : d.offB), get = trList(A ? d.offB : d.offA);
+      if (G().kdTradeApply && G().kdTradeApply(give, get, p.mid + ':' + p.n)){
+        fs.updateDoc(mref(p.mid), { st: 'done' }).catch(() => {});
+        if (G().kdTradeUi) G().kdTradeUi({ st: 'done', name: A ? (d.nameB || 'Friend') : (d.nameA || 'Friend'), mine: give, theirs: get });
+      }
+    } else if (!d || d.n !== p.n || d.st === 'cancel' || d.st === 'done' || d.game !== 'trade') G().kdPend(null);
+  } catch (e){ console.warn(e); }
+}
+function trWatchdog(){
+  if (!TR.mid) return;
+  const A = TR.role === 'a';
+  if (Date.now() - (TR.hbT || 0) > 8000){ TR.hbT = Date.now(); const up = {}; up[A ? 'hbA' : 'hbB'] = nowS(); fs.updateDoc(mref(TR.mid), up).catch(() => {}); }
+  if (TR.st === 'wait' && Date.now() - TR.waitT > 60000){ const nm = TR.name; trCancel(); G().flash(nm + ' did not answer.'); return; }
+  if (TR.st === 'open' && Date.now() - TR.lastThem > 35000){ const nm = TR.name; trCancel(); G().flash(nm + ' left the trade.'); }
+}
+window.ppTrade = {
+  ready: () => !!(me && F.code),
+  active: () => !!TR.mid,
+  friends: () => onlineFriends(),
+  invite: fid => trInvite(fid),
+  offer: list => trOffer(list),
+  setReady: on => trReady(on),
+  cancel: () => trCancel()
 };
 
 /* ---------- Battle Arena co-op over the Realtime Database ---------- */
@@ -865,6 +1006,7 @@ function lbFmt(c, v){
   if (c.kind === 'surv') return (v || 0) + (c.k === 's_dig' ? ' islands' : c.k === 's_raid' ? ' bosses' : c.k === 's_quest' ? ' levels' : ' waves');
   if (c.kind === 'hunts') return (v || 0).toLocaleString() + ' hunts';
   if (c.kind === 'wins') return (v || 0).toLocaleString() + ' wins';
+  if (c.kind === 'cards') return (v || 0).toLocaleString() + ' / 500 cards';
   return (v || 0).toLocaleString();
 }
 function lbOpen(){
@@ -886,6 +1028,7 @@ function lbRender(rows, mine){
     grp('Skills', cats.filter(x => x.kind === 'lv' || x.kind === 'skill')) +
     grp('Minigame wins', cats.filter(x => x.kind === 'wins' || x.kind === 'hunts')) +
     grp('Survival best', cats.filter(x => x.kind === 'surv')) +
+    grp('Collections', cats.filter(x => x.kind === 'cards')) +
     '<p class="lvpick-t">' + esc(c ? c.label : '') + (c && c.kind === 'surv' ? ' · Survival' : c && (c.kind === 'wins' || c.kind === 'hunts') ? ' · Wins' : '') + '</p>';
   if (!rows) h += '<p class="small">Loading…</p>';
   else if (!rows.length) h += '<p class="small">Nobody is on this board yet. Play to be the first!</p>';
