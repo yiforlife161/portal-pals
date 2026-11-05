@@ -6,8 +6,8 @@ window.__qbot = function(){
     var qu = __qu, L = qu.L, me = qu.hero; if (!me || qu.phase !== 'play' || me.ko > 0) return;
     var isAt = function(p){ return __quIslAt(p.x, p.y); };
     // fight anything close
-    var near = L.foes.filter(function(f){ return Math.hypot(f.x - me.x, f.y - me.y) < (me.ranged ? 300 : 110); });
-    if (near.length) __quTry();
+    var near = L.foes.filter(function(f){ return Math.hypot(f.x - me.x, f.y - me.y) < (me.ranged ? 150 : 110); });
+    if (near.length){ near.sort(function(a, b){ return Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y); }); qu.aim = { x: near[0].x, y: near[0].y - 10 }; __quTry(); }
     // islands reachable through open bridges
     var reach = {}; reach[isAt(me) >= 0 ? isAt(me) : (window.__lastIsl || 0)] = 1;
     var grow = true; while (grow){ grow = false; L.br.forEach(function(b){ if (b.st === 1 && (!!reach[b.a]) !== (!!reach[b.b])){ reach[b.a] = reach[b.b] = 1; grow = true; } }); }
@@ -36,7 +36,8 @@ window.__qbot = function(){
     }
     while (QB.path.length > 1 && Math.hypot(QB.path[0].x - me.x, QB.path[0].y - me.y) < 16) QB.path.shift();
     var tgt = QB.path[0];
-    if (!near.length || me.ranged) me.mv = { x: tgt.x, y: tgt.y };
-    else me.mv = { x: near[0].x - 30 * Math.sign(near[0].x - me.x || 1), y: near[0].y };
+    if (!near.length) me.mv = { x: tgt.x, y: tgt.y };
+    else if (me.ranged) me.mv = Math.hypot(near[0].x - me.x, near[0].y - me.y) < 70 ? { x: me.x - 60 * Math.sign(near[0].x - me.x || 1), y: me.y } : null;
+    else me.mv = { x: near[0].x - 34 * Math.sign(near[0].x - me.x || 1), y: near[0].y + 4 };
   }, 100);
 };
