@@ -91,6 +91,7 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - Skilling pets: 1 in 20,000 per action. Minigame pets: 1 in 300 per win.
   - **A pet only helps while it is the one following you** (`petOn(k)`, `state.island.petMain`).
   - In co-op, only a friend's equipped pet shows and helps.
+  - On the main and skilling islands the following pet moves every frame (`petTick(dt)` from `frame`, friends' pets via `skpMatePet(m, dt)`), using `petStep`: time-based easing plus an 8-unit leash from the owner, and it only jumps on a real teleport (over 40 units). Don't move it back to a timer: that caused low-fps lag and snapping.
 - **Hats:** skilling hats drop 1 in 3,000 per action, minigame hats come from 30 wins, plus the hat shop. Data is `c.hat`.
 - **Capes:** one per skill (`CAPES`, keyed by skill key), unlocked when that skill hits 99 (`capeOwned`, derived from skill level, no extra save data). Worn per pal like hats (`c.cape`, kept by `cleanChar`, sent in `coopChar`). `capeLuck(skill)` = 20% roll, only when the hero wears that skill's cape. Gathering skills (mining, fishing, woodcutting, gravedigging) get +1 resource; making skills (potionmaking, cooking, smithing, firemaking) keep their materials. Drawn behind the body by `capeBack` in `palFigure`. Panel: `capesOpen` (Pal > Capes). The Max Cape (`max`, last in `CAPE_ORDER`) unlocks when every skill is 99 (`capeMaxed`) and works in every skill at 1 in 4 (`CAPE_MAX_CHANCE`).
 - **Decorations:**
