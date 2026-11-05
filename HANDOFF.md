@@ -90,6 +90,74 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - Tapping with a pal toggles element looks. Build mode has a lock button. Build mode lets the camera pan past the world edges.
 - **Practice spots:** 5-minute AFK stations per skill. Endless materials (`end_log`, `end_ore`, `end_fish`, `end_bone`) only work at practice stations.
 
+## Building something new: what the owner expects
+
+These are lessons from earlier requests, where the owner had to send fixes afterwards. Build to them from the start.
+
+### Look and feel
+- **Reuse what the arena already has instead of making new versions:**
+  - Attacks: `dfMakeTeam` numbers (dmg 26 melee / 11 ranged, range 34 / 140, cd 0.5), with a 0.25 s input buffer.
+  - Swipe slash fx, not a circle.
+  - Hp bar above the pal (`.dfp-hp`; add the game's class to the `.cn.df.th.qu .dfp-hp` rule).
+  - Monsters drawn by the **live** `dfDrawFoe` override, the one near the arena art. It reads `df.t` and `f.T`, so swap `df.t` while drawing.
+  - Telegraphed attacks: goblin shot (red line), imp dash (red lane), brute slam (red circle).
+  - Food drops, not hearts (`DF_FOOD`, `dfDrawFood`).
+- **Islands are never flat circles.** Use wobbly outlines, cliff layers, grass mottling and tufts, and props, painted once to a canvas (see `quShape` and `quIslCanvas`).
+- **Levels go in every direction**, not left to right.
+- **Minigame buildings** use chunky outlined SVG, the same scale as the Sky Cannon, Guard Post, Arena, Raid, Dig Site, Starstone Table and Quest Gate.
+- **Carried or overhead items** must be big enough to read on a phone and sit above the name tag.
+
+### Rules every minigame follows
+- **Levels:** 1–3 unlock in order (`lvOpen`, `lvWon`, `lvMark`; needs `LV_FIRST`/`LV_HARD` entries).
+- **Survival (`SURV_LV = 4`):**
+  - Locked until **every** achievement for that game is done (`survOpen(g)`).
+  - Never make an achievement that needs Survival, or it can never be unlocked.
+  - The lock button shows the achievement count.
+- **Survival works like Treasure Hunt:**
+  - Each cleared stage = +1 win.
+  - Gold, xp and treasures go into a pot, paid when the player stops, leaves or loses.
+  - Difficulty grows over time.
+  - Record goes to `survRecord`/`survBest`.
+- **Payout like the arena:** per kill `T.gold`/`T.xp`, the total × `MG_PAY` (0.5), xp × `XP_MULT` (15), via `giveReward`. Give both gold and xp.
+- **Losing like the arena:** solo, a knockout ends the run. In co-op, fallen pals revive after a delay unless everyone is down. Keep what was earned.
+- **Rewards:**
+  - Win counter (`winCount`).
+  - Game hat at 30 wins (`HAT_ORDER`, `HAT_GAME_NOTE`, `HAT_GAME_NAME`).
+  - Game pet at 1 in 300 per win (`MG_PET_GAMES`, `PETS[g]`), with a bonus that only works while it is the pet following you.
+  - Achievements in `ACH_DEFS`.
+- **No softlocks.** Every required item must be reachable before its lock and must be the right kind. Run a bot over many seeds to prove it.
+- **Mobile is the main platform:**
+  - Add the mode to the `tc` touch controls (`tcTick`, `tcKeys`, `tcAct`).
+  - Add the mode to the `.tc.<mode> .tc-btn` CSS, or the attack button won't show.
+  - Check the layout against the HUD at phone width.
+- **Sounds:** wrap the game's functions in the `sfx` section near the end of the file. Existing names: click, coin, levelup, ach, pet, swing, zap, hit, hurt, boom, win, lose, wave, build, fossil, and others.
+- **Serbian:** every new English string goes into `sr2.py`/`sr3.py`. The game file embeds the dictionary, so a `rep()` on English text can match twice. Update the i18n file first, then patch.
+
+### New-minigame checklist (hard-coded lists)
+A new game key must be added to every one of these lists, or something quietly breaks:
+- **Island cleaner:** the `lvWon` list, the `surv` list and the win fields.
+- **Building:** `BUILD_LIMIT`, `COST` and the games category list.
+- **Opening the game:** `commandInteract`, plus the `busy`/`arenaOpen` checks.
+- **"Is a minigame open" checks:** the frame loop, WASD, `coopStart`, `ssOpen`, `cnOpen`, `thOpen`, `enterArea` and visits.
+  - Do **not** add the new game's own flag to its own co-op start check.
+- **Stats and visits:** leaderboards (`lbStats` wins and survival, `lbCats`), `shareIsland` (visit data) and `friendView`.
+- **cloud.js:**
+  - `PT_TITLE`
+  - `md` normalization
+  - the building check map `B`
+  - the invite popup text, including the Survival text when `lv === 4`
+  - `lbFmt` survival unit
+- **Other:** `leaveSure`, `tcTick`, `tcKeys` and `tcAct`.
+- **Co-op hooks:** `coopStart` dispatches on `md`. The game needs snap/out/in/apply functions, the seed passed as `am`, a guest guard after the link closes, and end/lose sent in the snapshot.
+- `ACH_GAMES` is unused, so don't rely on it.
+
+### Known traps
+- `dfLevelMult` exists but is **unused**: pal level doesn't scale damage. Only upgrades (dmg/spd/crit with `EL_CAPS`) do.
+- There are two `dfDrawFoe` definitions. The later override is the live one.
+- Long Python patches break in bash heredocs. Write them to a file. Make `rep()` assert counts and abort before writing.
+- Multi-browser tests: invite every player first, then accept, or the first accept auto-starts the game.
+- Bot stalls in tests are often caused by running tests in parallel. Rerun the test alone first.
+
 ## Content rule
 
 Pals and art must be **original designs**: no characters from Skylanders, Spyro or other franchises, and no look-alikes.

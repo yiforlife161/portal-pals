@@ -862,7 +862,7 @@ function lbNow(){ try { return (G().lbStats && G().lbStats()) || {}; } catch (e)
 const LB = { box: null, cat: 'lv' };
 function lbFmt(c, v){
   if (c.kind === 'skill') return 'Lv ' + G().skillLevel(v) + '<small>' + Number(v || 0).toLocaleString() + ' xp</small>';
-  if (c.kind === 'surv') return (v || 0) + (c.k === 's_dig' ? ' islands' : c.k === 's_raid' ? ' bosses' : ' waves');
+  if (c.kind === 'surv') return (v || 0) + (c.k === 's_dig' ? ' islands' : c.k === 's_raid' ? ' bosses' : c.k === 's_quest' ? ' levels' : ' waves');
   if (c.kind === 'hunts') return (v || 0).toLocaleString() + ' hunts';
   if (c.kind === 'wins') return (v || 0).toLocaleString() + ' wins';
   return (v || 0).toLocaleString();

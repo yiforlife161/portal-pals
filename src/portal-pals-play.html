@@ -8326,14 +8326,14 @@ function quHostTick(dt){
       if (it.k === 'food'){
         if (it.drop > 0 || d > 30) return;
         var amt = Math.round(p.maxhp * (it.heal || 0.2)), got = Math.max(0, Math.round(Math.min(amt, p.maxhp - p.hp)));
-        p.hp = Math.min(p.maxhp, p.hp + amt); L.items.splice(L.items.indexOf(it), 1);
+        p.hp = Math.min(p.maxhp, p.hp + amt); L.items.splice(L.items.indexOf(it), 1); if (p.me) sfx('pet');
         quFx({ k: 'txt', x: it.x, y: it.y - 40, t: 0.8, T: 0.8, s: got > 0 ? '+' + got + ' HP' : 'Full HP', c: '#2fbf6a' });
         quFx({ k: 'ring', x: it.x, y: it.y, t: 0.4, T: 0.4, c: '#7affc4' });
         return;
       }
       if (held && held.k === it.k) return;
       if (held){ held.by = -1; held.x = it.x; held.y = it.y; held.noP = p.slot; }      /* swap: what you held is left where the new one lay */
-      it.by = p.slot; p.carry = it.id; held = it;
+      it.by = p.slot; p.carry = it.id; held = it; if (p.me) sfx('click');
       quFx({ k: 'txt', x: p.x, y: p.y - 100, t: 1.2, T: 1.2, s: it.k === 'key' ? 'Got a key!' : 'Got a bomb!', c: '#ffd23e' });
     });
     if (p.carry){
@@ -8341,7 +8341,7 @@ function quHostTick(dt){
       if (it2){ it2.x = p.x; it2.y = p.y; L.br.forEach(function(b){
         if (!p.carry || b.st !== 0 || b.fuse > 0 || b.lock !== (it2.k === 'key' ? 'gate' : 'wall') || Math.hypot(b.mx - p.x, b.my - p.y) > 105) return;
         L.items.splice(L.items.indexOf(it2), 1); p.carry = '';
-        if (b.lock === 'gate'){ b.st = 1; quFx({ k: 'ring', x: b.mx, y: b.my - 30, t: 0.6, T: 0.6, c: '#ffd23e' }); quFx({ k: 'txt', x: b.mx, y: b.my - 110, t: 1.4, T: 1.4, s: 'Gate open!', c: '#ffd23e' }); }
+        if (b.lock === 'gate'){ sfx('build'); b.st = 1; quFx({ k: 'ring', x: b.mx, y: b.my - 30, t: 0.6, T: 0.6, c: '#ffd23e' }); quFx({ k: 'txt', x: b.mx, y: b.my - 110, t: 1.4, T: 1.4, s: 'Gate open!', c: '#ffd23e' }); }
         else { b.fuse = 1.5; quFx({ k: 'txt', x: b.mx, y: b.my - 110, t: 1.2, T: 1.2, s: 'Stand back!', c: '#ff9a5a' }); }
       }); }
     }
@@ -8353,7 +8353,7 @@ function quHostTick(dt){
     if (!(b.fuse > 0)) return;
     b.fuse -= dt;
     if (b.fuse <= 0){
-      b.fuse = 0; b.st = 1;
+      b.fuse = 0; b.st = 1; sfx('boom');
       quFx({ k: 'boom', x: b.mx, y: b.my - 20, t: 0.8, T: 0.8 });
       L.foes.slice().forEach(function(f){ if (Math.hypot(f.x - b.mx, f.y - b.my) < 190) quHitFoe(f, { dmg: 250, crit: 0, slot: -1, x: b.mx, y: b.my }); });
     }
@@ -12034,6 +12034,14 @@ function sndMusicTick(){
   cnWin = wrap(cnWin, function(){ sfx('win'); });
   cnLose = wrap(cnLose, function(){ sfx('lose'); });
   ssPlace = wrap(ssPlace, function(){ sfx('stone'); }, function(r){ if (r > 0) setTimeout(function(){ sfx('flip'); }, 120); });
+  quTryAttack = wrap(quTryAttack, function(){ var p = qu.hero; quTryAttack.ready = !!(p && qu.phase === 'play' && !(p.ko > 0) && !(p.cool > 0)); }, function(){ if (quTryAttack.ready) sfx(qu.hero.ranged ? 'zap' : 'swing'); });
+  quHitFoe = wrap(quHitFoe, function(f, p){ if (p && (p.me || p.mate || p.slot === -1)) sfx(f.hp - (p.dmg || 0) <= 0 ? 'boom' : 'hit'); });
+  quHurtPal = wrap(quHurtPal, function(p){ if (p && p.me && !(p.ko > 0)) sfx('hurt'); });
+  quChestReward = wrap(quChestReward, function(){ quChestReward.n0 = qu.found.length; }, function(){ sfx(qu.found.length > quChestReward.n0 ? 'fossil' : 'coin'); });
+  quFinish = wrap(quFinish, function(won){ if (qu.phase !== 'end') sfx(won ? 'win' : 'lose'); });
+  quSurvClear = wrap(quSurvClear, function(){ sfx('win'); });
+  quSurvNext = wrap(quSurvNext, function(){ sfx('wave'); });
+  quSurvClaim = wrap(quSurvClaim, function(leaving){ if (!leaving) sfx(qu.won === false && qu.loseWhy ? 'lose' : 'coin'); });
   thResolve = wrap(thResolve, null, function(){ var s = th.spots, last = null; for (var i = 0; i < s.length; i++) if (s[i].dug) last = s[i]; sfx('dig'); setTimeout(function(){ sfx(last && last.res === 'fossil' ? 'fossil' : last && last.res === 'coins' ? 'coin' : 'nothing'); }, 150); });
   document.addEventListener('click', function(ev){ var b = ev.target.closest && ev.target.closest('button'); if (b && !b.disabled) sfx('click'); }, true);
 })();
@@ -12048,7 +12056,7 @@ window.ppGame = {
   closeRight: function(){ openPanel('', 'r'); },
   /* what friends see when they visit: the islands, their buildings and decorations */
   shareIsland: function(){ var I = state.island; return { wv: I.wv || 9, items: I.items.filter(function(it){ return !ITEMS[it.type].mine; }), places: I.places, bridges: I.bridges, worldName: I.worldName || '', time: I.time,
-    ach: I.ach, st: I.st, thRuns: I.thRuns, pets: I.pets, fossils: I.fossils, fosN: I.fosN, stones: I.stones, deck: I.deck, lvWon: I.lvWon, surv: I.surv, skills: I.skills, cannonWins: I.cannonWins, defWins: I.defWins, arenaWins: I.arenaWins, raidWins: I.raidWins }; },
+    ach: I.ach, st: I.st, thRuns: I.thRuns, pets: I.pets, fossils: I.fossils, fosN: I.fosN, stones: I.stones, deck: I.deck, lvWon: I.lvWon, surv: I.surv, skills: I.skills, cannonWins: I.cannonWins, defWins: I.defWins, arenaWins: I.arenaWins, raidWins: I.raidWins, questWins: I.questWins, golds: I.golds, goldN: I.goldN }; },
   visiting: function(){ return VISIT ? VISIT.name : ''; },
   ssDeck: function(){ return ssDeck().slice(); },
   hasBuilding: function(type){ var I = VISIT ? VISIT.home.island : state.island; return I.items.some(function(it){ return it.type === type; }); },
@@ -12061,15 +12069,15 @@ window.ppGame = {
       var I = state.island, tot = 0;
       SKILLS.forEach(function(sk){ var v = (I.skills || {})[sk.key] || { xp: 0, lv: 1 }; out['sk_' + sk.key] = Math.floor(v.xp || 0); tot += v.lv || 1; });
       out.lv = tot;
-      ['cannon', 'defense', 'arena', 'raid', 'stones', 'dig'].forEach(function(g){ out['w_' + g] = winCount(g); });
-      ['cannon', 'defense', 'arena', 'raid', 'dig'].forEach(function(g){ out['s_' + g] = survBest(g); });
+      ['cannon', 'defense', 'arena', 'raid', 'stones', 'dig', 'quest'].forEach(function(g){ out['w_' + g] = winCount(g); });
+      ['cannon', 'defense', 'arena', 'raid', 'dig', 'quest'].forEach(function(g){ out['s_' + g] = survBest(g); });
     } finally { state.island = keep; }
     return out;
   },
   lbCats: function(){
     return [{ k: 'lv', label: 'Total skill level', kind: 'lv' }].concat(SKILLS.map(function(sk){ return { k: 'sk_' + sk.key, label: sk.label, kind: 'skill' }; }))
-      .concat([['cannon', 'Sky Cannon'], ['defense', 'Guard Post'], ['arena', 'Battle Arena'], ['raid', 'Boss Raid'], ['stones', 'Starstones'], ['dig', 'Treasure Hunt']].map(function(x){ return { k: 'w_' + x[0], label: x[1], kind: x[0] === 'dig' ? 'hunts' : 'wins' }; }))
-      .concat([['cannon', 'Sky Cannon'], ['defense', 'Guard Post'], ['arena', 'Battle Arena'], ['raid', 'Boss Raid'], ['dig', 'Treasure Hunt']].map(function(x){ return { k: 's_' + x[0], label: x[1], kind: 'surv' }; }));
+      .concat([['cannon', 'Sky Cannon'], ['defense', 'Guard Post'], ['arena', 'Battle Arena'], ['raid', 'Boss Raid'], ['stones', 'Starstones'], ['dig', 'Treasure Hunt'], ['quest', 'Island Quest']].map(function(x){ return { k: 'w_' + x[0], label: x[1], kind: x[0] === 'dig' ? 'hunts' : 'wins' }; }))
+      .concat([['cannon', 'Sky Cannon'], ['defense', 'Guard Post'], ['arena', 'Battle Arena'], ['raid', 'Boss Raid'], ['dig', 'Treasure Hunt'], ['quest', 'Island Quest']].map(function(x){ return { k: 's_' + x[0], label: x[1], kind: 'surv' }; }));
   },
   skillLevel: function(xp){ return levelForXp(xp || 0); },
   coopStart: coopStart, coopSnap: coopSnap, coopInput: coopInput, coopOut: coopOut, coopApply: coopApply,
