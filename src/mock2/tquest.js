@@ -35,14 +35,16 @@ console.log('B pop:',await P[1].evaluate(()=>document.querySelector('.pv-pop').i
 for(let i=2;i<N;i++){ await A.click('#pt-more');await A.waitForTimeout(200);await A.click('[data-pt-inv]');await A.waitForTimeout(1000); }
 for(let i=1;i<N;i++){ await P[i].click('#pv-acc');await P[i].waitForTimeout(1500); }
 await A.waitForTimeout(4000);
-const st=pg=>pg.evaluate(()=>{const q=window.__qu,C=q.coop;if(!q.hero)return {open:q.open,ph:q.phase,coop:!!C,pop:(document.querySelector('.pv-pop')||{}).innerText};return {ph:q.phase,role:C&&C.role,slot:C&&C.slot,lv:q.lv,isl:q.L.N,me:[Math.round(q.hero.x),Math.round(q.hero.y)],mates:q.P.filter(p=>p.mate).map(p=>p.name+'@'+Math.round(p.x)),foes:q.L.foes.length,open:q.L.br.filter(b=>b.lock&&b.st).length+'/'+q.L.br.filter(b=>b.lock).length,ch:q.L.chests.map(c=>c.op).join(''),kills:q.kills,coins:q.coins};});
+const st=pg=>pg.evaluate(()=>{const q=window.__qu,C=q.coop;if(!q.hero)return {open:q.open,ph:q.phase,coop:!!C,pop:(document.querySelector('.pv-pop')||{}).innerText};return {ph:q.phase,role:C&&C.role,slot:C&&C.slot,lv:q.lv,isl:q.L.N,me:[Math.round(q.hero.x),Math.round(q.hero.y)],mates:q.P.filter(p=>p.mate).map(p=>p.name+'@'+Math.round(p.x)),foes:q.L.foes.length,open:q.L.br.filter(b=>b.lock&&b.st).length+'/'+q.L.br.filter(b=>b.lock).length,ch:q.L.chests.map(c=>c.op).join(''),kills:q.kills,coins:q.coins,kos:q.kos,hp:Math.round(q.hero.hp)+'/'+q.hero.maxhp+(q.hero.ko>0?'KO':''),at:window.__quIslAt(q.hero.x,q.hero.y)};});
 for(const p of P) console.log(JSON.stringify(await st(p)));
 console.log('same level:',new Set(await Promise.all(P.map(p=>p.evaluate(()=>JSON.stringify(window.__qu.L.isl.map(i=>[Math.round(i.x),Math.round(i.y)])))))).size===1);
 await Promise.all(P.map(p=>p.evaluate(()=>window.__qbot())));
-for(let t=0;t<180;t+=10){ await A.waitForTimeout(10000); const s=await Promise.all(P.map(st)); console.log(t+10,s.map(x=>x.ph+' '+x.open+' ch'+x.ch+' k'+x.kills+' foes'+x.foes).join(' | ')); if(s.every(x=>x.ph==='end')) break; }
+await P[1].evaluate(()=>{window.__warnSeen=0;window.__fbSeen=0;setInterval(()=>{const q=window.__qu;if(q.L.foes.some(f=>f.wind>0))window.__warnSeen++;if((q.esh||[]).length)window.__fbSeen++;},100);});
+for(let t=0;t<(+process.env.SECS||240);t+=10){ await A.waitForTimeout(10000); const s=await Promise.all(P.map(st)); console.log(t+10,s.map(x=>x.ph+' '+x.open+' ch'+x.ch+' k'+x.kills+' foes'+x.foes+' me'+x.me+' ko'+x.kos+' hp'+x.hp+' isl'+x.at).join(' | ')); if(s.every(x=>x.ph==='end')) break; }
 await A.screenshot({path:path.join(__dirname,'qco1.png')});await P[1].screenshot({path:path.join(__dirname,'qco2.png')});
 const g1=await Promise.all(P.map(p=>p.evaluate(()=>window.__st.island.gold)));
 console.log('gold gained',g1.map((g,i)=>g-g0[i]).join(' '),'wins',(await Promise.all(P.map(p=>p.evaluate(()=>window.__st.island.questWins)))).join(' '),'found',(await Promise.all(P.map(p=>p.evaluate(()=>window.__qu.found.join(','))))).join(' | '));
 await A.waitForTimeout(5000);
+console.log('guest saw warnings',await P[1].evaluate(()=>window.__warnSeen),'fireballs',await P[1].evaluate(()=>window.__fbSeen));
 console.log('links closed:',(await Promise.all(P.map(p=>p.evaluate(()=>!window.__qu.coop)))).join(' '));
 await b.close();})();
