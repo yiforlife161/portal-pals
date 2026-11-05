@@ -3585,6 +3585,7 @@ function frame(ts){
   lastTs = ts;
   if (state.tab !== 'island' || document.hidden || !stage.clientWidth || cn.open || df.open || th.open || qu.open || ss.open) return;
   if (heroEl) moveHero(dt);
+  petTick(dt);
   if (SKP.coop) skpFrame(dt);
   followCam(dt);
   updateFocus();
@@ -10055,7 +10056,18 @@ function petArea(){
   Object.keys(AREAS).forEach(function(k){ if (inIsleIn(REALM_DEFS.skill.isles, AREAS[k].isle, I.hx, I.hy, 1.15)) best = k; });
   return best;
 }
-function petTick(){
+/* a pet eases after its owner every frame and stays on a short leash, so it never falls far behind and never has to jump
+   (only a real teleport, like going through a gate, moves it straight to you) */
+function petStep(pos, tx, ty, dt, ox, oy){
+  var dx = tx - pos.x, dy = ty - pos.y, d = Math.hypot(dx, dy);
+  if (d > 40){ pos.x = tx; pos.y = ty; return 0; }
+  var k = 1 - Math.exp(-dt * 6);
+  pos.x += dx * k; pos.y += dy * k;
+  var ex = pos.x - ox, ey = (pos.y - oy) * 1.6, e = Math.hypot(ex, ey);      /* the leash is measured from the owner, so turning around doesn't yank the pet */
+  if (e > 8){ pos.x = ox + ex / e * 8; pos.y = oy + ey / e * 8 / 1.6; }
+  return d;
+}
+function petTick(dt){
   var area = petArea(), pm = state.island && state.island.petMain && hasPet(state.island.petMain) ? state.island.petMain : '';
   var want = VISIT || !heroEl ? '' : pm;
   if (!want){ if (petEl){ petEl.remove(); petEl = null; } return; }
@@ -10066,15 +10078,12 @@ function petTick(){
   }
   var I = state.island, f = hero.face || 1, tx = I.hx - f * 3.4, ty = I.hy + 0.9;
   if (!petPos) petPos = { x: tx, y: ty };
-  var dx = tx - petPos.x, dy = ty - petPos.y, d = Math.hypot(dx, dy);
-  if (d > 14){ petPos.x = tx; petPos.y = ty; }
-  else if (d > 0.4){ petPos.x += dx * 0.12; petPos.y += dy * 0.12; }
+  var dx = tx - petPos.x, d = petStep(petPos, tx, ty, dt || 0, I.hx, I.hy);
   petEl.classList.toggle('walk', d > 0.8);
   if (dx < -0.2 || dx > 0.2) petEl.dataset.dir = dx < 0 ? -1 : 1;
   petEl.style.setProperty('--pf', petFlip(petEl.dataset.area, +(petEl.dataset.dir || 1)));
   placeToken(petEl, petPos.x, petPos.y);
 }
-setInterval(petTick, 50);
 
 /* ---------- the work areas (mine, forest) ---------- */
 var AREAS = {
@@ -10480,7 +10489,7 @@ function skpFrame(dt){
     m.x += (m.tx - m.x) * k; m.y += (m.ty - m.y) * k;
     placeToken(el, m.x, m.y);
     el.style.setProperty('--f', m.f);
-    skpMatePet(m);
+    skpMatePet(m, dt);
     if (el.classList.contains('walking') !== !!m.w) el.classList.toggle('walking', !!m.w);
     var tool = m.m ? m.m + '|' + m.tc : '';
     if (el.dataset.tool !== tool){
@@ -10499,7 +10508,7 @@ function skpFrame(dt){
   });
 }
 /* a friend's pet follows their pal, the same way mine follows me */
-function skpMatePet(m){
+function skpMatePet(m, dt){
   if (!m.pk){ if (m.pel){ m.pel.remove(); m.pel = null; } return; }
   if (!m.pel || m.pel.dataset.area !== m.pk || m.pel.parentNode !== layer){
     if (m.pel) m.pel.remove();
@@ -10508,8 +10517,7 @@ function skpMatePet(m){
   }
   var tx = m.x - (m.f || 1) * 3.4, ty = m.y + 0.9;
   if (!m.ppos) m.ppos = { x: tx, y: ty };
-  var dx = tx - m.ppos.x, dy = ty - m.ppos.y, d = Math.hypot(dx, dy);
-  if (d > 14){ m.ppos.x = tx; m.ppos.y = ty; } else if (d > 0.4){ m.ppos.x += dx * 0.12; m.ppos.y += dy * 0.12; }
+  var dx = tx - m.ppos.x, d = petStep(m.ppos, tx, ty, dt || 0, m.x, m.y);
   m.pel.classList.toggle('walk', d > 0.8);
   if (dx < -0.2 || dx > 0.2) m.pel.dataset.dir = dx < 0 ? -1 : 1;
   m.pel.style.setProperty('--pf', petFlip(m.pk, +(m.pel.dataset.dir || 1)));
