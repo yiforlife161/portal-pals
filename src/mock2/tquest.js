@@ -35,13 +35,22 @@ console.log('B pop:',await P[1].evaluate(()=>document.querySelector('.pv-pop').i
 for(let i=2;i<N;i++){ await A.click('#pt-more');await A.waitForTimeout(200);await A.click('[data-pt-inv]');await A.waitForTimeout(1000); }
 for(let i=1;i<N;i++){ await P[i].click('#pv-acc');await P[i].waitForTimeout(1500); }
 await A.waitForTimeout(4000);
-const st=pg=>pg.evaluate(()=>{const q=window.__qu,C=q.coop;if(!q.hero)return {open:q.open,ph:q.phase,coop:!!C,pop:(document.querySelector('.pv-pop')||{}).innerText};return {ph:q.phase,role:C&&C.role,slot:C&&C.slot,lv:q.lv,isl:q.L.N,me:[Math.round(q.hero.x),Math.round(q.hero.y)],mates:q.P.filter(p=>p.mate).map(p=>p.name+'@'+Math.round(p.x)),foes:q.L.foes.length,open:q.L.br.filter(b=>b.lock&&b.st).length+'/'+q.L.br.filter(b=>b.lock).length,ch:q.L.chests.map(c=>c.op).join(''),kills:q.kills,coins:q.coins,kos:q.kos,hp:Math.round(q.hero.hp)+'/'+q.hero.maxhp+(q.hero.ko>0?'KO':''),at:window.__quIslAt(q.hero.x,q.hero.y)};});
+const st=pg=>pg.evaluate(()=>{const q=window.__qu,C=q.coop;window.__sn=q.surv?q.surv.n:0;if(!q.hero)return {open:q.open,ph:q.phase,coop:!!C,pop:(document.querySelector('.pv-pop')||{}).innerText};return {ph:q.phase,role:C&&C.role,slot:C&&C.slot,lv:q.lv,isl:q.L.N,me:[Math.round(q.hero.x),Math.round(q.hero.y)],mates:q.P.filter(p=>p.mate).map(p=>p.name+'@'+Math.round(p.x)),foes:q.L.foes.length,open:q.L.br.filter(b=>b.lock&&b.st).length+'/'+q.L.br.filter(b=>b.lock).length,ch:q.L.chests.map(c=>c.op).join(''),kills:q.kills,coins:q.coins,sn:q.surv?q.surv.n:0,kos:q.kos,hp:Math.round(q.hero.hp)+'/'+q.hero.maxhp+(q.hero.ko>0?'KO':''),at:window.__quIslAt(q.hero.x,q.hero.y)};});
 for(const p of P) console.log(JSON.stringify(await st(p)));
 console.log('same level:',new Set(await Promise.all(P.map(p=>p.evaluate(()=>JSON.stringify(window.__qu.L.isl.map(i=>[Math.round(i.x),Math.round(i.y)])))))).size===1);
+if(process.env.ALLDOWN){
+  await A.evaluate(()=>{const q=window.__qu,b=q.P.find(p=>p.mate);window.__quHurt(b,b.maxhp+5);});await A.waitForTimeout(1500);
+  console.log('one down: host',await A.evaluate(()=>window.__qu.phase),'| guest ko',await P[1].evaluate(()=>window.__qu.hero.ko.toFixed(1)));
+  await A.waitForTimeout(8500);console.log('after 8 s guest back up:',await P[1].evaluate(()=>!(window.__qu.hero.ko>0)&&window.__qu.hero.hp===window.__qu.hero.maxhp));
+  await A.evaluate(()=>{window.__qu.P.forEach(p=>window.__quHurt(p,p.maxhp+5));});await A.waitForTimeout(5000);
+  for(const p of P) console.log('all down:',await p.evaluate(()=>{const pn=document.getElementById('qu-panel');return window.__qu.phase+' | '+(pn.hidden?'':pn.querySelector('h2').innerText+' | '+pn.querySelector('p').innerText);}));
+  await b.close();return;
+}
 await Promise.all(P.map(p=>p.evaluate(()=>window.__qbot())));
 await P[1].evaluate(()=>{window.__warnSeen=0;window.__fbSeen=0;window.__foodSeen={};setInterval(()=>{const q=window.__qu;if(q.L.foes.some(f=>f.wind>0))window.__warnSeen++;if((q.esh||[]).length)window.__fbSeen++;q.L.items.forEach(i=>{if(i.k==='food')window.__foodSeen[i.fk]=1;});},100);});
-for(let t=0;t<(+process.env.SECS||240);t+=10){ await A.waitForTimeout(10000); const s=await Promise.all(P.map(st)); console.log(t+10,s.map(x=>x.ph+' '+x.open+' ch'+x.ch+' k'+x.kills+' foes'+x.foes+' me'+x.me+' ko'+x.kos+' hp'+x.hp+' isl'+x.at).join(' | ')); if(s.every(x=>x.ph==='end')) break; }
+for(let t=0;t<(+process.env.SECS||240);t+=10){ await A.waitForTimeout(10000); const s=await Promise.all(P.map(st)); console.log(t+10,s.map(x=>'L'+x.sn+' '+x.ph+' '+x.open+' ch'+x.ch+' k'+x.kills+' foes'+x.foes+' me'+x.me+' ko'+x.kos+' hp'+x.hp+' isl'+x.at).join(' | ')); if(s.every(x=>x.ph==='end')) break; }
 await A.screenshot({path:path.join(__dirname,'qco1.png')});await P[1].screenshot({path:path.join(__dirname,'qco2.png')});
+if(process.env.CLAIM){ await A.click('#qu-claim'); await A.waitForTimeout(7000); for(const p of P) console.log('after host claims:',await p.evaluate(()=>{const q=window.__qu,pn=document.getElementById('qu-panel');return q.phase+' | '+(pn.hidden?'':pn.querySelector('h2').innerText+' | '+pn.querySelector('p').innerText);})); }
 const g1=await Promise.all(P.map(p=>p.evaluate(()=>window.__st.island.gold)));
 console.log('gold gained',g1.map((g,i)=>g-g0[i]).join(' '),'wins',(await Promise.all(P.map(p=>p.evaluate(()=>window.__st.island.questWins)))).join(' '),'found',(await Promise.all(P.map(p=>p.evaluate(()=>window.__qu.found.join(','))))).join(' | '));
 await A.waitForTimeout(5000);

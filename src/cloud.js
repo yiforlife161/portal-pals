@@ -489,7 +489,7 @@ function pvInvites(list){
   if ((PV.mid && PV.started && !PV.ended) || (CO.key && G().coopRole()) || (PT.on && !PT.started)) return;      /* already playing or waiting in a co-op lobby (a finished co-op game does not count) */
   PV.inv = inv;
   const AM = { classic: 'Classic', fire: 'Fire Pit', blades: 'Blade Ring' };
-  if (inv.game === 'arena' && inv.md === 'quest') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to an Island Quest!</b><small>Co-op · Level ' + (inv.lv || 1) + '. Carry keys and bombs, open the chests, reach the flag together.</small>' +
+  if (inv.game === 'arena' && inv.md === 'quest') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to an Island Quest!</b><small>' + (inv.lv === 4 ? 'Co-op survival · level after level, stop when you like.' : 'Co-op · Level ' + (inv.lv || 1) + '. Carry keys and bombs, open the chests, reach the flag together.') + '</small>' +
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
   else if (inv.game === 'arena' && inv.md === 'skill') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to skill together!</b><small>Join their skilling islands. You share the trees and rocks, and you keep everything you gather.</small>' +
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
