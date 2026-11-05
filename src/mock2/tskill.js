@@ -41,7 +41,10 @@ for(let i=0;i<40;i++){await B.waitForTimeout(250);if(await B.evaluate(()=>!!(win
 console.log('layout arrived after accept (ms, with lobby):',await B.evaluate(()=>window.__skp.coop?'yes':'no'));await B.waitForTimeout(600);
 const st=pg=>pg.evaluate(()=>{const C=window.__skp.coop;return C?{role:C.role,mates:Object.values(C.mates).map(m=>m.name+(m.x!==null?' @'+m.x.toFixed(0)+','+m.y.toFixed(0):' ?')),realm:window.__st.island.realm,mateEls:document.querySelectorAll('.token.mate').length,bar:document.getElementById('skpbar').innerText.replace(/\n/g,' ')}:null;});
 console.log('A',JSON.stringify(await st(A)));console.log('B',JSON.stringify(await st(B)));
-{const ta=(await trees(A)).split(','),tb=(await trees(B)).split(',');console.log('B took A\'s trees:',ta.join()===tb.join(),'A',ta.length,'B',tb.length,'onlyA',ta.filter(x=>!tb.includes(x)).length,'onlyB',tb.filter(x=>!ta.includes(x)).length);
+{const ta=(await trees(A)).split(','),tb=(await trees(B)).split(',');await A.evaluate(()=>{const I=window.__st.island;I.pets=Object.assign({},I.pets,{forest:Date.now()});I.petMain='forest';});await B.evaluate(()=>{const I=window.__st.island;I.pets=Object.assign({},I.pets,{grave:Date.now()});I.petMain='grave';});await A.waitForTimeout(1500);
+console.log('B sees A\'s pet:',await B.evaluate(()=>[...document.querySelectorAll('.pet.matepet')].map(e=>e.dataset.area).join()),'| A sees B\'s pet:',await A.evaluate(()=>[...document.querySelectorAll('.pet.matepet')].map(e=>e.dataset.area).join()));
+await B.screenshot({path:path.join(__dirname,'skpet.png')});
+console.log('B took A\'s trees:',ta.join()===tb.join(),'A',ta.length,'B',tb.length,'onlyA',ta.filter(x=>!tb.includes(x)).length,'onlyB',tb.filter(x=>!ta.includes(x)).length);
 0&&console.log('onlyA types',await A.evaluate(ids=>window.__st.island.items.filter(i=>ids.includes(i.id)).map(i=>i.type+(window.__ITEMS[i.type].mine?'':'?')).join(' '),ta.filter(x=>!tb.includes(x))));}
 // A chops a tree; B should see the same tree's timer start
 const t1=await A.evaluate(()=>{const H=window.__st.island;const L=H.items.filter(i=>window.__isNode(i,'forest')&&i.type==='treenormal'||window.__isNode(i,'forest')&&/tree/.test(i.type)).sort((p,q)=>Math.hypot(p.x-H.hx,p.y-H.hy)-Math.hypot(q.x-H.hx,q.y-H.hy));const t=L.find(i=>window.__ITEMS[i.type].mine.lv<=1||!window.__ITEMS[i.type].mine.lv);window.__cmdI(t.id);return t.id;});
@@ -62,6 +65,6 @@ await A.waitForTimeout(30000);
 console.log('tree 1 after its 40s: A',JSON.stringify(await node(A,t1)),'B',JSON.stringify(await node(B,t1)));
 // B leaves
 await B.click('[data-action=skp-leave]');await B.waitForTimeout(3000);
-console.log('after B leaves: A',JSON.stringify(await st(A)),'B',JSON.stringify(await st(B)));
+console.log('pets left behind:',await A.evaluate(()=>document.querySelectorAll('.pet.matepet').length),await B.evaluate(()=>document.querySelectorAll('.pet.matepet').length));console.log('after B leaves: A',JSON.stringify(await st(A)),'B',JSON.stringify(await st(B)));
 console.log('A flash:',await A.evaluate(()=>{const f=document.querySelector('.flash,#flash');return f?f.innerText:'';}));
 await b.close();})();

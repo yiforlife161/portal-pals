@@ -8497,7 +8497,7 @@ function skpCoopStart(o){
 function skpMe(){
   var isl = state.island, area = '', col = '';
   if (mining && mining.id){ var it = findItem(mining.id); if (it && ITEMS[it.type].mine){ area = ITEMS[it.type].mine.area || 'mine'; var pk = pkDef(toolsOf(area).eq); col = pk ? pk.col : ''; } }
-  return [coopNum(isl.hx), coopNum(isl.hy), hero.face, heroEl && heroEl.classList.contains('walking') ? 1 : 0, area, col];
+  return [coopNum(isl.hx), coopNum(isl.hy), hero.face, heroEl && heroEl.classList.contains('walking') ? 1 : 0, area, col, isl.petMain && hasPet(isl.petMain) ? isl.petMain : ''];
 }
 /* host: me, every friend, and the shared trees and rocks */
 function skpSnap(){
@@ -8506,8 +8506,8 @@ function skpSnap(){
   if (C.endAt) return { sk: 1, end: 1, t: now };
   if (now - C.sendT < SKP_RATE) return null;
   C.sendT = now;
-  var P = [[0].concat(skpMe(), [C.actN, C.sayN, C.say || ''])];
-  Object.keys(C.mates).forEach(function(k){ var m = C.mates[k]; if (m.x !== null) P.push([m.slot, coopNum(m.tx), coopNum(m.ty), m.f, m.w, m.m || '', m.tc || '', m.a || 0, m.sayN || 0, m.say || '']); });
+  var me = skpMe(), P = [[0].concat(me.slice(0, 6), [C.actN, C.sayN, C.say || '', me[6]])];
+  Object.keys(C.mates).forEach(function(k){ var m = C.mates[k]; if (m.x !== null) P.push([m.slot, coopNum(m.tx), coopNum(m.ty), m.f, m.w, m.m || '', m.tc || '', m.a || 0, m.sayN || 0, m.say || '', m.pk || '']); });
   var N = [];
   state.island.items.forEach(function(i){
     if (!skpGather(i)) return;
@@ -8529,7 +8529,7 @@ function skpOut(){
   if (C.leaving) return { sk: 1, bye: 1, t: now };
   if (now - C.sendT < SKP_RATE) return null;
   C.sendT = now;
-  var me = skpMe(), o = { sk: 1, t: now, x: me[0], y: me[1], f: me[2], w: me[3], m: me[4], tc: me[5], a: C.actN, sn: C.sayN, say: C.say || '', hit: C.hitOut.slice(-8), nl: C.lsig ? 0 : 1 };      /* nl: I still need the host's trees */
+  var me = skpMe(), o = { sk: 1, t: now, x: me[0], y: me[1], f: me[2], w: me[3], m: me[4], tc: me[5], pk: me[6], a: C.actN, sn: C.sayN, say: C.say || '', hit: C.hitOut.slice(-8), nl: C.lsig ? 0 : 1 };      /* nl: I still need the host's trees */
   if (now - C.charT > 3000){ C.charT = now; o.c = window.ppGame.coopChar(); }
   return o;
 }
@@ -8541,6 +8541,7 @@ function skpIn(g, slot){
   if (g.bye){ skpDrop(slot, m.name + ' went home.'); return; }
   m.tx = +g.x; m.ty = +g.y; if (m.x === null){ m.x = m.tx; m.y = m.ty; }
   m.f = g.f === -1 ? -1 : 1; m.w = g.w ? 1 : 0; m.m = AREAS[g.m] ? g.m : ''; m.tc = typeof g.tc === 'string' ? g.tc.slice(0, 12) : '';
+  m.pk = PETS[g.pk] ? g.pk : '';
   m.a = +g.a || 0; if ((+g.sn || 0) > (m.sayN || 0)){ m.sayN = +g.sn; m.say = String(g.say || '').slice(0, 60); }
   if (g.c){ var ch = cleanChar(g.c); if (ch) m.c = ch; }
   (g.hit || []).forEach(function(h){
@@ -8564,7 +8565,7 @@ function skpApply(S){
     if (a[0] === C.slot) return;
     var m = C.mates[a[0]]; if (!m) return;
     m.tx = +a[1]; m.ty = +a[2]; if (m.x === null){ m.x = m.tx; m.y = m.ty; }
-    m.f = a[3] === -1 ? -1 : 1; m.w = a[4] ? 1 : 0; m.m = AREAS[a[5]] ? a[5] : ''; m.tc = a[6] || ''; m.a = +a[7] || 0;
+    m.f = a[3] === -1 ? -1 : 1; m.w = a[4] ? 1 : 0; m.m = AREAS[a[5]] ? a[5] : ''; m.tc = a[6] || ''; m.a = +a[7] || 0; m.pk = PETS[a[10]] ? a[10] : '';
     if ((+a[8] || 0) > (m.sayN || 0)){ m.sayN = +a[8]; m.say = String(a[9] || '').slice(0, 60); }
     m.lastIn = now;
   });
@@ -8613,12 +8614,13 @@ function skpFrame(dt){
   Object.keys(C.mates).forEach(function(key){
     var m = C.mates[key];
     if (C.role === 'host' && now - m.lastIn > SKP_LOST){ skpDrop(m.slot, 'Lost the connection to ' + m.name + '.'); return; }
-    if (realm !== 'skill' || !m.c || m.x === null || !EL[m.c.element]){ if (m.el){ m.el.remove(); m.el = null; } return; }
+    if (realm !== 'skill' || !m.c || m.x === null || !EL[m.c.element]){ skpMateGone(m); return; }
     var el = skpMateEl(m);
     if (Math.hypot(m.tx - m.x, m.ty - m.y) > 30){ m.x = m.tx; m.y = m.ty; }
     m.x += (m.tx - m.x) * k; m.y += (m.ty - m.y) * k;
     placeToken(el, m.x, m.y);
     el.style.setProperty('--f', m.f);
+    skpMatePet(m);
     if (el.classList.contains('walking') !== !!m.w) el.classList.toggle('walking', !!m.w);
     var tool = m.m ? m.m + '|' + m.tc : '';
     if (el.dataset.tool !== tool){
@@ -8636,6 +8638,24 @@ function skpFrame(dt){
     }
   });
 }
+/* a friend's pet follows their pal, the same way mine follows me */
+function skpMatePet(m){
+  if (!m.pk){ if (m.pel){ m.pel.remove(); m.pel = null; } return; }
+  if (!m.pel || m.pel.dataset.area !== m.pk || m.pel.parentNode !== layer){
+    if (m.pel) m.pel.remove();
+    m.pel = document.createElement('div'); m.pel.className = 'pet matepet'; m.pel.dataset.area = m.pk; m.pel.innerHTML = petSvg(m.pk);
+    layer.appendChild(m.pel); m.ppos = null;
+  }
+  var tx = m.x - (m.f || 1) * 3.4, ty = m.y + 0.9;
+  if (!m.ppos) m.ppos = { x: tx, y: ty };
+  var dx = tx - m.ppos.x, dy = ty - m.ppos.y, d = Math.hypot(dx, dy);
+  if (d > 14){ m.ppos.x = tx; m.ppos.y = ty; } else if (d > 0.4){ m.ppos.x += dx * 0.12; m.ppos.y += dy * 0.12; }
+  m.pel.classList.toggle('walk', d > 0.8);
+  if (dx < -0.2 || dx > 0.2) m.pel.dataset.dir = dx < 0 ? -1 : 1;
+  m.pel.style.setProperty('--pf', petFlip(m.pk, +(m.pel.dataset.dir || 1)));
+  placeToken(m.pel, m.ppos.x, m.ppos.y);
+}
+function skpMateGone(m){ if (m.el){ m.el.remove(); m.el = null; } if (m.pel){ m.pel.remove(); m.pel = null; } }
 function skpMateEl(m){
   var sig = palSig(m.c);
   if (m.el && m.el.parentNode === layer && m.el.dataset.sig === sig) return m.el;
@@ -8651,7 +8671,7 @@ function skpMateEl(m){
 /* a friend leaves: the others carry on, and the last one leaving ends it */
 function skpDrop(slot, msg){
   var C = SKP.coop, m = C && C.mates[slot]; if (!m) return;
-  if (m.el) m.el.remove();
+  skpMateGone(m);
   delete C.mates[slot];
   if (msg) flash(msg);
   if (!Object.keys(C.mates).length){ skpFinish(C.role === 'host' ? 'Everyone has gone home.' : ''); return; }
@@ -8660,13 +8680,13 @@ function skpDrop(slot, msg){
 function skpLeave(why){
   var C = SKP.coop; if (!C || C.leaving || C.endAt) return;
   if (C.role === 'host') C.endAt = Date.now(); else C.leaving = Date.now();
-  Object.keys(C.mates).forEach(function(k){ if (C.mates[k].el) C.mates[k].el.remove(); });
+  Object.keys(C.mates).forEach(function(k){ skpMateGone(C.mates[k]); });
   skpUi();
   flash(why || 'You stopped skilling together.');
 }
 function skpFinish(msg){
   var C = SKP.coop; if (!C) return;
-  Object.keys(C.mates).forEach(function(k){ if (C.mates[k].el) C.mates[k].el.remove(); });
+  Object.keys(C.mates).forEach(function(k){ skpMateGone(C.mates[k]); });
   SKP.coop = null;
   skpUi();
   if (msg) flash(msg);
