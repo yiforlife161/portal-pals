@@ -902,14 +902,14 @@ async function coopLink(key, role, slot, roster){
     CO.timer = setInterval(() => {
       if (!G().coopRole()){ if (++CO.idle > 30) coopStop(); return; }
       const snap = G().coopSnap(); if (snap) rt.set(rt.ref(rdb, base + '/h'), snap).catch(e => console.warn(e));
-    }, 50);      /* 20 pictures a second for the friends */
+    }, 40);      /* 25 pictures a second for the friends */
   } else {
     CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/h'), sn => { const v = sn.val(); if (v) G().coopApply(v, 0); }));
     if (PT.md === 'dig') mates.filter(m => m.slot !== 0).forEach(m => CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/' + coSlotPath(m.slot)), sn => { const v = sn.val(); if (v) G().coopApply(v, m.slot); })));      /* treasure hunters hear from everyone */
     CO.timer = setInterval(() => {
       if (!G().coopRole()){ if (++CO.idle > 10) coopStop(); return; }
       const o = G().coopOut(); if (o) rt.set(rt.ref(rdb, base + '/' + coSlotPath(slot)), o).catch(e => console.warn(e));
-    }, 66);
+    }, 40);      /* 25 a second from each guest */
   }
 }
 window.ppCoop = {
