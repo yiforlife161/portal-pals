@@ -189,6 +189,7 @@ SRT = {
 "§ hunts! Cape unlocked": "§ lovova! Ogrtač otključan",
 "Cape: § / §": "Ogrtač: § / §",
 "Win a minigame § times to unlock its cape (§ hunts in Treasure Hunt). Wear it for +25% gold and xp from that minigame. The Max Cape only needs the skill capes.": "Pobedi u mini-igri § puta da otključaš njen ogrtač (§ lovova u Lovu na blago). Nosi ga za +25% zlata i iskustva iz te mini-igre. Maks ogrtaču trebaju samo ogrtači veština.",
+"§ is choosing again.": "§ ponovo bira.",
 "Capes §/§": "Ogrtači §/§", "Level § / §": "Nivo § / §", "+2 §, +§ xp": "+2 §, +§ xp",
 "Wear it in Pal > Capes: §.": "Nosi ga (Drugar > Ogrtači): §.", "§ while you wear it.": "§ dok ga nosiš.",
 "Cape: an extra ore! §": "Ogrtač: dodatna ruda! §", "Cape: an extra fish! §": "Ogrtač: dodatna riba! §", "Cape: an extra log! §": "Ogrtač: dodatni trupac! §",

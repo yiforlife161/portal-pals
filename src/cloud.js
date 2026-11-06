@@ -646,8 +646,9 @@ async function trAccept(inv){
 function trWatch(){
   const mid = TR.mid, n = TR.n, A = TR.role === 'a';
   if (TR.unsub) TR.unsub();
-  TR.unsub = fs.onSnapshot(mref(mid), snap => {
+  TR.unsub = fs.onSnapshot(mref(mid), { includeMetadataChanges: true }, snap => {
     if (TR.mid !== mid || TR.n !== n) return;
+    const pend = !!(snap.metadata && snap.metadata.hasPendingWrites);      /* our own write not on the server yet */
     const d = snap.exists() ? snap.data() : null;
     if (!d || d.game !== 'trade' || d.n !== n){ if (!TR.applied) trEnd('The trade was called off.'); return; }
     TR.my = trList(A ? d.offA : d.offB); TR.their = trList(A ? d.offB : d.offA);
@@ -657,7 +658,7 @@ function trWatch(){
     if (d.st === 'declined'){ trEnd(TR.name + ' said no this time.'); return; }
     if (d.st === 'cancel'){ trEnd(d.by === me.uid ? '' : TR.name + ' called off the trade.'); return; }
     if (d.st === 'open' && TR.st === 'wait'){ TR.st = 'open'; TR.lastThem = Date.now(); }
-    if ((d.st === 'open' || d.st === 'done') && d.okA && d.okA === d.okB && d.okA === TR.sig){ trApply(d); return; }
+    if (!pend && (d.st === 'open' || d.st === 'done') && d.okA && d.okA === d.okB && d.okA === TR.sig){ trApply(d); return; }      /* swap only once the server has both Ready marks */
     trUi();
   }, e => console.warn(e));
 }

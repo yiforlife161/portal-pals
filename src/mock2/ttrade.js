@@ -9,7 +9,7 @@ async function player(b,uid,name){
   await ctx.route('https://www.gstatic.com/**',r=>{const f=r.request().url().split('/').pop().replace('firebase-','').replace('firestore','fs');return r.fulfill({body:fs.readFileSync(path.join(__dirname,f),'utf8'),contentType:'application/javascript'});});
   await ctx.exposeFunction('__db',(op,u,a)=>db(op,u,a));
   await ctx.exposeFunction('__rt',(op,p,v)=>rt(op,p,v));
-  await ctx.addInitScript(([uid,name])=>{localStorage.setItem('mock.want',JSON.stringify({uid,displayName:name}));},[uid,name]);
+  await ctx.addInitScript(([uid,name,lat])=>{localStorage.setItem('mock.want',JSON.stringify({uid,displayName:name}));localStorage.setItem('mock.fslat',lat);},[uid,name,process.env.FS_LAT||'0']);
   const pg=await ctx.newPage();
   pg.on('pageerror',e=>console.log(name,'ERR',e.message));
   await pg.goto('https://pp.test/');await pg.waitForTimeout(1200);
@@ -43,11 +43,12 @@ await A.click('[data-action=kt-add]');await A.click('[data-action=kt-give][data-
 await B.click('[data-action=kt-add]');await B.click('[data-action=kt-give][data-k="30"]');await B.click('[data-action=kt-pdone]');
 await A.waitForTimeout(1500);
 console.log('B sees:',await head(B));
-await A.click('[data-action=kt-ready]');await A.waitForTimeout(1200);
+await A.click('[data-action=kt-ready]');await A.click('[data-action=kt-ready]').catch(()=>{});await A.waitForTimeout(1500);
+console.log('A after a double tap on Ready:',await head(A));
 console.log('B after A ready:',await head(B));
 // B changes the offer: A's Ready must clear
 await B.click('[data-action=kt-add]');await B.click('[data-action=kt-give][data-k="30"]');await B.click('[data-action=kt-pdone]');await A.waitForTimeout(1500);
-console.log('A after B changed:',await A.evaluate(()=>document.querySelector('[data-action=kt-ready]').innerText),'| B sees A ready?',await B.evaluate(()=>!!document.querySelector('.kt-ok')));
+console.log('A after B changed:',await head(A),'| B sees A ready?',await B.evaluate(()=>!!document.querySelector('.kt-ok')));
 await A.click('[data-action=kt-ready]');await A.waitForTimeout(800);await B.click('[data-action=kt-ready]');await A.waitForTimeout(2500);
 console.log('A:',await head(A));console.log('B:',await head(B));
 console.log('A cards',await o(A),'| B cards',await o(B));
