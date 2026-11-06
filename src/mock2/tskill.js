@@ -67,4 +67,4 @@ console.log('tree 1 after its 40s: A',JSON.stringify(await node(A,t1)),'B',JSON.
 await B.click('[data-action=skp-leave]');await B.waitForTimeout(3000);
 console.log('pets left behind:',await A.evaluate(()=>document.querySelectorAll('.pet.matepet').length),await B.evaluate(()=>document.querySelectorAll('.pet.matepet').length));console.log('after B leaves: A',JSON.stringify(await st(A)),'B',JSON.stringify(await st(B)));
 console.log('A flash:',await A.evaluate(()=>{const f=document.querySelector('.flash,#flash');return f?f.innerText:'';}));
-await b.close();})();
+console.log('RATE',JSON.stringify(rt.rate()));await b.close();})();

@@ -56,4 +56,4 @@ console.log('gold gained',g1.map((g,i)=>g-g0[i]).join(' '),'wins',(await Promise
 await A.waitForTimeout(5000);
 console.log('guest saw warnings',await P[1].evaluate(()=>window.__warnSeen),'fireballs',await P[1].evaluate(()=>window.__fbSeen),'food',await P[1].evaluate(()=>Object.keys(window.__foodSeen).join(',')));
 console.log('links closed:',(await Promise.all(P.map(p=>p.evaluate(()=>!window.__qu.coop)))).join(' '));
-await b.close();})();
+console.log('RATE',JSON.stringify(rt.rate()));await b.close();})();

@@ -55,4 +55,4 @@ console.log('gold gained',g1.map((g,i)=>g-g0[i]).join(' '),'| wins gained',w1.ma
 for(const p of P) console.log('panel:',await p.evaluate(()=>{const pn=document.getElementById('cn-panel');return pn.hidden?'(none)':pn.querySelector('h2').innerText+' | '+pn.querySelector('.cn-stats').innerText.replace(/\n/g,' ');}),'| coop',await p.evaluate(()=>!!window.__cn.coop));
 await A.waitForTimeout(5000);
 console.log('links closed:',(await Promise.all(P.map(p=>p.evaluate(()=>!window.__cn.coop)))).join(' '));
-await b.close();})();
+console.log('RATE',JSON.stringify(rt.rate()));await b.close();})();

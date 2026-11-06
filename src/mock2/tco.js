@@ -58,6 +58,6 @@ console.log('A end',JSON.stringify(await st(A)), await A.evaluate(()=>document.g
 console.log('B end',JSON.stringify(await st(B)), await B.evaluate(()=>document.getElementById('df-panel').innerText.split('\n').slice(0,6).join(' | ')));
 console.log('gold gained A',(await gold(A))-g0[0],'B',(await gold(B))-g0[1]);
 console.log('xp A',await A.evaluate(()=>window.__st.chars[0].xp),'B',await B.evaluate(()=>window.__st.chars[0].xp));
-console.log('rt stats',JSON.stringify(rt.stats()));
+console.log('rt stats',JSON.stringify(rt.stats()));console.log('RATE',JSON.stringify(rt.rate()));
 await b.close();
 })();

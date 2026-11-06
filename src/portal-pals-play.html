@@ -4652,7 +4652,7 @@ function cnDamage(hit, by, px, py, el){
   if (hit.hp <= 0){
     cn.downed++; cn.totalDown++; cnKillPay(hit.tough, by);
     cnBurst(hit.x, hit.y, 'kill', true, el);
-    var C = cn.coop; if (C && C.role === 'host'){ C.kN++; C.kills.push([C.kN, hit.id, cnN(hit.nx), cnN(hit.ny), by, hit.tough ? 1 : 0]); if (C.kills.length > 40) C.kills.shift(); }      /* every kill stays in the next snapshots for a while, so nobody misses one */
+    var C = cn.coop; if (C && C.role === 'host'){ C.kN++; C.kills.push([C.kN, hit.id, cnN(hit.nx), cnN(hit.ny), by, hit.tough ? 1 : 0, Date.now()]); if (C.kills.length > 40) C.kills.shift(); }      /* every kill stays in the next snapshots for a while, so nobody misses one */
     var at = cn.ships.indexOf(hit); if (at >= 0) cn.ships.splice(at, 1);
     cnHud();
     if (cn.downed >= cn.need && cn.phase === 'play') cnWaveDone();
@@ -4723,7 +4723,7 @@ function cnUpdate(dt){
     if (hit){
       if (!sh.pet) cn.hits++;      /* the parrot's shots do not count toward your accuracy */
       if (guest){      /* the host decides; here the hit shows right away */
-        hit.flash = 0.15; C.hitN++; C.hitOut.push([C.hitN, hit.id]); if (C.hitOut.length > 10) C.hitOut.shift();
+        hit.flash = 0.15; C.hitN++; C.hitOut.push([C.hitN, hit.id, Date.now()]); if (C.hitOut.length > 10) C.hitOut.shift();
         cnBurst(sh.x, sh.y, 'hit', false, sh.el);
       } else cnDamage(hit, cnMySlot(), sh.x, sh.y, sh.el);
       cn.shots.splice(i, 1);
@@ -4812,10 +4812,12 @@ function cnCoopStop(){ if (!cn.coop) return; cn.coop = null; cnMatesDom(); if (w
 function cnCoopEnd(){ var C = cn.coop; if (!C) return; if (C.role === 'host'){ if (!C.endAt) C.endAt = Date.now(); } else { C.done = true; cnCoopStop(); } }
 function cnFxOut(o){ var C = cn.coop; if (C && C.role === 'host'){ C.fxOut.push(o); if (C.fxOut.length > 40) C.fxOut.shift(); } }
 function cnN(v){ return Math.round(v * 1e4) / 1e4; }
+/* data saver: only events from the last moment go out (each still goes out many times), without their timestamp */
+function cnRecent(list, ti, ms){ var now = Date.now(); return list.filter(function(e){ return now - e[ti] < ms; }).map(function(e){ return e.slice(0, ti); }); }
 function cnCoopFire(x, y, pet){
   var C = cn.coop; if (!C || C.done) return;
   C.fireN++;
-  var e = [C.fireN, cnN(x / cn.W), cnN(y / cn.H), pet ? 1 : 0];
+  var e = [C.fireN, cnN(x / cn.W), cnN(y / cn.H), pet ? 1 : 0, Date.now()];
   if (C.role === 'guest'){ C.fireOut.push(e); if (C.fireOut.length > 10) C.fireOut.shift(); }
   else { C.Fout.push([0].concat(e)); if (C.Fout.length > 16) C.Fout.shift(); }
 }
@@ -4890,17 +4892,17 @@ function cnSnap(){
     sh: cn.ships.map(function(s){ return [s.id, cnN(s.nx), cnN(s.ny), Math.round(s.nvx * 1e5) / 1e5, Math.round(s.ws), s.tough ? 1 : 0, s.hp, s.ci, s.out ? 1 : 0]; }),
     P: [[0, cnN(cn.aim.x / cn.W), cnN(cn.aim.y / cn.H)]].concat(C.mates.filter(function(m){ return !m.gone; }).map(function(m){ return [m.slot, m.ax, m.ay]; })),
     G: C.mates.filter(function(m){ return m.gone; }).map(function(m){ return m.slot; }),
-    F: C.Fout.slice(), K: C.kills.slice(), fx: C.fxOut.splice(0, 30), end: C.endAt ? { won: cn.phase === 'victory' } : null };
+    F: cnRecent(C.Fout, 5, 1000), K: cnRecent(C.kills, 6, 1500), fx: C.fxOut.splice(0, 30), end: C.endAt ? { won: cn.phase === 'victory' } : null };
 }
 function cnOut(){
   var C = cn.coop; if (!C || C.role !== 'guest' || C.done) return null;
-  return { cn: 1, t: Date.now(), ax: cnN(cn.aim.x / cn.W), ay: cnN(cn.aim.y / cn.H), F: C.fireOut.slice(), H: C.hitOut.slice() };
+  return { cn: 1, t: Date.now(), ax: cnN(cn.aim.x / cn.W), ay: cnN(cn.aim.y / cn.H), F: cnRecent(C.fireOut, 4, 1000), H: cnRecent(C.hitOut, 2, 1500) };
 }
 function cnIn(g, slot){
   var C = cn.coop, m = cnMate(slot); if (!C || C.role !== 'host' || !m || m.gone || !g) return;
   m.lastIn = Date.now();
   m.ax = clamp(+g.ax || 0.5, 0, 1); m.ay = clamp(+g.ay || 0.35, 0, 0.8);
-  (g.F || []).forEach(function(e){ if (!(e[0] > m.fireSeen)) return; m.fireSeen = e[0]; cnMateShot(m, e[1], e[2], e[3]); C.Fout.push([m.slot].concat(e)); if (C.Fout.length > 16) C.Fout.shift(); });
+  (g.F || []).forEach(function(e){ if (!(e[0] > m.fireSeen)) return; m.fireSeen = e[0]; cnMateShot(m, e[1], e[2], e[3]); C.Fout.push([m.slot, e[0], e[1], e[2], e[3], Date.now()]); if (C.Fout.length > 16) C.Fout.shift(); });
   (g.H || []).forEach(function(e){ if (!(e[0] > m.hitSeen)) return; m.hitSeen = e[0]; C.hitQ.push({ by: m.slot, id: e[1] }); });
 }
 /* guest: follow the host's sky, waves and results */
@@ -9073,9 +9075,16 @@ function quCoopStart(o){
 }
 function quSnap(){
   var C = qu.coop, L = qu.L; if (!C || C.role !== 'host' || !L) return null;
-  return { qu: 1, t: Date.now(), ph: qu.phase, cp: qu.cp || 0,
+  /* data saver: monsters that have not changed for 0.4 s are left out; the full list goes every 10th picture
+     and for 0.4 s after one disappears, so a skipped update never leaves a monster wrong for long */
+  var now = Date.now(), ids = L.foes.map(function(f){ return f.id; }).join(',');
+  C.snN = (C.snN || 0) + 1; C.fsig = C.fsig || {}; C.fchg = C.fchg || {};
+  if (ids !== C.fids){ C.fids = ids; C.fullTo = now + 400; }
+  var full = C.snN % 10 === 1 || now < (C.fullTo || 0);
+  var rows = L.foes.map(function(f){ var r = [f.id, f.k, coopNum(f.x), coopNum(f.y), Math.round(f.hp), f.max, f.dir, f.hit > 0 ? 1 : 0, f.wind > 0 ? Math.round(f.wind / (f.windMax || 1) * 100) / 100 : 0, f.atkType || '', coopNum(f.sx || 0), coopNum(f.sy || 0), coopNum(f.sr || 0)], sg = r.join(','); if (C.fsig[f.id] !== sg){ C.fsig[f.id] = sg; C.fchg[f.id] = now; } return r; });
+  return { qu: 1, t: now, ph: qu.phase, cp: qu.cp || 0, Ff: full ? 1 : 0,
     P: qu.P.map(function(p){ var it = p.carry ? quItem(p.carry) : null; return [p.slot, coopNum(p.x), coopNum(p.y), p.face, Math.round(p.hp), Math.round(p.maxhp), p.ko > 0 ? coopNum(p.ko) : 0, p.swing > 0 ? 1 : 0, p.zap > 0 ? 1 : 0, p.walkT > 0 ? 1 : 0, it ? it.k : '', p.gone ? 1 : 0, p.respawnN || 0]; }),
-    F: L.foes.map(function(f){ return [f.id, f.k, coopNum(f.x), coopNum(f.y), Math.round(f.hp), f.max, f.dir, f.hit > 0 ? 1 : 0, f.wind > 0 ? Math.round(f.wind / (f.windMax || 1) * 100) / 100 : 0, f.atkType || '', coopNum(f.sx || 0), coopNum(f.sy || 0), coopNum(f.sr || 0)]; }),
+    F: full ? rows : rows.filter(function(r, i){ var f = L.foes[i]; return now - (C.fchg[r[0]] || 0) < 400 && qu.P.some(function(p){ return !p.gone && Math.abs(p.x - f.x) < 900 && Math.abs(p.y - f.y) < 700; }); }),      /* far-off monsters only in the full list */
     E: (qu.esh || []).map(function(e){ return [coopNum(e.x), coopNum(e.y), coopNum(e.vx), coopNum(e.vy)]; }),
     I: L.items.map(function(it){ return [it.id, it.k, coopNum(it.x), coopNum(it.y), it.by, it.fk || '']; }),
     B: L.br.map(function(b){ return b.st ? 1 : b.fuse > 0 ? 2 : 0; }),
@@ -9110,7 +9119,9 @@ function quApply(S){
   }
   qu.cp = S.cp || 0;
   var old = {}; L.foes.forEach(function(f){ old[f.id] = f; });
-  L.foes = (S.F || []).map(function(a){ var f = old[a[0]] || { id: a[0], k: a[1], x: a[2], y: a[3], ph: Math.random() * 6, isl: 0 }; f.k = QU_FOES[a[1]] ? a[1] : 'goblin'; f.tx = a[2]; f.ty = a[3]; f.hp = a[4]; f.max = a[5]; f.dir = a[6]; f.hit = a[7] ? 0.1 : 0; f.wind = +a[8] || 0; f.windMax = 1; f.atkType = a[9] || ''; f.sx = a[10]; f.sy = a[11]; f.sr = a[12]; return f; });
+  var rowF = function(a){ var f = old[a[0]] || { id: a[0], k: a[1], x: a[2], y: a[3], ph: Math.random() * 6, isl: 0 }; f.k = QU_FOES[a[1]] ? a[1] : 'goblin'; f.tx = a[2]; f.ty = a[3]; f.hp = a[4]; f.max = a[5]; f.dir = a[6]; f.hit = a[7] ? 0.1 : 0; f.wind = +a[8] || 0; f.windMax = 1; f.atkType = a[9] || ''; f.sx = a[10]; f.sy = a[11]; f.sr = a[12]; return f; };
+  if (S.Ff || S.Ff === undefined) L.foes = (S.F || []).map(rowF);      /* the full list */
+  else { var seen = {}; (S.F || []).forEach(function(a){ seen[a[0]] = rowF(a); }); L.foes = L.foes.map(function(f){ return seen[f.id] || f; }); Object.keys(seen).forEach(function(id){ if (!old[id]) L.foes.push(seen[id]); }); }      /* only what changed */
   qu.esh = (S.E || []).map(function(a){ return { x: a[0], y: a[1], vx: a[2], vy: a[3] }; });
   var oldI = {}; L.items.forEach(function(it){ oldI[it.id] = it; });
   L.items = (S.I || []).map(function(a){ var o = oldI[a[0]]; return { id: a[0], k: a[1], x: a[2], y: a[3], by: a[4], fk: a[5] || '', ph: o ? o.ph : Math.random() * 6, drop: o ? o.drop : (a[1] === 'food' ? 0.6 : 0) }; });
