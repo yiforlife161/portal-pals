@@ -75,7 +75,8 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - Battle Arena / Guard Post / Boss Raid share the `df` engine (`df.mode` arena/defense/raid; `dfAr()` = arena-like).
   - Sky Battle = `cn`, Treasure Hunt = `th`, Starstones = `ss`.
   - Levels 1–3 plus Survival (`SURV_LV = 4`, locked behind achievements).
-  - In Survival, every 5 waves = +1 win (every boss in Raid Survival), via `dfSurvWins`. Treasure Hunt Survival counts each island.
+  - Every level is 3 waves (`MG_LEVELS`); Medium and Hard keep only their 3 hardest waves (`CN_SETS`, `DF_SETS`).
+  - In Survival, every 3 waves = +1 win (`SURV_EVERY`; every boss in Raid Survival), via `dfSurvWins` and `cnWaveDone`. Treasure Hunt Survival counts each island.
   - 30 wins unlock a game's hat.
 - **Sky Cannon co-op (`cn.coop`, md `cannon`):** up to 4 players, levels 1–3 and Survival. Every player has their own cannon: your own double gun and console stay in the middle, friends' cannons stand at the right corner, on a floating rock on the left (above the Leave button) and higher on the right (`cnMateSpot`), with their pal portrait (`cnMatesDom`, `.cn-mate`) and a reticle in their element color.
   - Ships are stored as a share of the screen (`nx`, `ny`, `nvx`, size `ws`; `cnShipPx` turns them into pixels per device), so every screen size sees the same sky. The host spawns and moves them; guests extrapolate between snapshots.

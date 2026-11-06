@@ -270,7 +270,7 @@ SR = {
 "You can invite up to 3 friends.": "Možeš pozvati do 3 prijatelja.",
 "Co-op · Survival. Everyone gets the full gold and xp.": "Saradnja · Preživljavanje. Svi dobijaju puno zlato i xp.",
 "Co-op · more X marks, your own digs each.": "Saradnja · više X oznaka, svako ima svoja kopanja.",
-"5 more waves survived: +1 win!": "Još 5 talasa preživljeno: +1 pobeda!",
+"3 more waves survived: +1 win!": "Još 3 talasa preživljena: +1 pobeda!",
 "5 more bosses beaten: +1 win!": "Još 5 bosova pobeđeno: +1 pobeda!",
 "Grab the food: it comes back stronger! +1 win!": "Uzmi hranu: vraća se jači! +1 pobeda!",
 "It follows you now and helps you in the": "Sada te prati i pomaže ti u igri",
