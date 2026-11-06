@@ -230,6 +230,8 @@ SRT = {
 "This only takes §. Get them at the §!": "Ovo prima samo: §. Nabavi ih kod: §!",
 "Out of §!": "Nema više: §!",
 "-1 §, +§ xp · § min left": "-1 §, +§ xp · još § min",
+"-1 §, +§ xp, +§ gold · § min left": "-1 §, +§ xp, +§ zlata · još § min",
+"-1 §, +§ xp, +§ gold": "-1 §, +§ xp, +§ zlata",
 "-1 §, +§ xp": "-1 §, +§ xp",
 "+1 §, +§ xp · § min left": "+1 §, +§ xp · još § min",
 "+§ xp · § min left": "+§ xp · još § min",

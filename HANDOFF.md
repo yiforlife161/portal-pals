@@ -114,7 +114,7 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - Defined with `def(key, label, cat, w, svgFn, {n, say})`. Each needs an entry in both `BUILD_LIMIT` and `COST`.
   - Categories: buildings, nature, town, fun, themed ("Elements and skills").
   - Tapping with a pal toggles element looks. Build mode has a lock button. Build mode lets the camera pan past the world edges.
-- **Practice spots:** 5-minute AFK stations per skill. Endless materials (`end_log`, `end_ore`, `end_fish`, `end_bone`) only work at practice stations.
+- **Practice spots:** 5-minute AFK stations per skill. The four that use something up (fire, cook, smith, potion) also pay gold: `afkGold` = practice xp × that skill's gold-to-xp rate for its most basic item (`AFK_GOLD`: 3/40, 4/40, 8/13, 8/12), so it grows with level like the xp. Endless materials (`end_log`, `end_ore`, `end_fish`, `end_bone`) only work at practice stations.
 
 ## Building something new: what the owner expects
 
