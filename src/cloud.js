@@ -601,11 +601,14 @@ window.ppPvp = {
 /* ---------- card trades: one match document per pair (game 'trade'), both players edit their own offer.
    An offer change clears both Ready marks; each Ready mark is the exact pair of offers it agreed to, so the swap
    only happens when both marks match the current offers. Each side then swaps its own cards once (td in the save). ---------- */
-const TR = { mid: '', other: '', name: '', role: '', n: 0, unsub: null, st: '', my: [], their: [], okMe: '', okThem: '', sig: '', applied: false, waitT: 0, lastThem: 0, hbSeen: 0, uiKey: '' };
-function trSig(d){ return JSON.stringify([d.offA || [], d.offB || []]); }
+const TR_PV = 2;      /* trade protocol version: both players need the same one */
+const TR = { mid: '', other: '', name: '', role: '', n: 0, tid: '', unsub: null, st: '', my: [], their: [], vMe: 0, okMe: '', okThem: '', key: '', applied: false, waitT: 0, lastThem: 0, hbSeen: 0, uiKey: '' };
+/* every change to an offer raises that side's number (vA / vB); Ready means "I agree to offers vA and vB",
+   so the Ready mark is a short text like "3:5" that can't come out different on two phones */
+function trKey(d){ return (+d.vA || 0) + ':' + (+d.vB || 0); }
 function trList(a){ return (Array.isArray(a) ? a : []).filter(x => x && Number.isFinite(+x.k) && +x.n > 0).slice(0, 20).map(x => ({ k: +x.k, n: Math.min(999, +x.n) })); }
 function trUi(force){
-  const T = { st: TR.st, name: TR.name, mine: TR.my, theirs: TR.their, meOk: !!TR.okMe && TR.okMe === TR.sig, themOk: !!TR.okThem && TR.okThem === TR.sig };
+  const T = { st: TR.st, name: TR.name, mine: TR.my, theirs: TR.their, meOk: !!TR.okMe && TR.okMe === TR.key, themOk: !!TR.okThem && TR.okThem === TR.key };
   const key = JSON.stringify(T);
   if (!force && key === TR.uiKey) return;
   TR.uiKey = key;
@@ -613,6 +616,7 @@ function trUi(force){
 }
 function trStop(){ if (TR.unsub) TR.unsub(); TR.unsub = null; TR.mid = ''; TR.st = ''; }
 function trEnd(msg){ trStop(); if (G().kdTradeUi) G().kdTradeUi({ st: 'closed', msg: msg || '' }); }
+function trId(){ return Date.now().toString(36) + Math.random().toString(36).slice(2, 8); }
 async function trInvite(fid){
   if (!me || !fid) return;
   if (G().visiting && G().visiting()){ G().flash('Go back to your own world to trade cards.'); return; }
@@ -620,10 +624,10 @@ async function trInvite(fid){
   const mid = pairId(fid), name = friendName(fid);
   if (PT.on && !PT.started && PT.mem.some(m => m.uid === fid)){ G().flash('Finish the game invite with ' + name + ' first.'); return; }
   try {
-    const old = await fs.getDoc(mref(mid)), n = (old.exists() ? (old.data().n || 0) : 0) + 1;
-    Object.assign(TR, { mid: mid, other: fid, name: name, role: 'a', n: n, st: 'wait', my: [], their: [], okMe: '', okThem: '', sig: '', applied: false, waitT: Date.now(), lastThem: Date.now(), uiKey: '' });
-    await fs.setDoc(mref(mid), { game: 'trade', a: me.uid, b: fid, nameA: F.name, nameB: name, st: 'invite', n: n, offA: [], offB: [], okA: '', okB: '', hbA: nowS(), hbB: 0, at: nowS() });
-    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name, at: nowS(), game: 'trade' });
+    const old = await fs.getDoc(mref(mid)), n = (old.exists() ? (old.data().n || 0) : 0) + 1, tid = trId();
+    Object.assign(TR, { mid: mid, other: fid, name: name, role: 'a', n: n, tid: tid, st: 'wait', my: [], their: [], vMe: 0, okMe: '', okThem: '', key: '0:0', applied: false, waitT: Date.now(), lastThem: Date.now(), uiKey: '' });
+    await fs.setDoc(mref(mid), { game: 'trade', pv: TR_PV, tid: tid, a: me.uid, b: fid, nameA: F.name || 'Friend', nameB: name, st: 'invite', n: n, offA: [], offB: [], vA: 0, vB: 0, okA: '', okB: '', hbA: nowS(), hbB: 0, at: nowS() });
+    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name || 'Friend', at: nowS(), game: 'trade', pv: TR_PV });
     trWatch();
     trUi(true);
   } catch (e){ console.warn(e); trStop(); G().flash('Could not send the trade invite. Try again.'); }
@@ -637,8 +641,9 @@ async function trAccept(inv){
   try {
     const s2 = await fs.getDoc(mref(inv.mid)), m = s2.exists() ? s2.data() : null;
     if (!m || m.game !== 'trade' || m.st !== 'invite' || m.a !== inv.id){ G().flash('That trade is no longer open.'); return; }
-    Object.assign(TR, { mid: inv.mid, other: inv.id, name: inv.name || m.nameA || 'Friend', role: 'b', n: m.n || 0, st: 'open', my: [], their: [], okMe: '', okThem: '', sig: '', applied: false, waitT: Date.now(), lastThem: Date.now(), uiKey: '' });
-    await fs.updateDoc(mref(inv.mid), { st: 'open', nameB: F.name, hbB: nowS() });
+    if (m.pv !== TR_PV){ G().flash((inv.name || 'Your friend') + ' has an older version of the game open. Ask them to reload it, then trade again.'); fs.updateDoc(mref(inv.mid), { st: 'cancel', by: me.uid, why: 'version' }).catch(() => {}); return; }
+    Object.assign(TR, { mid: inv.mid, other: inv.id, name: inv.name || m.nameA || 'Friend', role: 'b', n: m.n || 0, tid: m.tid || '', st: 'open', my: [], their: [], vMe: 0, okMe: '', okThem: '', key: trKey(m), applied: false, waitT: Date.now(), lastThem: Date.now(), uiKey: '' });
+    await fs.updateDoc(mref(inv.mid), { st: 'open', nameB: F.name || 'Friend', hbB: nowS() });
     trWatch();
     trUi(true);
   } catch (e){ console.warn(e); trStop(); G().flash('Could not join the trade. Try again.'); }
@@ -651,25 +656,31 @@ function trWatch(){
     const pend = !!(snap.metadata && snap.metadata.hasPendingWrites);      /* our own write not on the server yet */
     const d = snap.exists() ? snap.data() : null;
     if (!d || d.game !== 'trade' || d.n !== n){ if (!TR.applied) trEnd('The trade was called off.'); return; }
+    if (d.pv !== TR_PV){ trEnd(TR.name + ' has an older version of the game open. Ask them to reload it, then trade again.'); return; }
+    TR.tid = d.tid || TR.tid;
     TR.my = trList(A ? d.offA : d.offB); TR.their = trList(A ? d.offB : d.offA);
-    TR.okMe = (A ? d.okA : d.okB) || ''; TR.okThem = (A ? d.okB : d.okA) || ''; TR.sig = trSig(d);
+    TR.vMe = +(A ? d.vA : d.vB) || 0;
+    TR.okMe = (A ? d.okA : d.okB) || ''; TR.okThem = (A ? d.okB : d.okA) || ''; TR.key = trKey(d);
     const hb = A ? d.hbB : d.hbA;
     if (hb && hb !== TR.hbSeen){ TR.hbSeen = hb; TR.lastThem = Date.now(); }
     if (d.st === 'declined'){ trEnd(TR.name + ' said no this time.'); return; }
-    if (d.st === 'cancel'){ trEnd(d.by === me.uid ? '' : TR.name + ' called off the trade.'); return; }
+    if (d.st === 'cancel'){ trEnd(d.by === me.uid ? '' : d.why === 'version' ? TR.name + ' has a different version of the game open. Both of you reload the game, then trade again.' : TR.name + ' called off the trade.'); return; }
     if (d.st === 'open' && TR.st === 'wait'){ TR.st = 'open'; TR.lastThem = Date.now(); }
-    if (!pend && (d.st === 'open' || d.st === 'done') && d.okA && d.okA === d.okB && d.okA === TR.sig){ trApply(d); return; }      /* swap only once the server has both Ready marks */
+    const agreed = !!d.okA && d.okA === d.okB && d.okA === TR.key;
+    if (!pend && agreed && (d.st === 'open' || d.st === 'done')){ trApply(d); return; }      /* swap only once the server has both Ready marks */
+    if (d.st === 'done' && !agreed && !pend){ trEnd('The trade ended without a swap. Nothing was traded.'); return; }
     trUi();
   }, e => console.warn(e));
 }
 function trApply(d){
   if (TR.applied) return;
   TR.applied = true;
-  const A = TR.role === 'a', give = trList(A ? d.offA : d.offB), get = trList(A ? d.offB : d.offA), name = TR.name;
-  if (G().kdTradeApply) G().kdTradeApply(give, get, TR.mid + ':' + TR.n);
-  fs.updateDoc(mref(TR.mid), { st: 'done' }).catch(() => {});
+  const A = TR.role === 'a', give = trList(A ? d.offA : d.offB), get = trList(A ? d.offB : d.offA), name = TR.name, mid = TR.mid;
+  const ok = G().kdTradeApply ? G().kdTradeApply(give, get, 't' + (d.tid || (mid + ':' + TR.n))) : false;
+  fs.updateDoc(mref(mid), { st: 'done' }).catch(() => {});
   trStop();
-  if (G().kdTradeUi) G().kdTradeUi({ st: 'done', name: name, mine: give, theirs: get });
+  if (ok){ if (G().kdTradeUi) G().kdTradeUi({ st: 'done', name: name, mine: give, theirs: get }); }
+  else if (G().kdTradeUi) G().kdTradeUi({ st: 'closed', msg: 'This trade was already done earlier, so nothing changed.' });
 }
 function trCancel(){
   const mid = TR.mid, other = TR.other, applied = TR.applied, st = TR.st;
@@ -683,9 +694,9 @@ function trCancel(){
 }
 function trOffer(list){
   if (!TR.mid || TR.st !== 'open') return;
-  const A = TR.role === 'a', clean = trList(list), up = { okA: '', okB: '' };
-  up[A ? 'offA' : 'offB'] = clean;
-  TR.my = clean; TR.okMe = ''; TR.okThem = '';
+  const A = TR.role === 'a', clean = trList(list), v = TR.vMe + 1, up = { okA: '', okB: '' };
+  up[A ? 'offA' : 'offB'] = clean; up[A ? 'vA' : 'vB'] = v;
+  TR.my = clean; TR.vMe = v; TR.okMe = ''; TR.okThem = '';
   if (G().kdPend) G().kdPend(null);
   fs.updateDoc(mref(TR.mid), up).catch(e => console.warn(e));
 }
@@ -694,10 +705,10 @@ function trReady(on){
   if (on && !TR.my.length && !TR.their.length){ G().flash('Add some cards first.'); return; }
   if (on && G().kdCanGive && !G().kdCanGive(TR.my)){ G().flash('You no longer have all the cards you offered.'); return; }
   const A = TR.role === 'a', up = {};
-  up[A ? 'okA' : 'okB'] = on ? TR.sig : '';
-  TR.okMe = on ? TR.sig : '';
+  up[A ? 'okA' : 'okB'] = on ? TR.key : '';
+  TR.okMe = on ? TR.key : '';
   /* remember the Ready in the save: if the game closes before the swap, it finishes the next time you sign in */
-  if (G().kdPend) G().kdPend(on ? { mid: TR.mid, n: TR.n, role: TR.role, sig: TR.sig } : null);
+  if (G().kdPend) G().kdPend(on ? { mid: TR.mid, n: TR.n, role: TR.role, sig: TR.key, tid: TR.tid } : null);
   fs.updateDoc(mref(TR.mid), up).catch(e => console.warn(e));
   trUi(true);
 }
@@ -707,9 +718,9 @@ async function trResume(){
   if (!p || !me) return;
   try {
     const s2 = await fs.getDoc(mref(p.mid)), d = s2.exists() ? s2.data() : null;
-    if (d && d.game === 'trade' && d.n === p.n && d.okA && d.okA === d.okB && d.okA === trSig(d) && d.okA === p.sig){
+    if (d && d.game === 'trade' && d.pv === TR_PV && d.n === p.n && (!p.tid || d.tid === p.tid) && d.okA && d.okA === d.okB && d.okA === trKey(d) && d.okA === p.sig){
       const A = p.role === 'a', give = trList(A ? d.offA : d.offB), get = trList(A ? d.offB : d.offA);
-      if (G().kdTradeApply && G().kdTradeApply(give, get, p.mid + ':' + p.n)){
+      if (G().kdTradeApply && G().kdTradeApply(give, get, 't' + (d.tid || (p.mid + ':' + p.n)))){
         fs.updateDoc(mref(p.mid), { st: 'done' }).catch(() => {});
         if (G().kdTradeUi) G().kdTradeUi({ st: 'done', name: A ? (d.nameB || 'Friend') : (d.nameA || 'Friend'), mine: give, theirs: get });
       }
@@ -721,7 +732,7 @@ function trWatchdog(){
   const A = TR.role === 'a';
   if (Date.now() - (TR.hbT || 0) > 8000){ TR.hbT = Date.now(); const up = {}; up[A ? 'hbA' : 'hbB'] = nowS(); fs.updateDoc(mref(TR.mid), up).catch(() => {}); }
   if (TR.st === 'wait' && Date.now() - TR.waitT > 60000){ const nm = TR.name; trCancel(); G().flash(nm + ' did not answer.'); return; }
-  if (TR.st === 'open' && Date.now() - TR.lastThem > 35000){ const nm = TR.name; trCancel(); G().flash(nm + ' left the trade.'); }
+  if (TR.st === 'open' && Date.now() - TR.lastThem > 45000){ const nm = TR.name; trCancel(); G().flash(nm + ' left the trade.'); }
 }
 window.ppTrade = {
   ready: () => !!(me && F.code),

@@ -9,7 +9,7 @@ async function player(b,uid,name){
   await ctx.route('https://www.gstatic.com/**',r=>{const f=r.request().url().split('/').pop().replace('firebase-','').replace('firestore','fs');return r.fulfill({body:fs.readFileSync(path.join(__dirname,f),'utf8'),contentType:'application/javascript'});});
   await ctx.exposeFunction('__db',(op,u,a)=>db(op,u,a));
   await ctx.exposeFunction('__rt',(op,p,v)=>rt(op,p,v));
-  await ctx.addInitScript(([uid,name,lat])=>{localStorage.setItem('mock.want',JSON.stringify({uid,displayName:name}));localStorage.setItem('mock.fslat',lat);},[uid,name,process.env.FS_LAT||'0']);
+  await ctx.addInitScript(([uid,name,lat,sh])=>{localStorage.setItem('mock.want',JSON.stringify({uid,displayName:name}));localStorage.setItem('mock.fslat',lat);localStorage.setItem('mock.shuffle',sh);},[uid,name,process.env.FS_LAT||'0',process.env.FS_SHUF||'0']);
   const pg=await ctx.newPage();
   pg.on('pageerror',e=>console.log(name,'ERR',e.message));
   await pg.goto('https://pp.test/');await pg.waitForTimeout(1200);

@@ -499,6 +499,8 @@ SR = {
 "to press Ready…": "pritisne Spreman…",
 "is ready! Press Ready to swap.": "je spreman! Pritisni Spreman za zamenu.",
 "✓ Ready": "✓ Spreman",
+"The trade ended without a swap. Nothing was traded.": "Razmena je završena bez zamene. Ništa nije razmenjeno.",
+"This trade was already done earlier, so nothing changed.": "Ova razmena je već obavljena ranije, pa se ništa nije promenilo.",
 "Capes": "Ogrtači", "no cape": "bez ogrtača", "Unlocked:": "Otključano:", "Cape: reach level 99": "Ogrtač: dostigni nivo 99", "Level 99! Cape unlocked": "Nivo 99! Ogrtač otključan",
 "Mining Cape": "Rudarski ogrtač", "Fishing Cape": "Ribarski ogrtač", "Woodcutting Cape": "Drvoseški ogrtač", "Potionmaking Cape": "Ogrtač napitaka",
 "Cooking Cape": "Kuvarski ogrtač", "Smithing Cape": "Kovački ogrtač", "Firemaking Cape": "Ogrtač vatre", "Gravedigging Cape": "Grobarski ogrtač",

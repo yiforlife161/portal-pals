@@ -6,6 +6,8 @@ export function serverTimestamp(){ return { '.sv': 'ts' }; }
 const snap=(path,d,pend)=>({id:path.split('/').pop(),exists:()=>d!=null,data:()=>d,metadata:{hasPendingWrites:!!pend}});
 export async function getDoc(r){ const d=await window.__db('get',me(),[{path:r.path}]); return snap(r.path,d); }
 export async function setDoc(r,v,o){ await window.__db('write',me(),[{op:'set',path:r.path,v,merge:!!(o&&o.merge)}]); }
+const SHUF=localStorage.getItem('mock.shuffle')==='1';
+function shuf(v){ if(!SHUF||v==null||typeof v!=='object') return v; if(Array.isArray(v)) return v.map(shuf); const ks=Object.keys(v).sort(()=>Math.random()-0.5); const o={}; ks.forEach(k=>o[k]=shuf(v[k])); return o; }
 /* like the real SDK: a write shows up at once in this page's listeners (pending), and reaches the server after FS_LAT ms */
 const LAT=+(localStorage.getItem('mock.fslat')||0), PEND={}, LIS={};
 function localFire(path){ (LIS[path]||[]).forEach(fn=>fn()); }
@@ -22,7 +24,7 @@ export function onSnapshot(ref,f,err,e2){
   let last=null, stop=false;
   const tick=async()=>{ if(stop)return; try{
     if(ref.coll){ const list=await window.__db('list',me(),[{coll:ref.coll}]); const j=JSON.stringify(list); if(j!==last){ last=j; f({forEach:(cb)=>list.forEach(([p,d])=>cb(snap(p,d)))}); } }
-    else { let d=await window.__db('get',me(),[{path:ref.path}]); if(d&&PEND[ref.path]&&PEND[ref.path].length){ d=Object.assign({},d); PEND[ref.path].forEach(v=>Object.assign(d,v)); } const pd=!!(PEND[ref.path]&&PEND[ref.path].length), j=JSON.stringify(d)+pd; if(j!==last){ last=j; f(snap(ref.path,d,pd)); } }
+    else { let d=shuf(await window.__db('get',me(),[{path:ref.path}])); if(d&&PEND[ref.path]&&PEND[ref.path].length){ d=Object.assign({},d); PEND[ref.path].forEach(v=>Object.assign(d,v)); } const pd=!!(PEND[ref.path]&&PEND[ref.path].length), j=JSON.stringify(d)+pd; if(j!==last){ last=j; f(snap(ref.path,d,pd)); } }
   }catch(e){ err&&err(e); } if(!stop) T=setTimeout(tick,250); };
   let T=null; const now=()=>{ clearTimeout(T); tick(); };
   if(ref.path){ (LIS[ref.path]=LIS[ref.path]||[]).push(now); }
