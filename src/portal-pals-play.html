@@ -10142,14 +10142,14 @@ function capeOff(){ var c = heroChar(); if (!c) return; c.cape = ''; save(); syn
 var PET_RATE = 20000, PET_BONUS = 2;
 function petEye(x, y, r){ return '<circle cx="' + x + '" cy="' + y + '" r="' + (r || 3.2) + '" fill="#1e1530"/><circle cx="' + (x + 1) + '" cy="' + (y - 1.1) + '" r="1.1" fill="#fff"/>'; }
 var PETS = {
-  mine: { name: 'Digger the Mole', note: 'A tiny mole in a miner’s helmet who sniffs out ore.', art: function(){
+  mine: { face: 'front', name: 'Digger the Mole', note: 'A tiny mole in a miner’s helmet who sniffs out ore.', art: function(){
     return '<ellipse cx="30" cy="54" rx="16" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
       '<path d="M12 46Q10 26 30 22Q50 26 48 46Q46 54 30 54Q14 54 12 46Z" fill="#7a5a44" stroke="#3a2a1e" stroke-width="2.2"/>' +
       '<path d="M18 50Q16 56 22 56L24 52M42 50Q44 56 38 56L36 52" fill="#f2a6a0" stroke="#3a2a1e" stroke-width="1.8"/>' +
       '<path d="M16 26Q30 8 44 26Z" fill="#f2c230" stroke="#3a2a1e" stroke-width="2"/><rect x="13" y="24" width="34" height="5" rx="2.5" fill="#d9a520" stroke="#3a2a1e" stroke-width="1.6"/>' +
       '<circle cx="30" cy="18" r="4.4" fill="#fff6c8" stroke="#3a2a1e" stroke-width="1.6"/><path d="M30 13V8M24 15L21 11M36 15L39 11" stroke="#ffe680" stroke-width="1.8" stroke-linecap="round"/>' +
       petEye(24, 36, 2.2) + petEye(36, 36, 2.2) + '<ellipse cx="30" cy="43" rx="4.5" ry="3.4" fill="#f28a9a" stroke="#3a2a1e" stroke-width="1.6"/>'; } },
-  forest: { name: 'Chomper the Beaver', note: 'Gnaws through bark faster than any axe.', art: function(){
+  forest: { face: 'left', name: 'Chomper the Beaver', note: 'Gnaws through bark faster than any axe.', art: function(){
     return '<ellipse cx="30" cy="55" rx="17" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
       '<path d="M40 44Q56 42 56 52Q50 58 40 52Z" fill="#5a4030" stroke="#2e2014" stroke-width="2"/><path d="M44 46L52 52M47 45L54 49" stroke="#3e2c1e" stroke-width="1.2"/>' +
       '<ellipse cx="28" cy="40" rx="16" ry="15" fill="#a26a3c" stroke="#3e2614" stroke-width="2.2"/>' +
@@ -10157,7 +10157,7 @@ var PETS = {
       '<ellipse cx="28" cy="44" rx="9" ry="7" fill="#e6c49a"/>' + petEye(22, 35) + petEye(34, 35) +
       '<ellipse cx="28" cy="41" rx="3.2" ry="2.4" fill="#3e2614"/><rect x="25" y="45" width="6" height="7" rx="1" fill="#fff" stroke="#3e2614" stroke-width="1.4"/><path d="M28 45V52" stroke="#3e2614" stroke-width="1"/>' +
       '<path d="M8 50L4 46M8 50L3 52" stroke="#5a8a3a" stroke-width="2" stroke-linecap="round"/><ellipse cx="7" cy="49" rx="3" ry="2" fill="#7ab84a"/>'; } },
-  fish: { name: 'Splash the Otter', note: 'Dives for the fish that slip off your hook.', art: function(){
+  fish: { face: 'front', name: 'Splash the Otter', note: 'Dives for the fish that slip off your hook.', art: function(){
     return '<ellipse cx="30" cy="55" rx="17" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
       '<path d="M14 52Q8 36 18 26Q30 16 42 26Q52 36 46 52Z" fill="#8a5e3c" stroke="#3a2614" stroke-width="2.2"/>' +
       '<ellipse cx="30" cy="40" rx="11" ry="9" fill="#e9d2b0"/>' +
@@ -10165,7 +10165,7 @@ var PETS = {
       petEye(24, 33) + petEye(36, 33) + '<ellipse cx="30" cy="38" rx="3" ry="2.2" fill="#3a2614"/>' +
       '<path d="M20 40H12M20 42L13 45M40 40H48M40 42L47 45" stroke="#3a2614" stroke-width="1" stroke-linecap="round"/>' +
       '<path d="M22 50Q30 44 38 50Q34 54 30 52Q26 54 22 50Z" fill="#6ec3f0" stroke="#1f5d86" stroke-width="1.6"/><path d="M38 50L42 47L42 53Z" fill="#6ec3f0" stroke="#1f5d86" stroke-width="1.4"/><circle cx="26" cy="49" r="1" fill="#1f5d86"/>'; } },
-  grave: { name: 'Rattles the Bone Pup', note: 'A friendly little skeleton dog who loves to dig.', art: function(){
+  grave: { face: 'left', name: 'Rattles the Bone Pup', note: 'A friendly little skeleton dog who loves to dig.', art: function(){
     return '<ellipse cx="30" cy="55" rx="17" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
       '<path d="M44 40Q54 34 52 26" stroke="#ede6d2" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M44 40Q54 34 52 26" stroke="#6b6250" stroke-width="1" fill="none"/>' +
       '<rect x="16" y="36" width="30" height="13" rx="6.5" fill="#ede6d2" stroke="#4a4436" stroke-width="2"/><path d="M24 38V47M30 38V47M36 38V47" stroke="#8a8270" stroke-width="1.6"/>' +
@@ -10174,7 +10174,7 @@ var PETS = {
       '<path d="M10 20L6 10L15 16M26 18L30 9L24 16" fill="#ede6d2" stroke="#4a4436" stroke-width="1.8" stroke-linejoin="round"/>' +
       '<circle cx="15" cy="27" r="3.4" fill="#2a2436"/><circle cx="24" cy="27" r="3.4" fill="#2a2436"/><circle cx="15" cy="27" r="1.2" fill="#7affc4"/><circle cx="24" cy="27" r="1.2" fill="#7affc4"/>' +
       '<path d="M17 33H23" stroke="#4a4436" stroke-width="1.6" stroke-linecap="round"/>'; } },
-  fire: { name: 'Cinder the Salamander', note: 'Breathes on your logs so they catch in a flash.', art: function(){
+  fire: { face: 'left', name: 'Cinder the Salamander', note: 'Breathes on your logs so they catch in a flash.', art: function(){
     return '<ellipse cx="30" cy="55" rx="18" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
       '<path d="M42 46Q54 44 52 32Q50 26 54 20Q58 30 56 40Q54 50 42 52Z" fill="#ff9a2e" stroke="#7a2a0a" stroke-width="1.8"/><path d="M52 34Q56 28 54 22" stroke="#ffe680" stroke-width="2" fill="none" stroke-linecap="round"/>' +
       '<ellipse cx="30" cy="44" rx="15" ry="9" fill="#e8452c" stroke="#7a1a0a" stroke-width="2.2"/>' +
@@ -10182,7 +10182,7 @@ var PETS = {
       '<circle cx="24" cy="40" r="2.2" fill="#ffd23e"/><circle cx="32" cy="38" r="1.8" fill="#ffd23e"/><circle cx="38" cy="43" r="2" fill="#ffd23e"/>' +
       '<ellipse cx="14" cy="38" rx="10" ry="8" fill="#e8452c" stroke="#7a1a0a" stroke-width="2.2"/>' + petEye(11, 35, 2.8) + petEye(18, 35, 2.8) +
       '<path d="M8 41Q12 44 17 41" stroke="#7a1a0a" stroke-width="1.6" fill="none" stroke-linecap="round"/>'; } },
-  smith: { name: 'Bolt the Clockwork Beetle', note: 'Taps along with your hammer, ping, ping, ping.', art: function(){
+  smith: { face: 'front', name: 'Bolt the Clockwork Beetle', note: 'Taps along with your hammer, ping, ping, ping.', art: function(){
     return '<ellipse cx="30" cy="55" rx="17" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
       '<path d="M16 50L10 56M22 52L20 57M38 52L40 57M44 50L50 56" stroke="#4a5060" stroke-width="2.6" stroke-linecap="round"/>' +
       '<ellipse cx="30" cy="40" rx="17" ry="13" fill="#c9a24a" stroke="#5a4214" stroke-width="2.2"/><path d="M30 27V53" stroke="#5a4214" stroke-width="2"/>' +
@@ -10190,14 +10190,14 @@ var PETS = {
       '<path d="M30 30V32M30 46V48M21 39H23M37 39H39M24 33L25.5 34.5M34.5 43.5L36 45M36 33L34.5 34.5M25.5 43.5L24 45" stroke="#4a5060" stroke-width="2.2" stroke-linecap="round"/>' +
       '<ellipse cx="30" cy="24" rx="9" ry="6" fill="#8a919e" stroke="#3a3e4a" stroke-width="2"/>' + petEye(26, 23, 2.4) + petEye(34, 23, 2.4) +
       '<path d="M26 19Q22 12 18 12M34 19Q38 12 42 12" stroke="#3a3e4a" stroke-width="1.6" fill="none"/><circle cx="18" cy="12" r="2" fill="#ffd23e"/><circle cx="42" cy="12" r="2" fill="#ffd23e"/>'; } },
-  cook: { name: 'Puff the Cloud Chef', note: 'A little cloud in a chef’s hat who fans your stove.', art: function(){
+  cook: { face: 'front', name: 'Puff the Cloud Chef', note: 'A little cloud in a chef’s hat who fans your stove.', art: function(){
     return '<ellipse cx="30" cy="56" rx="15" ry="3" fill="rgba(0,0,0,.15)"/>' +
       '<path d="M12 46Q4 46 6 38Q8 32 14 33Q14 24 24 25Q30 18 38 24Q48 22 48 32Q56 34 53 42Q51 48 44 47Q40 52 30 50Q20 52 12 46Z" fill="#fff" stroke="#8aa0c8" stroke-width="2.2"/>' +
       '<path d="M18 22Q14 12 22 11Q24 4 31 8Q38 4 40 11Q47 12 43 22Z" fill="#fff" stroke="#8aa0c8" stroke-width="2"/><rect x="18" y="20" width="25" height="5" rx="1.5" fill="#f4f4fa" stroke="#8aa0c8" stroke-width="1.6"/>' +
       petEye(24, 37, 2.8) + petEye(36, 37, 2.8) + '<path d="M26 42Q30 46 34 42" stroke="#1e1530" stroke-width="1.8" fill="none" stroke-linecap="round"/>' +
       '<circle cx="19" cy="42" r="2.4" fill="#ffb3c8" opacity=".8"/><circle cx="41" cy="42" r="2.4" fill="#ffb3c8" opacity=".8"/>' +
       '<path d="M52 30Q58 28 58 34M54 24Q60 20 60 27" stroke="#b9d8ff" stroke-width="1.8" fill="none" stroke-linecap="round"/>'; } },
-  potion: { name: 'Bubbles the Toad', note: 'Puffs magic bubbles into your cauldron.', art: function(){
+  potion: { face: 'front', name: 'Bubbles the Toad', note: 'Puffs magic bubbles into your cauldron.', art: function(){
     return '<ellipse cx="30" cy="55" rx="18" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
       '<path d="M8 50Q6 34 18 28Q30 24 42 28Q54 34 52 50Q44 56 30 55Q16 56 8 50Z" fill="#8a52d8" stroke="#3a1a6a" stroke-width="2.2"/>' +
       '<ellipse cx="30" cy="47" rx="14" ry="7" fill="#c9a8f5"/>' +
@@ -10214,7 +10214,7 @@ function petOn(k){ return !!k && hasPet(k) && state.island.petMain === k; }
    and keep you company in their minigame ---------- */
 var MG_PET_RATE = 300;
 var MG_PET_GAMES = { cannon: 'Sky Cannon', defense: 'Guard Post', arena: 'Battle Arena', raid: 'Boss Raid', stones: 'Starstones', dig: 'Treasure Hunt', quest: 'Island Quest' };
-PETS.quest = { name: 'Clink the Key Bird', note: 'A little bird with a key for a tail. In Island Quest it sniffs out treasure: chests give 50% more coins.', art: function(){
+PETS.quest = { face: 'left', name: 'Clink the Key Bird', note: 'A little bird with a key for a tail. In Island Quest it sniffs out treasure: chests give 50% more coins.', art: function(){
   return '<ellipse cx="30" cy="56" rx="14" ry="3" fill="rgba(0,0,0,.18)"/>' +
     '<path d="M24 52L22 57M34 52L36 57" stroke="#e8a020" stroke-width="2.6" stroke-linecap="round"/>' +
     '<path d="M40 40L54 44M48 42V48M52 43V47" stroke="#8a5a00" stroke-width="5" stroke-linecap="round"/><path d="M40 40L54 44M48 42V48M52 43V47" stroke="#ffcf3a" stroke-width="2.6" stroke-linecap="round"/>' +
@@ -10224,7 +10224,7 @@ PETS.quest = { name: 'Clink the Key Bird', note: 'A little bird with a key for a
     '<path d="M10 24L4 27L10 29Z" fill="#ffb13a" stroke="#8a5a00" stroke-width="1.4" stroke-linejoin="round"/>' +
     '<path d="M22 14Q26 6 30 12" stroke="#ffcf3a" stroke-width="3" fill="none" stroke-linecap="round"/><ellipse cx="27" cy="45" rx="7" ry="5" fill="#cfe9ff"/>';
 } };
-PETS.cannon = { name: 'Captain Squawk', note: 'A pirate parrot. In the Sky Cannon he fires his own cannonball at an airship every 4 seconds.', art: function(){
+PETS.cannon = { face: 'left', name: 'Captain Squawk', note: 'A pirate parrot. In the Sky Cannon he fires his own cannonball at an airship every 4 seconds.', art: function(){
   return '<ellipse cx="30" cy="56" rx="14" ry="3" fill="rgba(0,0,0,.18)"/>' +
     '<path d="M22 54L20 58M38 54L40 58" stroke="#e8a020" stroke-width="2.6" stroke-linecap="round"/>' +
     '<path d="M18 50Q12 34 22 24Q34 16 42 28Q48 40 40 52Q30 58 18 50Z" fill="#e8402c" stroke="#6a1a10" stroke-width="2.2"/>' +
@@ -10233,14 +10233,14 @@ PETS.cannon = { name: 'Captain Squawk', note: 'A pirate parrot. In the Sky Canno
     '<circle cx="28" cy="29" r="3.2" fill="#fff" stroke="#1e1530" stroke-width="1"/><circle cx="28.4" cy="29" r="1.6" fill="#1e1530"/>' +
     '<path d="M33 26L38 31M33 31L38 26" stroke="#1e1530" stroke-width="2.4" stroke-linecap="round"/><path d="M22 24L42 32" stroke="#1e1530" stroke-width="1.4"/>' +
     '<path d="M16 22Q30 4 44 22Q30 18 16 22Z" fill="#2b2338" stroke="#120c1e" stroke-width="1.6"/><circle cx="30" cy="15" r="2.4" fill="#fff"/>'; } };
-PETS.defense = { name: 'Shelly the Shield Turtle', note: 'Her shell is a tiny shield. In the Guard Post she freezes the nearest thief for 2.5 seconds, every 8 seconds.', art: function(){
+PETS.defense = { face: 'right', name: 'Shelly the Shield Turtle', note: 'Her shell is a tiny shield. In the Guard Post she freezes the nearest thief for 2.5 seconds, every 8 seconds.', art: function(){
   return '<ellipse cx="30" cy="55" rx="20" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
     '<path d="M14 50L10 55M22 52L20 57M38 52L40 57M46 50L50 55" stroke="#4a8a3a" stroke-width="4" stroke-linecap="round"/>' +
     '<ellipse cx="50" cy="40" rx="7" ry="6" fill="#7ac860" stroke="#2f6a1f" stroke-width="2"/>' + petEye(52, 38, 1.8) +
     '<path d="M8 48Q8 22 30 20Q52 22 52 48Z" fill="#c9a24a" stroke="#5a4214" stroke-width="2.4"/>' +
     '<path d="M30 22V48M12 36H48" stroke="#8a6a1a" stroke-width="2.4"/><path d="M22 28L30 24L38 28L38 40Q30 46 22 40Z" fill="#3f86e8" stroke="#1a3a7a" stroke-width="1.8"/>' +
     '<path d="M30 28V40M25 33H35" stroke="#ffd23e" stroke-width="2"/>'; } };
-PETS.arena = { name: 'Leo the Lion Cub', note: 'Brave little cub. In the Battle Arena he pounces on the nearest monster every 5 seconds.', art: function(){
+PETS.arena = { face: 'front', name: 'Leo the Lion Cub', note: 'Brave little cub. In the Battle Arena he pounces on the nearest monster every 5 seconds.', art: function(){
   return '<ellipse cx="30" cy="56" rx="16" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
     '<path d="M44 46Q56 40 52 30" stroke="#d9902a" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="52" cy="29" r="3" fill="#8a4a1a"/>' +
     '<ellipse cx="30" cy="46" rx="14" ry="10" fill="#f2b84a" stroke="#8a5a1a" stroke-width="2.2"/>' +
@@ -10249,7 +10249,7 @@ PETS.arena = { name: 'Leo the Lion Cub', note: 'Brave little cub. In the Battle 
     '<circle cx="20" cy="19" r="4" fill="#f2b84a" stroke="#8a5a1a" stroke-width="1.8"/><circle cx="40" cy="19" r="4" fill="#f2b84a" stroke="#8a5a1a" stroke-width="1.8"/>' +
     petEye(25, 28, 2.6) + petEye(35, 28, 2.6) + '<ellipse cx="30" cy="35" rx="5" ry="3.6" fill="#fff2d8"/><path d="M28 33L32 33L30 35.5Z" fill="#5a2a0a"/>' +
     '<path d="M27 37Q30 39 33 37" stroke="#5a2a0a" stroke-width="1.4" fill="none" stroke-linecap="round"/>'; } };
-PETS.raid = { name: 'Mini Boss', note: 'The boss’s little cousin. In the Boss Raid he throws a fireball at the boss every 6 seconds.', art: function(){
+PETS.raid = { face: 'front', name: 'Mini Boss', note: 'The boss’s little cousin. In the Boss Raid he throws a fireball at the boss every 6 seconds.', art: function(){
   return '<ellipse cx="30" cy="56" rx="15" ry="3.5" fill="rgba(0,0,0,.2)"/>' +
     '<path d="M20 22Q10 18 12 6Q16 16 24 18Z" fill="#f2ead2" stroke="#2a1050" stroke-width="1.8"/><path d="M40 22Q50 18 48 6Q44 16 36 18Z" fill="#f2ead2" stroke="#2a1050" stroke-width="1.8"/>' +
     '<ellipse cx="30" cy="38" rx="17" ry="16" fill="#8a4ad8" stroke="#2a1050" stroke-width="2.4"/>' +
@@ -10257,7 +10257,7 @@ PETS.raid = { name: 'Mini Boss', note: 'The boss’s little cousin. In the Boss 
     '<path d="M21 34L28 37L22 39Z" fill="#ffe14a"/><path d="M39 34L32 37L38 39Z" fill="#ffe14a"/>' +
     '<path d="M23 45Q30 50 37 45" stroke="#1b1230" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M26 46L27 48M33 46L32 48" stroke="#fff" stroke-width="1.4"/>' +
     '<path d="M18 52L16 56M42 52L44 56" stroke="#5e2aa8" stroke-width="4" stroke-linecap="round"/>'; } };
-PETS.stones = { name: 'Twinkle the Star Fox', note: 'A clever fox. In Starstones against the computer she peeks at one of its hidden stones every match.', art: function(){
+PETS.stones = { face: 'left', name: 'Twinkle the Star Fox', note: 'A clever fox. In Starstones against the computer she peeks at one of its hidden stones every match.', art: function(){
   return '<ellipse cx="30" cy="56" rx="16" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
     '<path d="M40 48Q58 46 54 26Q50 36 40 40Z" fill="#7a5ad8" stroke="#2a1a6a" stroke-width="2"/><path d="M52 30L54 26M50 36L54 34" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>' +
     '<ellipse cx="28" cy="46" rx="13" ry="9" fill="#8a6ae8" stroke="#2a1a6a" stroke-width="2.2"/>' +
@@ -10265,7 +10265,7 @@ PETS.stones = { name: 'Twinkle the Star Fox', note: 'A clever fox. In Starstones
     '<path d="M10 30Q12 16 28 16Q44 16 46 30Q40 42 28 42Q16 42 10 30Z" fill="#8a6ae8" stroke="#2a1a6a" stroke-width="2.2"/>' +
     '<path d="M20 34Q28 44 36 34Q28 38 20 34Z" fill="#e8e0ff"/>' + petEye(21, 29, 2.4) + '<path d="M33 29Q36 27 39 29" stroke="#1e1530" stroke-width="2" fill="none" stroke-linecap="round"/>' +
     '<circle cx="28" cy="35" r="1.8" fill="#1e1530"/><polygon points="' + starPts(28, 22, 4, 1.7) + '" fill="#ffd23e"/>'; } };
-PETS.dig = { name: 'Pip the Baby Dino', note: 'Hatched from a fossil egg. In the Treasure Hunt he sniffs out 3 to 10 bonus coins at every hole you dig.', art: function(){
+PETS.dig = { face: 'left', name: 'Pip the Baby Dino', note: 'Hatched from a fossil egg. In the Treasure Hunt he sniffs out 3 to 10 bonus coins at every hole you dig.', art: function(){
   return '<ellipse cx="30" cy="56" rx="18" ry="3.5" fill="rgba(0,0,0,.18)"/>' +
     '<path d="M42 44Q56 46 58 38Q52 42 44 38Z" fill="#6ac85a" stroke="#2a6a1f" stroke-width="2"/>' +
     '<path d="M20 30L22 22L26 28L30 20L34 28L38 22L40 32" fill="#ffb13a" stroke="#8a5a00" stroke-width="1.6" stroke-linejoin="round"/>' +
@@ -10274,9 +10274,24 @@ PETS.dig = { name: 'Pip the Baby Dino', note: 'Hatched from a fossil egg. In the
     '<ellipse cx="14" cy="34" rx="10" ry="8" fill="#6ac85a" stroke="#2a6a1f" stroke-width="2.2"/>' + petEye(13, 32, 2.6) +
     '<path d="M6 37Q9 39 12 37" stroke="#2a6a1f" stroke-width="1.4" fill="none" stroke-linecap="round"/><ellipse cx="30" cy="45" rx="8" ry="5" fill="#c8f0a0"/>' +
     '<g transform="rotate(-24 44 50)"><rect x="37" y="48.6" width="12" height="3.4" rx="1.5" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="37" cy="48.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="37" cy="51.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="49" cy="48.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><circle cx="49" cy="51.8" r="2" fill="#f4efe0" stroke="#7a6a50" stroke-width="1.1"/><rect x="37" y="49.2" width="12" height="2.2" fill="#f4efe0"/></g>'; } };
-/* pets drawn looking to the left get flipped the other way when they walk */
-var PET_LEFT = { fire: 1, cannon: 1, stones: 1, dig: 1, forest: 1, grave: 1 };
-function petFlip(k, dir){ return (PET_LEFT[k] ? -1 : 1) * (dir < 0 ? -1 : 1); }
+/* which way each pet's picture looks: every pet sets face: 'left' | 'right' | 'front' in its own entry, and walking
+   flips the picture so it always looks where it is going. A pet added without it still works: the way its eyes sit
+   in the picture decides (eyes left of the middle = looking left), and a warning shows in the console. */
+var PET_FACE = {};
+function petFace(k){
+  if (PET_FACE[k]) return PET_FACE[k];
+  var P = PETS[k], f = P && P.face;
+  if (f !== 'left' && f !== 'right' && f !== 'front'){
+    var xs = [], re = /<circle cx="([\d.]+)"[^>]*fill="#1e1530"/g, m, art = P ? P.art() : '';
+    while ((m = re.exec(art))) xs.push(+m[1]);
+    var avg = xs.length ? xs.reduce(function(a, b){ return a + b; }, 0) / xs.length : 30;
+    f = avg < 27 ? 'left' : avg > 33 ? 'right' : 'front';
+    if (P && window.console) console.warn('Pet "' + k + '" has no face setting; guessed ' + f + ' from its eyes.');
+  }
+  return (PET_FACE[k] = f);
+}
+/* pictures look right (or straight ahead) unless face is 'left'; walking left mirrors them */
+function petFlip(k, dir){ return (petFace(k) === 'left' ? -1 : 1) * (dir < 0 ? -1 : 1); }
 function petName(k){ return PETS[k] ? PETS[k].name : ''; }
 function mgPetRoll(g){
   gcapeCheck();

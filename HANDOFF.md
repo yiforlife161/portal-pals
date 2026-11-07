@@ -21,6 +21,8 @@ Test version (claude.ai artifact, owner's private test page): https://claude.ai/
 
 **Game rule: no passive health regeneration in any minigame.** Food drops are the only way to heal (Guard Post, Boss Raid, Island Quest). Island Quest used to heal 7%/s after 4 s out of a fight; that was removed. Do not add it to new minigames. Test: `node src/mock2/tqregen.js`.
 
+**Pet facing:** every pet entry in `PETS` must have `face: 'left' | 'right' | 'front'` (which way its picture looks). `petFlip` mirrors it so it always looks where it walks. (This used to be a hand-kept list `PET_LEFT`; the Key Bird was missing from it and walked backwards.) A pet without `face` falls back to guessing from its eye positions and logs a console warning. When adding a pet, set `face` and run `node src/mock2/tpets.js` (must say PASS).
+
 **Island Quest bridges:** `mkBr` puts each end at 0.8 of that island's edge measured on the side the bridge meets it (`quEdge(B, -ux, -uy)` for the far end; it used to measure the wrong side, so on lumpy islands about 3% of bridges stopped over the cliff and could not be walked off). `node src/mock2/tbridge.js` walks every bridge of 300 seeds x 3 levels with the game's own movement and must report `bad: 0`.
 
 **Ranged vs melee (combat minigames):** melee swings do 26 to everything in a short arc; ranged shots do `RANGED_DMG` (19, was 11) and pass through up to `SHOT_PIERCE` (3) monsters in a line (was 1). Owner found ranged far too slow before. Same numbers in Arena / Guard Post / Boss Raid (`df.shots`, guest `C.ghost`) and Island Quest (`qu.bolts`). Test: `node src/mock2/tpierce.js`.
