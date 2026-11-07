@@ -19,6 +19,8 @@ Portal Pals is a single-file browser game: build an island, pick pals, play mini
 
 Test version (claude.ai artifact, owner's private test page): https://claude.ai/artifact/8Lgy5MWmdkUGTQynb3C2G2. Publish `src/portal-pals-play.html` to that URL after each change.
 
+**Game rule: no passive health regeneration in any minigame.** Food drops are the only way to heal (Guard Post, Boss Raid, Island Quest). Island Quest used to heal 7%/s after 4 s out of a fight; that was removed. Do not add it to new minigames. Test: `node src/mock2/tqregen.js`.
+
 ## How every change ships
 
 All commands run from `src/`.

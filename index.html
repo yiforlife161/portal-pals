@@ -8712,7 +8712,7 @@ function quHostTick(dt){
       if (p.ko <= 0){ p.ko = 0; p.hp = p.maxhp; var s = quCpSpot(p.slot); p.x = p.tx = s.x; p.y = p.ty = s.y; p.respawnN = (p.respawnN || 0) + 1; }
       return;
     }
-    if (qu.t - p.lastHit > 4) p.hp = Math.min(p.maxhp, p.hp + p.maxhp * 0.07 * dt);      /* out of the fight you heal up */
+    /* no healing over time here: food is the only way to heal (keep it that way in every minigame) */
     var at = quIslAt(p.x, p.y); if (at > (qu.cp || 0) && !L.isl[at].side) qu.cp = at;
     var held = p.carry ? quItem(p.carry) : null;
     L.items.forEach(function(it){
