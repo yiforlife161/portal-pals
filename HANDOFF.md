@@ -21,6 +21,8 @@ Test version (claude.ai artifact, owner's private test page): https://claude.ai/
 
 **Game rule: no passive health regeneration in any minigame.** Food drops are the only way to heal (Guard Post, Boss Raid, Island Quest). Island Quest used to heal 7%/s after 4 s out of a fight; that was removed. Do not add it to new minigames. Test: `node src/mock2/tqregen.js`.
 
+**Ranged vs melee (combat minigames):** melee swings do 26 to everything in a short arc; ranged shots do `RANGED_DMG` (19, was 11) and pass through up to `SHOT_PIERCE` (3) monsters in a line (was 1). Owner found ranged far too slow before. Same numbers in Arena / Guard Post / Boss Raid (`df.shots`, guest `C.ghost`) and Island Quest (`qu.bolts`). Test: `node src/mock2/tpierce.js`.
+
 ## How every change ships
 
 All commands run from `src/`.

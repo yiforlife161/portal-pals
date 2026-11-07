@@ -503,6 +503,7 @@ SR = {
 "This trade was already done earlier, so nothing changed.": "Ova razmena je već obavljena ranije, pa se ništa nije promenilo.",
 "⚡ Direct connection": "⚡ Direktna veza",
 "☁ Server connection": "☁ Veza preko servera",
+"Your shots fly straight, go through up to 3 monsters, and fade at the edge of your range.": "Tvoji hici lete pravo, prolaze kroz do 3 čudovišta i nestaju na ivici dometa.",
 "Capes": "Ogrtači", "no cape": "bez ogrtača", "Unlocked:": "Otključano:", "Cape: reach level 99": "Ogrtač: dostigni nivo 99", "Level 99! Cape unlocked": "Nivo 99! Ogrtač otključan",
 "Mining Cape": "Rudarski ogrtač", "Fishing Cape": "Ribarski ogrtač", "Woodcutting Cape": "Drvoseški ogrtač", "Potionmaking Cape": "Ogrtač napitaka",
 "Cooking Cape": "Kuvarski ogrtač", "Smithing Cape": "Kovački ogrtač", "Firemaking Cape": "Ogrtač vatre", "Gravedigging Cape": "Grobarski ogrtač",
