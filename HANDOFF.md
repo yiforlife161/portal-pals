@@ -76,6 +76,7 @@ A "fresh build" (a clean copy without test gifts) is only made when the owner as
   - `nowS()` = server-corrected time.
 - **Minigames:**
   - Battle Arena / Guard Post / Boss Raid share the `df` engine (`df.mode` arena/defense/raid; `dfAr()` = arena-like).
+  - Boss pay: `RAID_SETS[lv].pay` multiplies the boss's base gold/xp (2.5 / 3.5 / 5, survival 3), so each raid level pays more than the same arena level (hard raid ≈ 205 gold / 1,500 xp vs hard arena 188 / 825). Check with `node src/mock2/traidpay.js`.
   - Sky Battle = `cn`, Treasure Hunt = `th`, Starstones = `ss`.
   - Levels 1–3 plus Survival (`SURV_LV = 4`, locked behind achievements).
   - Every level is 3 waves (`MG_LEVELS`); Medium and Hard keep only their 3 hardest waves (`CN_SETS`, `DF_SETS`).
