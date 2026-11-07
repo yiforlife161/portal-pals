@@ -11,7 +11,7 @@ async function player(b,uid,name){
   await ctx.route('https://www.gstatic.com/**',r=>{const f=r.request().url().split('/').pop().replace('firebase-','').replace('firestore','fs');return r.fulfill({body:fs.readFileSync(path.join(__dirname,f),'utf8'),contentType:'application/javascript'});});
   await ctx.exposeFunction('__db',(op,u,a)=>db(op,u,a));
   await ctx.exposeFunction('__rt',(op,p,v)=>rt(op,p,v));
-  await ctx.addInitScript(([uid,name])=>{localStorage.setItem('mock.want',JSON.stringify({uid,displayName:name}));},[uid,name]);
+  await ctx.addInitScript(([uid,name,nd])=>{localStorage.setItem('mock.want',JSON.stringify({uid,displayName:name}));if(nd)localStorage.setItem('pp.noDirect','1');},[uid,name,process.env.NODIRECT||'']);
   const pg=await ctx.newPage();
   pg.on('pageerror',e=>console.log(name,'ERR',e.message));
   await pg.goto('https://pp.test/');await pg.waitForTimeout(1200);
@@ -29,7 +29,7 @@ const HOOKS={
     me:"window.__qu.hero", see:"(slot)=>{const p=window.__qu.P.find(p=>p.slot===slot);return p?[p.x,p.y]:null;}" }
 };
 (async()=>{
-const b=await chromium.launch();
+const b=await chromium.launch({args:['--disable-features=WebRtcHideLocalIpsWithMdns']});
 const A=await player(b,'uidA','Ana'), B=await player(b,'uidB','Boris');
 const codeOf=pg=>pg.evaluate(()=>{document.getElementById('btn-friends').click();return new Promise(r=>setTimeout(()=>r(document.querySelector('.fr-code b').textContent),400));});
 const c=await codeOf(B); await codeOf(A); await A.fill('#fr-add',c);await A.click('#fr-send');await B.waitForTimeout(900);await B.click('[data-fr-acc]');await B.waitForTimeout(1200);
@@ -37,7 +37,9 @@ await A.evaluate(()=>document.getElementById('btn-friends').click());await B.eva
 const H=HOOKS[MODE];
 await A.evaluate(H.open);await A.waitForTimeout(500);
 await A.click(H.inv);await A.waitForTimeout(300);await A.click(H.lvBtn);await A.waitForTimeout(1200);
-await B.click('#pv-acc');await B.waitForTimeout(3500);
+await B.click('#pv-acc');await B.waitForTimeout(3500);await A.waitForTimeout(2500);
+const badge=pg=>pg.evaluate(()=>{const e=document.getElementById('pp-net');return e&&!e.hidden?e.textContent:'(none)';});
+console.log('badge A:',await badge(A),'| B:',await badge(B));if(process.env.SHOT)await B.screenshot({path:process.env.SHOT});
 // freeze monsters far away so nobody gets hurt, then walk
 const prep=MODE==='arena'?"window.__df.foes.forEach(f=>{f.x=-5000;f.y=-5000;});window.__df.spawnT=1e9;":"";
 async function run(mover,watcher,slot,label){
@@ -64,6 +66,12 @@ async function run(mover,watcher,slot,label){
   console.log(label.padEnd(18),'(own screen wobble '+(sd2/m2*100).toFixed(0)+'%)','behind '+String(best.L).padStart(3)+' ms','| off-path '+best.e.toFixed(1)+' px','| speed wobble '+(sd/mean*100).toFixed(0)+'%','| stalled frames '+(still*100).toFixed(0)+'%','| frames '+S.length,'| slides past the stop by '+over.toFixed(1)+' px, settles at '+rest.toFixed(1)+' px');
 }
 await A.evaluate(prep);await B.evaluate(prep);
+if(process.env.CUT){ // B's direct link stops sending (half-broken), then fully closes later
+  await B.evaluate(()=>{window.__realSend=RTCDataChannel.prototype.send;RTCDataChannel.prototype.send=function(){};});await A.waitForTimeout(2600);
+  console.log('after B stops sending: A',await badge(A),JSON.stringify(await A.evaluate(()=>window.ppCoop.net())), '| B',await badge(B),JSON.stringify(await B.evaluate(()=>window.ppCoop.net())));
+}
+const s0=rt.stats(),t0=Date.now();
 await run(B,A,1,MODE+' host sees');
 await run(A,B,0,MODE+' guest sees');
+const s1=rt.stats();console.log('database traffic during the test:',((s1.bytes-s0.bytes)/((Date.now()-t0)/1000)/1024).toFixed(1),'KB/s,',s1.writes-s0.writes,'writes');
 await b.close();})();

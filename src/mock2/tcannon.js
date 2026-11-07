@@ -44,6 +44,7 @@ for(;t<(+process.env.SECS||150);t+=5){
   if(process.env.STOP && t+5>=+process.env.STOP) await Promise.all(P.map(p=>p.evaluate(()=>{clearInterval(window.__bot);window.__cn.hold=false;})));
   const s=await Promise.all(P.map(st));
   console.log(t+5,s.map(x=>x.role+' '+x.ph+' w'+x.wave+' '+x.dn+'/'+x.need+' esc'+x.es+'/'+x.sp+' ships'+x.ships+' mine'+x.mine).join(' | '));
+  if(process.env.SHOTAT&&t+5==+process.env.SHOTAT) for(let i=0;i<N;i++) await P[i].screenshot({path:process.env.SHOTDIR+'/cnb'+i+'.png'});
   if(!shot && s[0].ships>=3){ shot=true; for(let i=0;i<N;i++) await P[i].screenshot({path:path.join(__dirname,'cn'+i+'.png')}); console.log('same ship ids host/guest:',s.map(x=>x.ids).every(v=>v===s[0].ids)); }
   if(s.every(x=>x.ph==='victory'||x.ph==='lost')) break;
 }

@@ -746,7 +746,7 @@ window.ppTrade = {
 
 /* ---------- Battle Arena co-op over the Realtime Database ---------- */
 let rt = null, rdb = null;
-const CO = { key: '', role: '', unsub: [], timer: 0, idle: 0 };
+const CO = { key: '', role: '', unsub: [], timer: 0, idle: 0, peers: {}, links: [], lastQ: {}, q: 0, recv: null };
 async function rtReady(){
   if (rdb) return true;
   try { rt = await import(SDK + 'firebase-database.js'); rdb = rt.getDatabase(fbApp, RTDB_URL); return true; }
@@ -891,6 +891,8 @@ async function coopAccept(inv){
 function coopStop(){
   CO.unsub.forEach(u => { try { u(); } catch (e) {} }); CO.unsub = [];
   clearInterval(CO.timer); CO.timer = 0;
+  Object.keys(CO.peers || {}).forEach(k => rtcClose(CO.peers[k])); CO.peers = {}; CO.links = []; CO.recv = null;
+  const nb = document.getElementById('pp-net'); if (nb) nb.hidden = true;
   if (CO.key && CO.role === 'host' && rt){ const k = CO.key; setTimeout(() => rt.remove(rt.ref(rdb, 'coop/' + k)).catch(() => {}), 3000); }
   CO.key = ''; CO.role = '';
   if (CO.gen && PT.gen === CO.gen && PT.started) ptReset();      /* only end the party this co-op belonged to, never a fresh invite */
@@ -899,28 +901,146 @@ function coopStop(){
 }
 /* the realtime channel: the host writes /h, the guests write /g, /g2, /g3 */
 function coSlotPath(n){ return n === 0 ? 'h' : n === 1 ? 'g' : 'g' + n; }
+
+/* ---------- direct connections (WebRTC): game updates go straight between the devices (inside the home Wi-Fi when
+   everyone is in the same house), with the Realtime Database as the fallback. The host links to each guest; the
+   offer and answer travel in that pair's match document (rtcO / rtcA, tagged with the game key). Every message
+   carries a number (_q) per sender, so a copy arriving by the other road, or late, is skipped. A link counts as
+   "live" once it has carried data in the last second and the other side confirms it hears us; while any guest is not live, the host also writes to the database. ---------- */
+const RTC_ICE = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
+function rtcAllowed(){ try { if (localStorage.getItem('pp.noDirect') === '1') return false; } catch (e){} return typeof RTCPeerConnection === 'function'; }
+function rtcGather(pc, ms){
+  return new Promise(res => {
+    if (pc.iceGatheringState === 'complete') return res();
+    const t = setTimeout(res, ms);
+    pc.addEventListener('icegatheringstatechange', () => { if (pc.iceGatheringState === 'complete'){ clearTimeout(t); res(); } });
+  });
+}
+/* live = data came in over the link lately AND the other side says it is getting ours (a link can break one way only) */
+function rtcHear(P){ return !!(P && P.dc && P.dc.readyState === 'open' && Date.now() - P.lastIn < 1000); }
+function rtcLive(P){ return rtcHear(P) && Date.now() - P.okT < 1200 && Date.now() - P.openT > 1200 && P.dc.bufferedAmount < 262144; }
+function rtcPing(){ CO.links.forEach(s => { const P = CO.peers[s]; if (P && P.dc && P.dc.readyState === 'open' && Date.now() - (P.pingT || 0) > 300){ P.pingT = Date.now(); rtcSend(P, JSON.stringify({ _p: rtcHear(P) ? 1 : 0 })); } }); }
+function rtcSend(P, s){ if (P && P.dc && P.dc.readyState === 'open' && P.dc.bufferedAmount < 262144) try { P.dc.send(s); } catch (e){} }
+function rtcClose(P){ if (!P) return; P.dead = true; if (P.unsub) try { P.unsub(); } catch (e){} try { if (P.dc) P.dc.close(); } catch (e){} try { P.pc.close(); } catch (e){} }
+function rtcWire(P, dc){
+  P.dc = dc;
+  dc.onopen = () => { P.openT = Date.now(); };
+  dc.onmessage = e => { if (P.dead) return; let v; try { v = JSON.parse(e.data); } catch (er){ return; } P.lastIn = Date.now(); if (v && v._p !== undefined){ if (v._p) P.okT = Date.now(); return; } if (CO.recv) CO.recv(v, P.slot, true); };
+}
+function rtcNew(slot, key){
+  const P = { slot: slot, key: key, pc: new RTCPeerConnection({ iceServers: RTC_ICE }), dc: null, openT: 0, lastIn: 0, okT: 0, pingT: 0, dead: false, unsub: null, done: false };
+  setTimeout(() => { if (!P.dead && !(P.dc && P.dc.readyState === 'open')){ rtcClose(P); } }, 15000);      /* no direct road: stay on the server */
+  return P;
+}
+async function rtcHost(slot, mid, key){
+  const P = rtcNew(slot, key);
+  CO.peers[slot] = P;
+  try {
+    rtcWire(P, P.pc.createDataChannel('pp', { ordered: true }));
+    await P.pc.setLocalDescription(await P.pc.createOffer());
+    await rtcGather(P.pc, 2500);
+    if (P.dead) return;
+    await fs.updateDoc(mref(mid), { rtcO: { k: key, sdp: P.pc.localDescription.sdp }, rtcA: null });
+    P.unsub = fs.onSnapshot(mref(mid), snap => {
+      const d = snap.exists() ? snap.data() : null;
+      if (P.dead || P.done || !d || !d.rtcA || d.rtcA.k !== key) return;
+      P.done = true;
+      P.pc.setRemoteDescription({ type: 'answer', sdp: d.rtcA.sdp }).catch(e => { console.warn(e); rtcClose(P); });
+    }, () => {});
+  } catch (e){ console.warn('direct link', e); rtcClose(P); }
+}
+function rtcGuest(mid, key){
+  const P = rtcNew(0, key);
+  CO.peers[0] = P;
+  P.pc.ondatachannel = e => rtcWire(P, e.channel);
+  P.unsub = fs.onSnapshot(mref(mid), async snap => {
+    const d = snap.exists() ? snap.data() : null;
+    if (P.dead || P.done || !d || !d.rtcO || d.rtcO.k !== key) return;
+    P.done = true;
+    try {
+      await P.pc.setRemoteDescription({ type: 'offer', sdp: d.rtcO.sdp });
+      await P.pc.setLocalDescription(await P.pc.createAnswer());
+      await rtcGather(P.pc, 2500);
+      if (P.dead) return;
+      await fs.updateDoc(mref(mid), { rtcA: { k: key, sdp: P.pc.localDescription.sdp } });
+    } catch (e){ console.warn('direct link', e); rtcClose(P); }
+  }, () => {});
+}
+/* the little "Direct / Server" label at the bottom of the screen during co-op games */
+function rtcBadge(){
+  let el = document.getElementById('pp-net');
+  const on = CO.key && CO.links && CO.links.length && G().coopRole && G().coopRole();
+  if (!on){ if (el) el.hidden = true; return; }
+  if (!el){
+    el = document.createElement('div'); el.id = 'pp-net';
+    el.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);z-index:9000;pointer-events:none;font:700 11px/1 system-ui,sans-serif;padding:4px 10px;border-radius:999px;color:#fff;opacity:.85;white-space:nowrap';
+    document.body.appendChild(el);
+  }
+  const top = CO.md === 'cannon';      /* the cannons fill the bottom of the screen there */
+  el.style.top = top ? '94px' : ''; el.style.bottom = top ? '' : '4px';
+  const n = CO.links.length, d = CO.links.filter(s => rtcLive(CO.peers[s])).length;
+  const txt = d === n ? '⚡ Direct connection' : d === 0 ? '☁ Server connection' : '⚡ Direct ' + d + '/' + n;
+  if (el.dataset.k !== txt){ el.dataset.k = txt; el.textContent = txt; el.style.background = d === n ? 'rgba(25,135,70,.88)' : d ? 'rgba(175,120,20,.88)' : 'rgba(55,65,85,.82)'; }
+  el.hidden = false;
+}
+/* a message from slot s (by either road): use it only if it is newer than the last one from s */
+function coFresh(v, s){
+  if (!v || typeof v !== 'object') return false;
+  const q = +v._q;
+  if (!q) return true;      /* an older game version sends no numbers */
+  if (q <= (CO.lastQ[s] || 0)) return false;
+  CO.lastQ[s] = q; return true;
+}
 async function coopLink(key, role, slot, roster){
   if (!(await rtReady())){ G().flash('Co-op is not set up yet.'); ptReset(); return; }
-  const mates = roster.filter(r => r && +r.slot !== slot).map(r => ({ slot: +r.slot || 0, name: r.name || 'Friend', partner: r.char }));
+  const mates = roster.filter(r => r && +r.slot !== slot).map(r => ({ slot: +r.slot || 0, name: r.name || 'Friend', partner: r.char, uid: r.uid }));
   if (!mates.length){ ptReset(); return; }
+  /* each guest's match document, for setting up the direct link */
+  const mids = {};
+  if (role === 'host') mates.forEach(m => { const pm = PT.mem.find(x => x.uid === m.uid); if (pm) mids[m.slot] = pm.mid; });
+  else mids[0] = PT.mid;
   const ok = G().coopStart({ role: role, slot: slot, mates: mates, name: mates[0].name, partner: mates[0].partner, lv: PT.lv, am: PT.am, md: PT.md });
   if (!ok){ if (role === 'guest') ptLeave(); else ptReset(); return; }
-  const gen = PT.gen;
+  const gen = PT.gen, md = PT.md;
   coopStop(); PT.started = true;
-  CO.key = key; CO.role = role; CO.idle = 0; CO.gen = gen;
-  const base = 'coop/' + key;
+  CO.key = key; CO.role = role; CO.idle = 0; CO.gen = gen; CO.md = md; CO.q = 0; CO.lastQ = {}; CO.peers = {};
+  CO.links = role === 'host' ? mates.map(m => m.slot) : [0];
+  const base = 'coop/' + key, direct = rtcAllowed();
   if (role === 'host'){
-    mates.forEach(m => CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/' + coSlotPath(m.slot)), sn => { const v = sn.val(); if (v) G().coopInput(v, m.slot); })));
+    CO.recv = (v, s) => {
+      if (!coFresh(v, s)) return;
+      G().coopInput(v, s);
+      if (md === 'dig'){ const msg = JSON.stringify({ _r: s, d: v }); CO.links.forEach(o => { if (o !== s) rtcSend(CO.peers[o], msg); }); }      /* treasure hunters hear from everyone */
+    };
+    mates.forEach(m => CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/' + coSlotPath(m.slot)), sn => { const v = sn.val(); if (v) CO.recv(v, m.slot, false); })));
+    if (direct) mates.forEach(m => { if (mids[m.slot]) rtcHost(m.slot, mids[m.slot], key); });
     CO.timer = setInterval(() => {
+      rtcBadge(); rtcPing();
       if (!G().coopRole()){ if (++CO.idle > 30) coopStop(); return; }
-      const snap = G().coopSnap(); if (snap) rt.set(rt.ref(rdb, base + '/h'), snap).catch(e => console.warn(e));
+      const snap = G().coopSnap(); if (!snap) return;
+      snap._q = ++CO.q;
+      const s = JSON.stringify(snap);
+      let server = false;
+      CO.links.forEach(o => { const P = CO.peers[o]; rtcSend(P, s); if (!rtcLive(P)) server = true; });
+      if (server) rt.set(rt.ref(rdb, base + '/h'), snap).catch(e => console.warn(e));
     }, 40);      /* 25 pictures a second for the friends */
   } else {
-    CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/h'), sn => { const v = sn.val(); if (v) G().coopApply(v, 0); }));
-    if (PT.md === 'dig') mates.filter(m => m.slot !== 0).forEach(m => CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/' + coSlotPath(m.slot)), sn => { const v = sn.val(); if (v) G().coopApply(v, m.slot); })));      /* treasure hunters hear from everyone */
+    CO.recv = (v, s) => {
+      if (v && v._r !== undefined && v.d){ const r = +v._r; if (r !== slot && coFresh(v.d, r)) G().coopApply(v.d, r); return; }
+      if (coFresh(v, s)) G().coopApply(v, s);
+    };
+    CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/h'), sn => { const v = sn.val(); if (v) CO.recv(v, 0, false); }));
+    if (md === 'dig') mates.filter(m => m.slot !== 0).forEach(m => CO.unsub.push(rt.onValue(rt.ref(rdb, base + '/' + coSlotPath(m.slot)), sn => { const v = sn.val(); if (v) CO.recv(v, m.slot, false); })));
+    if (direct && mids[0]) rtcGuest(mids[0], key);
     CO.timer = setInterval(() => {
+      rtcBadge(); rtcPing();
       if (!G().coopRole()){ if (++CO.idle > 10) coopStop(); return; }
-      const o = G().coopOut(); if (o) rt.set(rt.ref(rdb, base + '/' + coSlotPath(slot)), o).catch(e => console.warn(e));
+      const o = G().coopOut(); if (!o) return;
+      o._q = ++CO.q;
+      const P = CO.peers[0];
+      rtcSend(P, JSON.stringify(o));
+      /* treasure hunters also write to the database, so friends without a direct link still hear them */
+      if (!rtcLive(P) || md === 'dig') rt.set(rt.ref(rdb, base + '/' + coSlotPath(slot)), o).catch(e => console.warn(e));
     }, 40);      /* 25 a second from each guest */
   }
 }
@@ -928,7 +1048,8 @@ window.ppCoop = {
   ready(){ return !!(me && F.code); },
   friends(){ return onlineFriends(); },
   invite(uid, lv, am, md){ coopInvite(uid, lv, am, md); },
-  left(){ setTimeout(() => { if (!G().coopRole()) coopStop(); }, 50); }
+  left(){ setTimeout(() => { if (!G().coopRole()) coopStop(); }, 50); },
+  net(){ return (CO.links || []).map(s => rtcLive(CO.peers[s]) ? 1 : 0); }
 };
 
 /* ---------- friend chat: one conversation per pair of friends ---------- */
