@@ -8286,7 +8286,7 @@ function quGenTry(seed, lv, np, mul){
   }
   if (sides.length < 2) return null;
   function mkBr(a, b){
-    var A = isl[a], B = isl[b], dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d, ta = quEdge(A, ux, uy) * 0.8, tb = quEdge(B, ux, uy) * 0.8;
+    var A = isl[a], B = isl[b], dx = B.x - A.x, dy = B.y - A.y, d = Math.hypot(dx, dy), ux = dx / d, uy = dy / d, ta = quEdge(A, ux, uy) * 0.8, tb = quEdge(B, -ux, -uy) * 0.8;      /* B's edge on the side the bridge arrives from (islands are lumpy, not mirror images) */
     var x1 = A.x + ux * ta, y1 = A.y + uy * ta, x2 = B.x - ux * tb, y2 = B.y - uy * tb;
     br.push({ a: a, b: b, x1: x1, y1: y1, x2: x2, y2: y2, ux: ux, uy: uy, len: Math.hypot(x2 - x1, y2 - y1), mx: (x1 + x2) / 2, my: (y1 + y2) / 2, lock: '', st: 1, fuse: 0 });
   }
