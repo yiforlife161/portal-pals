@@ -21,7 +21,7 @@ async function player(b,uid,name){
 }
 (async()=>{const b=await chromium.launch();
 const out=[];
-for(const [mode,lv] of [['raid',1],['raid',2],['raid',3],['arena',1],['arena',2],['arena',3]]){
+for(const [mode,lv] of [['raid',1],['raid',2],['raid',3],['arena',3]]){
   const P=await player(b,'u'+mode+lv,'Ana');
   await P.evaluate(m=>{const I=window.__st.island;I.arenaMode='classic';I.lvWon=Object.assign({},I.lvWon,{[m]:3,raid:3,arena:3,defense:3});},mode);
   await P.evaluate(m=>window.__dfOpen(m),mode);await P.waitForTimeout(400);
