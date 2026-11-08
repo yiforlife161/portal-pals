@@ -1,14 +1,14 @@
 /* Winged warrior (no name yet): the owner's armoured warrior in yellow and black: a knight helmet with a black visor and white eye
    slits, a black crest, a yellow breastplate with a black chevron, black shoulder guards, metal blade-feather wings, solid armour
-   plates (no stripes), and yellow gauntlets with blue gems and two sharp blades sticking out of each (Air, melee, Giant). (preview only) */
+   plates (no stripes), and yellow gauntlets with blue gems and one big blade sticking out of each (Air, melee, Giant). (preview only) */
 var SN = { Y: '#f2b81e', YD: '#7a5400', YL: '#ffd968', K: '#2a2830', KD: '#0c0b10', KL: '#4a4652', BL: '#2f9be8', BLD: '#0e3f6a', W: '#d9dee8', WD: '#4a5060', ST: '#8fa8d0', STD: '#1e2c4a' };
-function snClaw(x, y, m){      /* a yellow gauntlet with two long sharp blades sticking out past the knuckles; m = 1 blades right, -1 left */
+function snClaw(x, y, m){      /* a yellow gauntlet with one big blade sticking out past the knuckles; m = 1 blades right, -1 left */
   var S = SN; function X(v){ return x + v * m; }
-  function blade(y0, len, rise){
-    return '<path d="M' + X(4) + ' ' + (y0 - 2.2) + 'L' + X(4 + len) + ' ' + (y0 - rise) + 'L' + X(4) + ' ' + (y0 + 2.2) + 'Z" fill="' + S.ST + '" stroke="' + S.STD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
-      '<path d="M' + X(6) + ' ' + (y0 - 0.6) + 'L' + X(2 + len * 0.85) + ' ' + (y0 - rise * 0.9) + '" stroke="#fff" stroke-width="1" stroke-linecap="round" stroke-opacity=".85"/>';
-  }
-  return blade(y - 3, 20, -3) + blade(y + 3, 18, -9) +
+  /* one big, broad blade out of the knuckles, slightly curved, with a bright edge */
+  var big = '<path d="M' + X(4) + ' ' + (y - 6) + 'Q' + X(18) + ' ' + (y - 7) + ' ' + X(30) + ' ' + (y - 2) + 'Q' + X(18) + ' ' + (y + 3) + ' ' + X(4) + ' ' + (y + 5) + 'Z" fill="' + S.ST + '" stroke="' + S.STD + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+    '<path d="M' + X(6) + ' ' + (y - 4.6) + 'Q' + X(18) + ' ' + (y - 5.4) + ' ' + X(27) + ' ' + (y - 2.2) + '" fill="none" stroke="#eef4ff" stroke-width="1.4" stroke-linecap="round"/>' +
+    '<path d="M' + X(6) + ' ' + (y + 0.5) + 'Q' + X(16) + ' ' + (y - 0.5) + ' ' + X(24) + ' ' + (y - 1.8) + '" fill="none" stroke="' + S.STD + '" stroke-width="1" stroke-linecap="round" stroke-opacity=".5"/>';
+  return big +
     '<path d="M' + X(-8) + ' ' + (y - 4) + 'Q' + X(-7) + ' ' + (y - 11) + ' ' + X(1) + ' ' + (y - 10) + 'Q' + X(8) + ' ' + (y - 9) + ' ' + X(8) + ' ' + (y - 2) + 'Q' + X(8) + ' ' + (y + 5) + ' ' + X(1) + ' ' + (y + 6) + 'Q' + X(-7) + ' ' + (y + 5) + ' ' + X(-8) + ' ' + (y - 4) + 'Z" fill="' + S.Y + '" stroke="' + S.YD + '" stroke-width="2.2" stroke-linejoin="round"/>' +
     '<path d="M' + X(4) + ' ' + (y - 8) + 'V' + (y + 4) + '" stroke="' + S.K + '" stroke-width="2.6" stroke-linecap="round"/>' +
     '<ellipse cx="' + X(-3) + '" cy="' + (y - 3) + '" rx="2.8" ry="2.2" fill="' + S.BL + '" stroke="' + S.BLD + '" stroke-width="1.2"/>';
@@ -63,7 +63,7 @@ function snBack(c){
     '<g><g class="pump pR">' + arm(70, 60, 82, 64) + '</g></g></svg>';
 }
 function snFront(c){
-  /* the front gauntlet and its blades sit in the weapon group so they slash when he hits */
+  /* the front gauntlet and its blade sit in the weapon group so they slash when he hits */
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
     '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + snClaw(88, 66, 1) + '</g></g></g></g></svg>';
 }
