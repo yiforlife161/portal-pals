@@ -1,5 +1,5 @@
 /* Winged warrior (no name yet): the owner's armoured warrior in yellow and black: a knight helmet with a black visor and white eye
-   slits, a black crest, a yellow breastplate with a black chevron, black shoulder guards, metal blade-feather wings, solid armour
+   slits, a black crest, a yellow breastplate with a black chevron, black shoulder guards, a big silver blade-wing hanging down behind each shoulder, solid armour
    plates (no stripes), and yellow gauntlets with blue gems and one big blade sticking out of each (Air, melee, Giant). (preview only) */
 var SN = { Y: '#f2b81e', YD: '#7a5400', YL: '#ffd968', K: '#2a2830', KD: '#0c0b10', KL: '#4a4652', BL: '#2f9be8', BLD: '#0e3f6a', W: '#d9dee8', WD: '#4a5060', ST: '#8fa8d0', STD: '#1e2c4a' };
 function snClaw(x, y, m){      /* a yellow gauntlet with one big blade sticking out past the knuckles; m = 1 blades right, -1 left */
@@ -47,16 +47,13 @@ function snBack(c){
     return '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + S.YD + '" stroke-width="10" stroke-linecap="round"/>' +
       '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + S.Y + '" stroke-width="6.4" stroke-linecap="round"/>';
   }
-  /* metal blade-feather wings: three long silver blades on each side, set in a black frame */
+  /* wings: one big silver blade on each side, hanging down behind him from the shoulders */
   function wing(m){
     function X(x){ return (50 + (x - 50) * m).toFixed(1); }
-    function blade(x0, y0, x1, y1, w){
-      var dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy), nx = -dy / L * w, ny = dx / L * w;
-      return '<path d="M' + X(x0 + nx) + ' ' + (y0 + ny) + 'L' + X(x1) + ' ' + y1 + 'L' + X(x0 - nx) + ' ' + (y0 - ny) + 'Z" fill="' + S.W + '" stroke="' + S.WD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
-        '<path d="M' + X(x0) + ' ' + y0 + 'L' + X(x0 + dx * 0.8) + ' ' + (y0 + dy * 0.8) + '" stroke="#fff" stroke-width="1" stroke-linecap="round" stroke-opacity=".8"/>';
-    }
-    return blade(34, 50, -6, 12, 5.4) + blade(34, 54, -12, 36, 5.2) + blade(34, 58, -6, 62, 4.8) +
-      '<path d="M' + X(36) + ' 48L' + X(28) + ' 46L' + X(26) + ' 60L' + X(36) + ' 60Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.8" stroke-linejoin="round"/>';
+    return '<path d="M' + X(36) + ' 47Q' + X(16) + ' 52 ' + X(8) + ' 70Q' + X(4) + ' 82 ' + X(10) + ' 96Q' + X(16) + ' 80 ' + X(24) + ' 70Q' + X(31) + ' 62 ' + X(36) + ' 60Z" fill="' + S.W + '" stroke="' + S.WD + '" stroke-width="2" stroke-linejoin="round"/>' +
+      '<path d="M' + X(32) + ' 50Q' + X(16) + ' 57 ' + X(10) + ' 74Q' + X(8) + ' 83 ' + X(10) + ' 91" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-opacity=".85"/>' +
+      '<path d="M' + X(33) + ' 57Q' + X(24) + ' 63 ' + X(18) + ' 74" fill="none" stroke="' + S.WD + '" stroke-width="1.1" stroke-linecap="round" stroke-opacity=".5"/>' +
+      '<path d="M' + X(37) + ' 46L' + X(29) + ' 46L' + X(27) + ' 61L' + X(37) + ' 61Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.8" stroke-linejoin="round"/>';
   }
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + wing(-1) + wing(1) + leg('lgL', 41, 38, 35) + leg('lgR', 59, 62, 65) +
     '<g><g class="pump pL">' + arm(30, 60, 17, 67) + snClaw(12, 72, -1) + '</g></g>' +
