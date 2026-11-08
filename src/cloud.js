@@ -739,7 +739,7 @@ function trWatchdog(){
    player can only create docs with their own uid; docs there can't be changed or deleted). Removing a look writes a second doc
    codes/X_<id> by the same player; looks with one are hidden. Loaded once at sign-in, so new looks appear after a reload. ---------- */
 const LK_RE = /^u_[a-z0-9]{8,24}$/;
-function lkFromDoc(d){ if (!d || d.kind !== 'look' || !LK_RE.test(d.id || '')) return null; return { id: d.id, name: d.name, el: d.el, style: d.style, giant: !!d.giant, by: d.by || '', uid: d.uid || '', t: d.t || 0, p: d.p || {} }; }
+function lkFromDoc(d){ if (!d || d.kind !== 'look' || !LK_RE.test(d.id || '')) return null; return { id: d.id, name: d.name, el: d.el, style: d.style, giant: !!d.giant, by: d.by || '', uid: d.uid || '', t: d.t || 0, p: d.p || {}, b: d.b || null }; }
 async function lkLoad(){
   if (!me) return;
   try {
@@ -759,7 +759,9 @@ window.ppLooks = {
   share: async L => {
     if (!me) throw new Error('signed out');
     const P = {}; ['body', 'front', 'armB', 'legL', 'legR', 'back'].forEach(k => { if (L.p && L.p[k]) P[k] = L.p[k]; });
-    await fs.setDoc(fs.doc(db, 'codes', 'L_' + L.id), { kind: 'look', uid: me.uid, id: L.id, name: String(L.name || '').slice(0, 20), el: L.el, style: L.style, giant: !!L.giant, by: F.name || 'Friend', t: Date.now(), p: P });
+    const doc = { kind: 'look', uid: me.uid, id: L.id, name: String(L.name || '').slice(0, 20), el: L.el, style: L.style, giant: !!L.giant, by: F.name || 'Friend', t: Date.now(), p: P };
+    if (L.b) doc.b = L.b;      /* a Pal Builder look: just the part choices and colours */
+    await fs.setDoc(fs.doc(db, 'codes', 'L_' + L.id), doc);
   },
   retire: async id => { if (me) await fs.setDoc(fs.doc(db, 'codes', 'X_' + id), { kind: 'lookoff', uid: me.uid, look: id }); },
   get: async id => {
