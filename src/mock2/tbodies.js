@@ -23,7 +23,7 @@ async function player(b,uid,name){
 (async()=>{const b=await chromium.launch();const P=await player(b,'u1','Ana');const OUT=process.argv[2]||'.';
 await P.click('button.dbtn[data-tab=pals]');await P.waitForTimeout(500);
 const made=[];
-for(const [k,name] of [['eagle','Talon'],['wyrm','Gloom'],['knight','Rattles'],['mecha','Bolt'],['cyc','Glare'],['rogue','Wren'],['md','Rex'],['sh','Spore'],['tk','Rivet']]){
+for(const [k,name] of [['eagle','Talon'],['wyrm','Gloom'],['knight','Rattles'],['mecha','Bolt'],['cyc','Glare'],['rogue','Wren'],['md','Rex'],['sh','Spore'],['tk','Rivet'],['ar','Ember']]){
   await P.click('button.btn.primary[data-action=new] >> visible=true');await P.waitForTimeout(300);
   await P.click('input[name=pbody][value='+k+']');await P.waitForTimeout(200);
   const lock=await P.evaluate(()=>({el:[...document.querySelectorAll('input[name=element]')].filter(r=>!r.disabled).map(r=>r.value+(r.checked?'*':'')),st:[...document.querySelectorAll('input[name=pstyle]')].filter(r=>!r.disabled).map(r=>r.value),size:[...document.querySelectorAll('input[name=psize]')].filter(r=>!r.disabled).map(r=>r.value),imgHidden:document.getElementById('f-img-field').offsetParent===null,sub:document.querySelector('.pv-sub').textContent}));
@@ -40,7 +40,7 @@ await P.screenshot({path:OUT+'/grid.png'});
 await P.evaluate(()=>{const c=window.__st.chars.find(c=>c.body==='eagle');c.giant=true;});await P.click('button.dbtn[data-tab=pals]').catch(()=>{});await P.waitForTimeout(1500);await P.reload();await P.waitForTimeout(1500);await P.click('#pp-signin').catch(()=>{});await P.waitForTimeout(3500);
 await P.evaluate(()=>{const b=document.querySelector('[data-action=menu-play]');b&&b.click();});await P.waitForTimeout(800);
 console.log('after reload',JSON.stringify(await P.evaluate(()=>window.__st.chars.map(c=>[c.name,c.body||'',c.element,c.style,c.giant?'giant':'normal']))));
-for(const k of ['eagle','wyrm','knight','mecha','cyc','rogue','md','sh','tk']){
+for(const k of ['eagle','wyrm','knight','mecha','cyc','rogue','md','sh','tk','ar']){
   await P.evaluate(k=>{const S=window.__st;const c=S.chars.find(c=>c.body===k);S.island.heroId=c.id;S.island.hero=c.id;window.__syncHero();window.__renderSide();},k);
   await P.waitForTimeout(600);await P.screenshot({path:OUT+'/isl_'+k+'.png'});
 }
