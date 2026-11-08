@@ -1,4 +1,4 @@
-/* One-eyed soldier (no name yet): an original pal in the owner's black-and-gold colours. An all-black full helmet with a gold crest,
+/* One-eyed soldier (no name yet): an original pal in the owner's black-and-gold colours. An all-black full helmet,
    one big blue eye showing through a round opening, a mouth grille, black plate armour with gold trim, and big gauntlet fists
    (Undead, melee, Giant). (preview only) */
 var CYC = { K: '#24222a', KD: '#0b0a0f', KL: '#46424f', Y: '#f2b81e', YD: '#7a5400', E: '#2f5fd8', ED: '#13286a' };
@@ -24,18 +24,15 @@ function cycArt(){
     /* all-black full helmet */
     outlined('<path d="M50 12C64 12 72 22 72 36L71 52Q68 59 62 60L38 60Q32 59 29 52L28 36C28 22 36 12 50 12Z"/>', C.K, C.KD) +
     '<path d="M35 20Q41 15 48 14.5" fill="none" stroke="' + C.KL + '" stroke-width="2.6" stroke-linecap="round"/>' +
-    /* gold crest running over the top of the helmet */
-    outlined('<path d="M45.5 18Q44 6 50 -1Q56 6 54.5 18Q50 15.5 45.5 18Z"/>', C.Y, C.YD, 2) +
-    '<path d="M50 2V14" stroke="#ffe08a" stroke-width="1.4" stroke-linecap="round"/>' +
     '<path d="M29.5 44H35M70.5 44H65" stroke="' + C.KL + '" stroke-width="1.8" stroke-linecap="round"/>' +
     /* round opening with the one big eye */
-    '<circle cx="50" cy="35" r="16" fill="' + C.KD + '" stroke="' + C.Y + '" stroke-width="2.6"/>' +
+    '<circle cx="50" cy="35" r="16" fill="' + C.KD + '" stroke="' + C.KL + '" stroke-width="2.4"/>' +
     '<circle cx="50" cy="35.5" r="13.4" fill="#fbf8f0" stroke="' + O + '" stroke-width="1.8"/>' +
     '<circle cx="50.5" cy="36.2" r="8.2" fill="' + C.E + '" stroke="' + C.ED + '" stroke-width="1.8"/><circle cx="50.5" cy="36.2" r="4" fill="' + O + '"/>' +
     '<circle cx="47.4" cy="33" r="2" fill="#fff"/><circle cx="54.6" cy="39.6" r="1.1" fill="#bcd0ff"/>' +
     '<path d="M36 25Q50 18 64 25" fill="none" stroke="' + C.KD + '" stroke-width="3.8" stroke-linecap="round"/>' +
     /* mouth grille */
-    '<path d="M42 53.5H58M43.5 57H56.5" stroke="' + C.Y + '" stroke-width="2.2" stroke-linecap="round"/>');
+    '<path d="M42 53.5H58M43.5 57H56.5" stroke="' + C.KD + '" stroke-width="2.4" stroke-linecap="round"/>');
 }
 function cycBack(c){
   var C = CYC;
