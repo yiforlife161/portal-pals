@@ -356,6 +356,7 @@ input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
 .body-pick .mini svg{overflow:visible}.bp-classic{opacity:.85}
 .el-pick.locked,.style-pick.locked{opacity:.35;pointer-events:none}
 .lk-bar{margin-top:6px}
+.lk-make[hidden],#lk-build[hidden],#lk-upload[hidden]{display:none!important}
 .lk-modes{display:flex;gap:6px}.lk-modes .btn.on,.lk-play .btn.on{background:var(--c,#6a5ae0);color:#fff;border-color:transparent}
 .bd-top{margin-bottom:6px}.bd-ctrl{display:grid;gap:7px}
 .bd-row{display:grid;gap:3px}.bd-row>b{font-size:12.5px}
@@ -5519,7 +5520,7 @@ document.addEventListener('click', function(ev){
     case 'new': openForm(null); break;
     case 'edit': openForm(id); break;
     case 'cancel-form': closeForm(); break;
-    case 'lk-open': lkOpen(); break;
+    case 'lk-open': if ($('#lk-make').hidden) lkOpen(); else $('#lk-make').hidden = true; break;
     case 'lk-mode': lkMode(t.dataset.m); break;
     case 'bd-set': LK.b[t.dataset.k] = t.dataset.v; t.parentNode.querySelectorAll('.bd-chip').forEach(function(c){ c.classList.toggle('on', c === t); }); lkPreview(); break;
     case 'bd-random': bdRandom(); bdControls(); lkPreview(); break;
