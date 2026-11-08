@@ -1,13 +1,14 @@
 /* Undead purple dragon (no name yet): an original slim grave dragon pal (preview only). Undead, ranged.
    Long snout, dark swept-back horns, bone ridge spikes, glowing cyan eyes,
-   torn wings with holes, a bony tail ending in a ghost flame, and a floating ghost flame he throws. */
+   torn wings with holes, a bony tail ending in a purple lightning bolt, and purple lightning he shoots. */
 var WYRM = { P: '#6e4aa8', PD: '#2f1d55', PL: '#a98bd8', SH: '#4a3080', B: '#ece2c8', BD: '#5a4a3a', G: '#7ff3ff', GD: '#1a7f8f', M: '#3d3550', MD: '#1c1628' };
-function wyrmFlame(cx, cy, s){
-  var W = WYRM;
-  return '<path d="M' + cx + ' ' + (cy + 8 * s) + 'C' + (cx - 7 * s) + ' ' + (cy + 8 * s) + ' ' + (cx - 8 * s) + ' ' + cy + ' ' + (cx - 3 * s) + ' ' + (cy - 4 * s) +
-    'C' + (cx - 3 * s) + ' ' + (cy - 1 * s) + ' ' + (cx - 1 * s) + ' ' + (cy - 1 * s) + ' ' + cx + ' ' + (cy - 3 * s) + 'C' + (cx - 1 * s) + ' ' + (cy - 8 * s) + ' ' + (cx + 2 * s) + ' ' + (cy - 12 * s) + ' ' + (cx + 5 * s) + ' ' + (cy - 13 * s) +
-    'C' + (cx + 4 * s) + ' ' + (cy - 8 * s) + ' ' + (cx + 8 * s) + ' ' + (cy - 5 * s) + ' ' + (cx + 7 * s) + ' ' + (cy + 1 * s) + 'C' + (cx + 7 * s) + ' ' + (cy + 6 * s) + ' ' + (cx + 4 * s) + ' ' + (cy + 8 * s) + ' ' + cx + ' ' + (cy + 8 * s) + 'Z" fill="' + W.G + '" fill-opacity=".9" stroke="' + W.GD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
-    '<path d="M' + cx + ' ' + (cy + 5 * s) + 'C' + (cx - 3 * s) + ' ' + (cy + 5 * s) + ' ' + (cx - 3 * s) + ' ' + (cy + 1 * s) + ' ' + (cx + 1 * s) + ' ' + (cy - 3 * s) + 'C' + (cx + 4 * s) + ' ' + (cy + 1 * s) + ' ' + (cx + 3 * s) + ' ' + (cy + 5 * s) + ' ' + cx + ' ' + (cy + 5 * s) + 'Z" fill="#e8ffff"/>';
+/* crackling purple lightning: a glow, a zigzag bolt and a few sparks */
+function wyrmBolt(cx, cy, s){
+  function P(x, y){ return (cx + x * s).toFixed(1) + ' ' + (cy + y * s).toFixed(1); }
+  return '<circle cx="' + cx + '" cy="' + cy + '" r="' + (10 * s) + '" fill="#b77bff" fill-opacity=".28"/>' +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (6 * s) + '" fill="#d6b3ff" fill-opacity=".45"/>' +
+    '<path d="M' + P(2, -12) + 'L' + P(-5, -1) + 'L' + P(0, -1) + 'L' + P(-4, 11) + 'L' + P(6, -3) + 'L' + P(1, -3) + 'L' + P(5, -12) + 'Z" fill="#f1e2ff" stroke="#5a1fa0" stroke-width="1.6" stroke-linejoin="round"/>' +
+    '<path d="M' + P(-7, -7) + 'L' + P(-10, -9) + 'M' + P(8, 5) + 'L' + P(11, 7) + 'M' + P(-8, 6) + 'L' + P(-11, 8) + 'M' + P(8, -8) + 'L' + P(10, -11) + '" stroke="#c99aff" stroke-width="' + (1.6 * s).toFixed(1) + '" stroke-linecap="round"/>';
 }
 function wyrmArt(){
   var W = WYRM, O = '#160f26';
@@ -59,12 +60,13 @@ function wyrmBack(c){
       '<path d="' + bone + '" fill="none" stroke="' + W.P + '" stroke-width="2.4" stroke-linecap="round"/>' +
       '<path d="M' + X(2) + ' 30L' + X(-1) + ' 25L' + X(5) + ' 28Z" fill="' + W.B + '" stroke="' + W.BD + '" stroke-width="1.4" stroke-linejoin="round"/>';
   }
-  /* thin bony tail out to the left, a ghost flame at the tip */
+  /* thin bony tail out to the left, a purple lightning bolt at the tip */
   var tailPath = 'M40 89Q26 97 14 90Q8 86 9 80';
   var tail = '<path d="' + tailPath + '" fill="none" stroke="' + W.PD + '" stroke-width="7" stroke-linecap="round"/>' +
     '<path d="' + tailPath + '" fill="none" stroke="' + W.P + '" stroke-width="3.6" stroke-linecap="round"/>' +
     '<circle cx="33" cy="92.5" r="1.4" fill="' + W.B + '"/><circle cx="25" cy="94" r="1.4" fill="' + W.B + '"/><circle cx="17" cy="92" r="1.3" fill="' + W.B + '"/>' +
-    wyrmFlame(9, 74, 0.75);
+    '<path d="M10 82L3 74L8 73L2 64L15 75L10 76L13 82Z" fill="#c99aff" stroke="#3b1a66" stroke-width="1.8" stroke-linejoin="round"/>' +
+    '<path d="M6 71L8.5 73.5" stroke="#f1e2ff" stroke-width="1.4" stroke-linecap="round"/>';
   /* back arm: thin, with bone claws */
   var claw = '<path d="M17 72L12 70M17 73.5L11.5 75M18 75.5L14 79" stroke="' + W.B + '" stroke-width="2" stroke-linecap="round"/><circle cx="18.5" cy="73" r="3.6" fill="' + W.P + '" stroke="' + W.PD + '" stroke-width="1.8"/>';
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + wing(-1) + wing(1) + tail + leg('lgL', 44, 41, 39) + leg('lgR', 56, 59, 61) +
@@ -73,8 +75,8 @@ function wyrmBack(c){
 }
 function wyrmFront(c){
   var W = WYRM;
-  /* a ghost flame floating over his claw; it sits in the weapon group so it jolts when he attacks */
-  var flame = '<g transform="rotate(-18 86 64)">' + wyrmFlame(96, 48, 1.4) + '</g>';
+  /* purple lightning crackling over his claw; it sits in the weapon group so it jolts when he attacks */
+  var flame = '<g transform="rotate(-18 86 64)">' + wyrmBolt(95, 50, 1.15) + '</g>';
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
     '<g><g class="pump pR"><g class="wpn">' + flame +
     '<path d="M85 61L87 56M87.5 62.5L91 59M88 65.5L92.5 64" stroke="' + W.B + '" stroke-width="2" stroke-linecap="round"/>' +
