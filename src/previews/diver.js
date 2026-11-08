@@ -26,7 +26,7 @@ function dvArt(){
     '<circle cx="41" cy="33" r="6.4" fill="#fff" stroke="' + O + '" stroke-width="1.6"/><circle cx="42" cy="34" r="3.6" fill="' + O + '"/><circle cx="43.4" cy="32.4" r="1.3" fill="#fff"/>' +
     '<circle cx="59" cy="33" r="6.4" fill="#fff" stroke="' + O + '" stroke-width="1.6"/><circle cx="58" cy="34" r="3.6" fill="' + O + '"/><circle cx="59.4" cy="32.4" r="1.3" fill="#fff"/>' +
     '<path d="M35 25.5L46 28M65 25.5L54 28" stroke="' + D.FD + '" stroke-width="2.2" stroke-linecap="round"/>' +
-    '<ellipse cx="50" cy="44" rx="4.4" ry="3.2" fill="#ff8a7a" stroke="' + D.FD + '" stroke-width="1.4"/><path d="M46 44H54" stroke="' + D.FD + '" stroke-width="1" stroke-linecap="round"/>' +
+    '<ellipse cx="50" cy="44.2" rx="7" ry="3.4" fill="#ff8a7a" stroke="' + D.FD + '" stroke-width="1.4"/><path d="M43.6 44.2H56.4" stroke="' + D.FD + '" stroke-width="1" stroke-linecap="round"/>' +
     /* glass shine and a couple of bubbles inside the helmet */
     '<path d="M34 18Q40 13 47 12.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-opacity=".9"/>' +
     '<circle cx="66" cy="22" r="1.6" fill="none" stroke="#fff" stroke-width="1"/><circle cx="63" cy="17" r="1" fill="none" stroke="#fff" stroke-width=".9"/>');
