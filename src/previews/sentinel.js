@@ -1,4 +1,4 @@
-/* Winged warrior (no name yet): the owner's armoured warrior in yellow and black: a knight helmet with a black visor and white eye
+/* Winged warrior (no name yet): the owner's armoured warrior in yellow and black: a knight helmet with two curved yellow horns and a black visor and white eye
    slits, a black crest, a yellow breastplate with a black chevron, black shoulder guards, a big silver blade-wing hanging down behind each shoulder, solid armour
    plates (no stripes), and yellow gauntlets with blue gems and one big blade sticking out of each (Air, melee, Giant). (preview only) */
 var SN = { Y: '#f2b81e', YD: '#7a5400', YL: '#ffd968', K: '#2a2830', KD: '#0c0b10', KL: '#4a4652', BL: '#2f9be8', BLD: '#0e3f6a', W: '#d9dee8', WD: '#4a5060', ST: '#8fa8d0', STD: '#1e2c4a' };
@@ -29,6 +29,9 @@ function snArt(){
     outlined('<path d="M47 14Q50 4 53 14L53 24H47Z"/>', S.K, S.KD, 2) +
     outlined('<path d="M50 13C63 13 70 23 70 35L69 47Q65 54 58 55L42 55Q35 54 31 47L30 35C30 23 37 13 50 13Z"/>', S.Y, S.YD) +
     '<path d="M36 20Q42 16 48 15.5" fill="none" stroke="' + S.YL + '" stroke-width="2.6" stroke-linecap="round"/>' +
+    /* two curved yellow horns on the sides of the helmet */
+    outlined('<path d="M33 27Q22 22 20 6Q28 14 37 20Z"/><path d="M67 27Q78 22 80 6Q72 14 63 20Z"/>', S.Y, S.YD, 2.2) +
+    '<path d="M24 12Q27 19 33 22M76 12Q73 19 67 22" fill="none" stroke="' + S.YL + '" stroke-width="1.5" stroke-linecap="round"/>' +
     '<path d="M32 33Q50 27 68 33L67 43Q60 40 50 41Q40 40 33 43Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
     '<path d="M36 36.5L45 38.5L44 40.5Q39 40.5 36 38.8Z M64 36.5L55 38.5L56 40.5Q61 40.5 64 38.8Z" fill="#fff"/>' +
     '<path d="M50 41V53" stroke="' + S.YD + '" stroke-width="1.6" stroke-linecap="round"/>' +
