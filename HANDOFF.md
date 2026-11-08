@@ -15,7 +15,7 @@ Portal Pals is a single-file browser game: build an island, pick pals, play mini
 | `src/i18n/` | Serbian translation. `sr2.py` = exact strings, `sr3.py` = templates (`§` = any text, `§1`/`§2` numbered). `build.py` injects the dictionary into the game file. |
 | `src/mkx.py` | Builds the test pages in `src/mock2/` (adds `window.__df`, `__th`, `__st`, … hooks). |
 | `src/mock2/` | Playwright test harness with a mock Firebase (`server.js` simulates Firestore rules, `rt.js` the Realtime Database). `t*.js` are tests. |
-| `src/previews/` | Two original pals drawn but **not added yet**: Sir Rattlebones (skeleton knight, Undead, melee) and Puddle (chubby purple baby dragon with gold horns and teal wings, Magic, ranged). The drawing functions are in `knight.js` / `dragon.js`. |
+| `src/previews/` | Two original pals drawn but **not added yet**: Sir Rattlebones (skeleton knight, Undead, melee) and Puddle (chubby purple baby dragon with gold horns and teal wings, Magic, ranged), and Talon (placeholder name; the owner's own drawing of a blue eagle with an arm cannon, Air, ranged, with a 3-feather crest and glowing cannon core added; the cannon replaces the wand as his weapon). The drawing functions are in `knight.js` / `dragon.js` / `eagle.js`; `eagle_preview.png` shows him in game. |
 
 Test version (claude.ai artifact, owner's private test page): https://claude.ai/artifact/8Lgy5MWmdkUGTQynb3C2G2. Publish `src/portal-pals-play.html` to that URL after each change.
 
