@@ -1,11 +1,18 @@
 /* Mech dragon (no name yet): the owner's own drawing of a green dinosaur-dragon in blue-and-gold mech gear: a blue helmet with
-   a gold crest and gold bolts, a toothy jaw, mech wings, orange clawed hands and feet (Tech, melee, Normal). (preview only) */
+   a gold crest and gold bolts, a toothy jaw, mech wings, orange clawed hands and feet, yellow lens eyes on the helmet, a wrist blaster (Tech, ranged, Normal). (preview only) */
 var MD = { G: '#4fae3a', GD: '#1f5a14', GL: '#a8dc6a', B: '#2f62d8', BD: '#122c72', BL: '#5f8cf0', Y: '#f2b81e', YD: '#7a5400', O: '#e07a1e', OD: '#7a3a08', K: '#2a2830' };
 function mdBolt(cx, cy, r){
   var M = MD;
   return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + M.B + '" stroke="' + M.BD + '" stroke-width="1.8"/>' +
     '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.62) + '" fill="' + M.Y + '" stroke="' + M.YD + '" stroke-width="1.3"/>' +
     '<path d="M' + (cx - r * 0.32) + ' ' + (cy + r * 0.28) + 'L' + (cx + r * 0.32) + ' ' + (cy - r * 0.28) + '" stroke="' + M.YD + '" stroke-width="1.3" stroke-linecap="round"/>';
+}
+function mdEye(cx, cy, r, m){      /* a yellow lens eye in a blue rim, the pupil looking a little toward the middle */
+  var M = MD, O = '#120f10';
+  return '<circle cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + M.B + '" stroke="' + M.BD + '" stroke-width="1.8"/>' +
+    '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 0.68) + '" fill="#ffd23a" stroke="' + M.YD + '" stroke-width="1.4"/>' +
+    '<circle cx="' + (cx + r * 0.16 * m) + '" cy="' + (cy + r * 0.05) + '" r="' + (r * 0.3) + '" fill="' + O + '"/>' +
+    '<circle cx="' + (cx - r * 0.2) + '" cy="' + (cy - r * 0.28) + '" r="' + (r * 0.14) + '" fill="#fff"/>';
 }
 function mdClaws(x, y, m){      /* an orange hand with three black claws; m = 1 claws point right, -1 left */
   var M = MD; function X(v){ return x + v * m; }
@@ -35,10 +42,8 @@ function mdArt(){
     '<path d="M29 38Q50 30 71 38" fill="none" stroke="' + M.Y + '" stroke-width="2.6" stroke-linecap="round"/>' +
     '<path d="M36 19Q43 15 50 15" fill="none" stroke="' + M.BL + '" stroke-width="2.6" stroke-linecap="round"/>' +
     '<path d="M44 16V24M56 16V24" stroke="' + M.BD + '" stroke-width="1.4" stroke-linecap="round" stroke-opacity=".6"/>' +
-    mdBolt(26, 40, 6.4) + mdBolt(74, 40, 6.4) +
-    /* eyes peeking under the helmet rim */
-    '<path d="M37 38.5Q41 36.5 45 38.5L44 41Q41 42 38 41Z" fill="#ffe14a" stroke="' + O + '" stroke-width="1.4" stroke-linejoin="round"/><circle cx="41.4" cy="39.6" r="1.3" fill="' + O + '"/>' +
-    '<path d="M63 38.5Q59 36.5 55 38.5L56 41Q59 42 62 41Z" fill="#ffe14a" stroke="' + O + '" stroke-width="1.4" stroke-linejoin="round"/><circle cx="58.6" cy="39.6" r="1.3" fill="' + O + '"/>');
+    /* his eyes: the two yellow lenses on the sides of the helmet */
+    mdEye(27, 39, 7, 1) + mdEye(73, 39, 7, -1));
 }
 function mdBack(c){
   var M = MD;
@@ -69,7 +74,12 @@ function mdBack(c){
     '<g><g class="pump pR">' + arm(63, 66, 82, 66) + '</g></g></svg>';
 }
 function mdFront(c){
-  /* the front claw sits in the weapon group so it swipes when he attacks */
+  /* a blue-and-gold blaster strapped over the front claw; it sits in the weapon group so it kicks back when he fires */
+  var M = MD;
+  var gun = '<rect x="80" y="57" width="20" height="10" rx="3.5" fill="' + M.B + '" stroke="' + M.BD + '" stroke-width="2"/>' +
+    '<path d="M83 59.5H96" stroke="' + M.BL + '" stroke-width="1.6" stroke-linecap="round"/>' +
+    '<rect x="84" y="56" width="4" height="12" rx="1.2" fill="' + M.Y + '" stroke="' + M.YD + '" stroke-width="1.2"/>' +
+    '<ellipse cx="100" cy="62" rx="3.4" ry="5.6" fill="' + M.Y + '" stroke="' + M.YD + '" stroke-width="1.6"/><ellipse cx="100.4" cy="62" rx="1.8" ry="3.2" fill="#7ff3ff"/>';
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + mdClaws(88, 66, 1) + '</g></g></g></g></svg>';
+    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + mdClaws(88, 68, 1) + gun + '</g></g></g></g></svg>';
 }
