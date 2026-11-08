@@ -38,7 +38,12 @@ const sx=await A.evaluate(()=>{const s=window.__lkB?null:null;return null;});
 // drag the new star from where it is to the left side of the belly
 const st=await A.evaluate(()=>{const ov=document.getElementById('st-ov');const c=ov.querySelector('circle');return c?[+c.getAttribute('cx'),+c.getAttribute('cy')]:null;});
 await A.mouse.move(box.x+st[0]/100*box.width,box.y+st[1]/100*box.height);await A.mouse.down();
-await A.mouse.move(box.x+40/100*box.width,box.y+70/100*box.height,{steps:6});await A.mouse.up();
+await A.mouse.move(box.x+51.5/100*box.width,box.y+66/100*box.height,{steps:6});
+await A.screenshot({path:OUT+'/snap.png'});
+console.log('snapped to middle while dragging:',JSON.stringify(await A.evaluate(()=>{const c=document.querySelector('#st-ov circle');const l=document.querySelector('#st-ov path');return [c&&c.getAttribute('cx'),!!l,l&&l.getAttribute('stroke')];})));
+await A.mouse.up();
+console.log('line hidden after drop:',await A.evaluate(()=>!document.querySelector('#st-ov path')));
+await A.mouse.move(box.x+st[0]/100*box.width,box.y+st[1]/100*box.height);
 await A.fill('#st-size','0.6').catch(()=>{});await A.evaluate(()=>{const r=document.getElementById('st-size');r.value='0.7';r.dispatchEvent(new Event('input'));const t=document.getElementById('st-rot');t.value='20';t.dispatchEvent(new Event('input'));});
 await A.click('[data-action=st-mirror]');await A.waitForTimeout(150);
 await A.selectOption('#st-newL','legL');await A.evaluate(()=>{const i=document.getElementById('st-newc');i.value='#ff5a7a';i.dispatchEvent(new Event('input'));});

@@ -5440,10 +5440,12 @@ function stBindOverlay(){
   ov.addEventListener('pointermove', function(ev){
     if (!LK.drag) return;
     var p = pt(ev), t = (LK.b.st || [])[LK.sel]; if (!t) return;
-    t.x = Math.round(Math.max(-30, Math.min(130, p.x + LK.drag.dx)) * 10) / 10; t.y = Math.round(Math.max(-30, Math.min(130, p.y + LK.drag.dy)) * 10) / 10;
+    var nx = Math.max(-30, Math.min(130, p.x + LK.drag.dx));
+    LK.drag.snap = Math.abs(nx - 50) < 2.5;      /* close to the middle: snap onto the centre line */
+    t.x = LK.drag.snap ? 50 : Math.round(nx * 10) / 10; t.y = Math.round(Math.max(-30, Math.min(130, p.y + LK.drag.dy)) * 10) / 10;
     lkPaint();
   });
-  function up(){ LK.drag = null; }
+  function up(){ if (LK.drag){ LK.drag = null; lkPaint(); } }
   ov.addEventListener('pointerup', up); ov.addEventListener('pointercancel', up);
 }
 function bdRandom(){
@@ -5483,7 +5485,8 @@ function lkPaint(){
   pb.innerHTML = E.back() + E.art() + E.front();
   var ov = $('#st-ov'); if (!ov) return;
   var t = LK.tab === 'st' && L.b && (LK.b.st || [])[LK.sel];
-  ov.innerHTML = t ? '<circle cx="' + t.x + '" cy="' + t.y + '" r="' + (9 * t.k + 1) + '" fill="none" stroke="#6a5ae0" stroke-width="1" stroke-dasharray="2.4 1.6"/><circle cx="' + t.x + '" cy="' + t.y + '" r="1.2" fill="#6a5ae0"/>' : '';
+  var mid = LK.drag ? '<path d="M50 -24V128" stroke="' + (LK.drag.snap ? '#ff3a7a' : '#6a5ae0') + '" stroke-width="' + (LK.drag.snap ? 0.9 : 0.5) + '" stroke-dasharray="' + (LK.drag.snap ? '0' : '2 1.6') + '" stroke-opacity="' + (LK.drag.snap ? 1 : 0.55) + '"/>' : '';
+  ov.innerHTML = mid + (t ? '<circle cx="' + t.x + '" cy="' + t.y + '" r="' + (9 * t.k + 1) + '" fill="none" stroke="#6a5ae0" stroke-width="1" stroke-dasharray="2.4 1.6"/><circle cx="' + t.x + '" cy="' + t.y + '" r="1.2" fill="#6a5ae0"/>' : '');
 }
 function lkOpen(){
   LK.p = {}; LK.b = bdClean(BD_DEF); LK.anim = ''; LK.tab = 'parts'; LK.sel = -1; LK.newL = 'body'; LK.newc = '#ffffff'; bdControls(); lkMode('build');
