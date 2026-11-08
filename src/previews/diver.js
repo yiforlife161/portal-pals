@@ -1,19 +1,19 @@
 /* Bubble Trooper (no name yet): an original blue fish soldier: a round blue fish face inside a water-filled glass dome helmet,
-   a brass and copper deep-sea armour suit with rivets over a navy undersuit, heavy boots, and a brass bubble blaster with an air
+   a steel deep-sea armour suit with rivets over a navy undersuit, heavy steel boots, and a steel bubble blaster with an air
    tank (Water, ranged). (preview only) */
-var DV = { F: '#2f7fe0', FD: '#0e2f6a', FL: '#8cc4ff', FB: '#ffd23a', G: '#bfe8ff', GD: '#3a6a8a', BR: '#d49a3a', BRD: '#5a3a0e', BRL: '#ffd27a', CU: '#b8643a', N: '#1e2c56', ND: '#0a1028' };
+var DV = { F: '#2f7fe0', FD: '#0e2f6a', FL: '#8cc4ff', FB: '#ffd23a', G: '#bfe8ff', GD: '#3a6a8a', BR: '#9aa6b6', BRD: '#2e3644', BRL: '#dfe6ef', CU: '#6c7888', N: '#1e2c56', ND: '#0a1028' };
 function dvRivets(pts){ var D = DV; return pts.map(function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.1" fill="' + D.BRL + '" stroke="' + D.BRD + '" stroke-width=".7"/>'; }).join(''); }
 function dvArt(){
   var D = DV, O = '#0a0e1a';
   return wrapSvg(
-    /* navy undersuit, brass chest plate with a copper band, a round air gauge */
+    /* navy undersuit, steel chest plate with a darker band, a round air gauge */
     outlined('<path d="M33 60Q50 54 67 60L68 86Q50 92 32 86Z"/>', D.N, D.ND) +
     outlined('<path d="M35 60Q50 55 65 60L64 78Q50 83 36 78Z"/>', D.BR, D.BRD) +
     '<path d="M38 62Q42 59 47 59" fill="none" stroke="' + D.BRL + '" stroke-width="2" stroke-linecap="round"/>' +
     outlined('<path d="M35 76Q50 81 65 76L65 81Q50 86 35 81Z"/>', D.CU, D.BRD, 1.8) +
     '<circle cx="50" cy="68" r="5" fill="#f2efe4" stroke="' + D.BRD + '" stroke-width="1.6"/><path d="M50 68L52.6 65.4" stroke="#c0382a" stroke-width="1.3" stroke-linecap="round"/><circle cx="50" cy="68" r="0.9" fill="' + D.BRD + '"/>' +
     dvRivets([[38, 64], [62, 64], [38, 73], [62, 73]]) +
-    /* brass diving collar */
+    /* steel diving collar */
     outlined('<path d="M28 56Q50 46 72 56L70 62Q50 54 30 62Z"/>', D.BR, D.BRD, 2.2) + dvRivets([[33, 56], [42, 52.6], [50, 51.6], [58, 52.6], [67, 56]]) +
     /* glass dome helmet full of water */
     '<circle cx="50" cy="33" r="22" fill="' + D.G + '" fill-opacity=".55" stroke="' + D.GD + '" stroke-width="2.4"/>' +
@@ -44,7 +44,7 @@ function dvBack(c){
       '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + D.N + '" stroke-width="5.4" stroke-linecap="round"/>';
   }
   function glove(x, y){ return '<circle cx="' + x + '" cy="' + y + '" r="4.6" fill="' + D.BR + '" stroke="' + D.BRD + '" stroke-width="1.8"/><path d="M' + (x - 3) + ' ' + (y - 1) + 'H' + (x + 3) + '" stroke="' + D.CU + '" stroke-width="1.4" stroke-linecap="round"/>'; }
-  /* brass shoulder pads */
+  /* steel shoulder pads */
   var pads = outlined('<path d="M24 58Q25 50 35 51L36 61Q29 63 25 61Z"/><path d="M76 58Q75 50 65 51L64 61Q71 63 75 61Z"/>', D.BR, D.BRD, 2) + dvRivets([[29, 56], [71, 56]]);
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + leg('lgL', 42, 39, 36) + leg('lgR', 58, 61, 64) +
     '<g><g class="pump pL">' + arm(33, 63, 18, 68) + glove(15, 69) + '</g></g>' +
@@ -52,7 +52,7 @@ function dvBack(c){
 }
 function dvFront(c){
   var D = DV;
-  /* brass bubble blaster: a round air tank on top, a flared bell muzzle, and a bubble ready to go */
+  /* steel bubble blaster: a round air tank on top, a flared bell muzzle, and a bubble ready to go */
   var gun = '<g transform="rotate(-18 86 64)">' +
     '<rect x="78" y="58" width="22" height="9" rx="3" fill="' + D.BR + '" stroke="' + D.BRD + '" stroke-width="2"/>' +
     '<path d="M81 60.5H96" stroke="' + D.BRL + '" stroke-width="1.6" stroke-linecap="round"/>' +
