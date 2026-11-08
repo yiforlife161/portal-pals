@@ -514,6 +514,7 @@ SR = {
 "Iron Cyclops": "Gvozdeni kiklop",
 "Masked Rogue": "Maskirana lopovka",
 "Mech Dragon": "Meh zmaj",
+"Mushroom Guy": "Pečurko",
 "Capes": "Ogrtači", "no cape": "bez ogrtača", "Unlocked:": "Otključano:", "Cape: reach level 99": "Ogrtač: dostigni nivo 99", "Level 99! Cape unlocked": "Nivo 99! Ogrtač otključan",
 "Mining Cape": "Rudarski ogrtač", "Fishing Cape": "Ribarski ogrtač", "Woodcutting Cape": "Drvoseški ogrtač", "Potionmaking Cape": "Ogrtač napitaka",
 "Cooking Cape": "Kuvarski ogrtač", "Smithing Cape": "Kovački ogrtač", "Firemaking Cape": "Ogrtač vatre", "Gravedigging Cape": "Grobarski ogrtač",

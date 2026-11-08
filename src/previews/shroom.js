@@ -48,7 +48,7 @@ function shBack(c){
     '<g><g class="pump pR">' + arm(70, 62, 83, 65) + '</g></g></svg>';
 }
 function shFront(c){
-  /* the front glove holds a little mushroom up, ready to throw; it sits in the weapon group so it jerks when he throws */
+  /* the front glove holds a little mushroom up, drawn over the glove, ready to throw; it sits in the weapon group so it jerks when he throws */
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + shMini(94, 48, 1.35) + shGlove(88, 65, 1, 1.35) + '</g></g></g></g></svg>';
+    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + shGlove(88, 65, 1, 1.35) + shMini(92, 52, 1.35) + '</g></g></g></g></svg>';
 }
