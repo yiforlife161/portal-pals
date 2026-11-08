@@ -1,5 +1,5 @@
 /* Undead purple dragon (no name yet): an original slim grave dragon pal (preview only). Undead, ranged.
-   Long snout, dark swept-back horns, bone ridge spikes, ribs showing on the chest, glowing cyan eyes,
+   Long snout, dark swept-back horns, bone ridge spikes, glowing cyan eyes,
    torn wings with holes, a bony tail ending in a ghost flame, and a floating ghost flame he throws. */
 var WYRM = { P: '#6e4aa8', PD: '#2f1d55', PL: '#a98bd8', SH: '#4a3080', B: '#ece2c8', BD: '#5a4a3a', G: '#7ff3ff', GD: '#1a7f8f', M: '#3d3550', MD: '#1c1628' };
 function wyrmFlame(cx, cy, s){
@@ -12,11 +12,9 @@ function wyrmFlame(cx, cy, s){
 function wyrmArt(){
   var W = WYRM, O = '#160f26';
   return wrapSvg(
-    /* slim body with ribs showing */
+    /* slim body with a paler belly */
     outlined('<path d="M39 64Q50 59 61 64Q65 78 60 90Q50 94 40 90Q35 78 39 64Z"/>', W.P, W.PD) +
-    '<path d="M50 65V88" stroke="' + W.BD + '" stroke-width="4.2" stroke-linecap="round"/><path d="M50 65V88" stroke="' + W.B + '" stroke-width="2.2" stroke-linecap="round"/>' +
-    '<path d="M50 69Q44 69 42 73M50 69Q56 69 58 73M50 75Q44 75 42 79M50 75Q56 75 58 79M50 81Q45 81 43.5 84.5M50 81Q55 81 56.5 84.5" fill="none" stroke="' + W.BD + '" stroke-width="3.6" stroke-linecap="round"/>' +
-    '<path d="M50 69Q44 69 42 73M50 69Q56 69 58 73M50 75Q44 75 42 79M50 75Q56 75 58 79M50 81Q45 81 43.5 84.5M50 81Q55 81 56.5 84.5" fill="none" stroke="' + W.B + '" stroke-width="1.8" stroke-linecap="round"/>' +
+    '<path d="M44 68Q50 65 56 68Q58 79 55 87Q50 89.5 45 87Q42 79 44 68Z" fill="' + W.PL + '" fill-opacity=".55"/>' +
     /* thin neck */
     outlined('<path d="M44 52L56 52L57 66Q50 69 43 66Z"/>', W.P, W.PD, 2.4) +
     /* dark swept-back horns */
@@ -26,8 +24,8 @@ function wyrmArt(){
     outlined('<path d="M50 18C63 18 71 27 71 38C71 47 64 54 50 54C36 54 29 47 29 38C29 27 37 18 50 18Z"/>', W.P, W.PD) +
     /* bone ridge spikes along the top */
     outlined('<path d="M46 20L50 11L54 20Z"/><path d="M41 22L43 15L46.5 20.5Z"/><path d="M59 22L57 15L53.5 20.5Z"/>', W.B, W.BD, 1.8) +
-    /* long snout */
-    outlined('<path d="M40 44Q50 40 60 44L58 60Q50 65 42 60Z"/>', W.PL, W.PD, 2.4) +
+    /* rounded snout */
+    outlined('<path d="M50 42C58 42 62 46 62 52C62 59 57 63 50 63C43 63 38 59 38 52C38 46 42 42 50 42Z"/>', W.PL, W.PD, 2.4) +
     '<path d="M44.5 48L47 50.5M55.5 48L53 50.5" stroke="' + W.PD + '" stroke-width="2" stroke-linecap="round"/>' +
     '<path d="M42.5 57Q50 60 57.5 57" fill="none" stroke="' + W.PD + '" stroke-width="1.8" stroke-linecap="round"/>' +
     '<path d="M45 57.6L46.2 61L47.6 58.2Z M55 57.6L53.8 61L52.4 58.2Z" fill="' + W.B + '" stroke="' + W.PD + '" stroke-width="0.9" stroke-linejoin="round"/>' +
