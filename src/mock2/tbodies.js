@@ -47,8 +47,9 @@ for(const k of ['eagle','wyrm','knight','mecha','cyc','rogue','md','sh','tk','ar
 await P.evaluate(()=>{const S=window.__st;const c=S.chars.find(c=>c.body==='wyrm');S.island.heroId=c.id;window.__syncHero();const I=S.island;I.lvWon=Object.assign({},I.lvWon,{arena:3,quest:3});});
 await P.evaluate(()=>window.__dfOpen('arena'));await P.waitForTimeout(400);await P.click('[data-action=df-start][data-lv="1"]');
 for(let i=0;i<30&&await P.evaluate(()=>window.__df.foes.filter(f=>!f.dead).length<1);i++) await P.waitForTimeout(300);
-await P.evaluate(()=>{const df=window.__df,H=df.hero;const f=df.foes.find(f=>!f.dead);f.x=H.x+150;f.y=H.y;f.spd=0;f.T=Object.assign({},f.T,{spd:0});f.hp=f.max=9999;df.aim={x:f.x,y:f.y-22};H.cool=0;window.__dfAim(H);});
+await P.evaluate(()=>{const df=window.__df,H=df.hero;const f=df.foes.find(f=>!f.dead);f.x=H.x+150;f.y=H.y;f.spd=0;f.T=Object.assign({},f.T,{spd:0});f.hp=f.max=9999;df.aim={x:f.x,y:f.y-22};H.cool=0;window.__dfAim(H);window.__zapNow=df.shots.map(s=>s.p.c.body||'');});
+console.log('shot right after firing:',JSON.stringify(await P.evaluate(()=>window.__zapNow)));
 await P.waitForTimeout(90);await P.screenshot({path:OUT+'/arena_zap.png'});
-console.log('arena shots zap',JSON.stringify(await P.evaluate(()=>window.__df.shots.map(s=>s.p.c.body||''))));
+console.log('arena shots zap',JSON.stringify(await P.evaluate(()=>[window.__df.hero&&window.__df.hero.c.body,window.__df.phase,window.__df.foes.length,window.__df.shots.map(s=>s.p.c.body||'')])));
 await P.evaluate(()=>{window.__df.phase='end';});
 await b.close();process.exit(0);})();

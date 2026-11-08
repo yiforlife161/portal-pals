@@ -379,6 +379,7 @@ async function friendsStart(user){
   }, e => console.warn(e)));
   setInterval(pvWatchdog, 5000);
   setTimeout(trResume, 3000);
+  setTimeout(lkLoad, 1500);
   friendsUi();
 }
 function friendsStop(){
@@ -734,6 +735,43 @@ function trWatchdog(){
   if (TR.st === 'wait' && Date.now() - TR.waitT > 60000){ const nm = TR.name; trCancel(); G().flash(nm + ' did not answer.'); return; }
   if (TR.st === 'open' && Date.now() - TR.lastThem > 45000){ const nm = TR.name; trCancel(); G().flash(nm + ' left the trade.'); }
 }
+/* ---------- player-made looks: each shared look is one doc codes/L_<id> (anyone signed in can read the codes collection, and a
+   player can only create docs with their own uid; docs there can't be changed or deleted). Removing a look writes a second doc
+   codes/X_<id> by the same player; looks with one are hidden. Loaded once at sign-in, so new looks appear after a reload. ---------- */
+const LK_RE = /^u_[a-z0-9]{8,24}$/;
+function lkFromDoc(d){ if (!d || d.kind !== 'look' || !LK_RE.test(d.id || '')) return null; return { id: d.id, name: d.name, el: d.el, style: d.style, giant: !!d.giant, by: d.by || '', uid: d.uid || '', t: d.t || 0, p: d.p || {} }; }
+async function lkLoad(){
+  if (!me) return;
+  try {
+    const off = {}, list = [];
+    const qo = await fs.getDocs(fs.query(fs.collection(db, 'codes'), fs.where('kind', '==', 'lookoff'), fs.limit(400)));
+    qo.forEach(x => { const d = x.data(); if (d && d.look) off[d.look + '|' + d.uid] = 1; });
+    const ql = await fs.getDocs(fs.query(fs.collection(db, 'codes'), fs.where('kind', '==', 'look'), fs.limit(120)));
+    ql.forEach(x => { const L = lkFromDoc(x.data()); if (L && !off[L.id + '|' + L.uid]) list.push(L); });
+    list.sort((a, b) => a.t - b.t);
+    if (G().lookSync) G().lookSync(list);
+  } catch (e){ console.warn('looks', e); }
+}
+window.ppLooks = {
+  ready: () => !!me,
+  uid: () => (me ? me.uid : ''),
+  name: () => F.name || 'Friend',
+  share: async L => {
+    if (!me) throw new Error('signed out');
+    const P = {}; ['body', 'front', 'armB', 'legL', 'legR', 'back'].forEach(k => { if (L.p && L.p[k]) P[k] = L.p[k]; });
+    await fs.setDoc(fs.doc(db, 'codes', 'L_' + L.id), { kind: 'look', uid: me.uid, id: L.id, name: String(L.name || '').slice(0, 20), el: L.el, style: L.style, giant: !!L.giant, by: F.name || 'Friend', t: Date.now(), p: P });
+  },
+  retire: async id => { if (me) await fs.setDoc(fs.doc(db, 'codes', 'X_' + id), { kind: 'lookoff', uid: me.uid, look: id }); },
+  get: async id => {
+    if (!me || !LK_RE.test(id)) return null;
+    const off = await fs.getDoc(fs.doc(db, 'codes', 'X_' + id)).catch(() => null);
+    const sn = await fs.getDoc(fs.doc(db, 'codes', 'L_' + id));
+    const L = sn.exists() ? lkFromDoc(sn.data()) : null;
+    if (L && off && off.exists() && off.data().uid === L.uid) return null;
+    return L;
+  }
+};
+
 window.ppTrade = {
   ready: () => !!(me && F.code),
   active: () => !!TR.mid,
