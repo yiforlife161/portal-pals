@@ -1,0 +1,90 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{margin:0;background:#fff;font-family:"DejaVu Sans",Arial,sans-serif;color:#222b45}
+.wrap{width:1780px;height:1150px;display:flex;gap:40px;padding:40px;box-sizing:border-box}
+.card{flex:none}
+h1{font-size:34px;margin:0 0 6px}
+.sub{font-size:17px;color:#5a6280;margin:0 0 18px}
+.notes{flex:1;font-size:17px;line-height:1.45}
+.notes h2{font-size:21px;margin:18px 0 6px;color:#3b3f8f}
+.notes ul{margin:0;padding-left:20px}
+.notes li{margin:3px 0}
+.k{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:6px}
+.box{border:2px dashed #b9bfd6;border-radius:10px;padding:10px 14px;margin-top:8px}
+</style></head><body><div class="wrap">
+<div class="card">
+<h1>Portal Pals: character template</h1>
+<p class="sub">Draw your pal standing still, facing <b>right</b>. The game animates it for you.</p>
+<svg width="1060" height="1010" viewBox="-14 -6 138 124" style="background:#fbfbfe;border:2px solid #d8dcec;border-radius:14px">
+ <defs><pattern id="g" width="5" height="5" patternUnits="userSpaceOnUse"><path d="M5 0H0V5" fill="none" stroke="#eceef6" stroke-width=".25"/></pattern></defs>
+ <rect x="-14" y="-6" width="138" height="124" fill="url(#g)"/>
+ <rect x="0" y="0" width="100" height="100" fill="none" stroke="#8a90b0" stroke-width=".5" stroke-dasharray="2 1.4"/>
+ <text x="1" y="-1.6" font-size="2.6" fill="#8a90b0">the pal's box (100 x 100); wings, tail and weapon may stick out a little</text>
+ <!-- back zone -->
+ <path d="M38 62Q14 44 -6 26L2 52L12 60L22 66Z" fill="#cfe9ff" fill-opacity=".55" stroke="#4a8fd0" stroke-width=".4" stroke-dasharray="1.4 .8"/>
+ <path d="M62 62Q86 44 106 26L98 52L88 60L78 66Z" fill="#cfe9ff" fill-opacity=".55" stroke="#4a8fd0" stroke-width=".4" stroke-dasharray="1.4 .8"/>
+ <path d="M38 88Q22 97 6 90L4 80L22 82Z" fill="#cfe9ff" fill-opacity=".55" stroke="#4a8fd0" stroke-width=".4" stroke-dasharray="1.4 .8"/>
+ <text x="-6" y="22" font-size="2.6" fill="#2a6aa8">wings / cape (behind)</text>
+ <text x="-12" y="96" font-size="2.6" fill="#2a6aa8">tail, ponytail = LEFT side</text>
+ <!-- legs -->
+ <path d="M42 84L39 96M58 84L61 96" stroke="#a3d977" stroke-width="7" stroke-linecap="round"/>
+ <ellipse cx="36" cy="100" rx="8" ry="3.4" fill="#a3d977"/><ellipse cx="64" cy="100" rx="8" ry="3.4" fill="#a3d977"/>
+ <text x="70" y="95" font-size="2.6" fill="#4e8a20">legs + feet (they swing)</text>
+ <!-- back arm -->
+ <path d="M34 63L16 68" stroke="#a3d977" stroke-width="5.5" stroke-linecap="round"/><circle cx="14" cy="69" r="4.5" fill="#a3d977"/>
+ <text x="-12" y="76" font-size="2.6" fill="#4e8a20">back hand (15, 70)</text>
+ <!-- body -->
+ <path d="M32 58Q50 52 68 58L69 86Q50 92 31 86Z" fill="#ffe2a8" stroke="#c48a1a" stroke-width=".5"/>
+ <text x="38" y="74" font-size="3" fill="#8a5a00">BODY</text><text x="35" y="78.2" font-size="2.3" fill="#8a5a00">chest, belt, armour</text>
+ <!-- head -->
+ <circle cx="50" cy="37" r="21" fill="#ffd0dc" stroke="#c0405a" stroke-width=".5"/>
+ <text x="43.6" y="31" font-size="3.2" fill="#a0203a">HEAD</text>
+ <text x="35.2" y="35.4" font-size="2.3" fill="#a0203a">big and readable: it's what</text>
+ <text x="36.6" y="38.6" font-size="2.3" fill="#a0203a">people see at game size</text>
+ <circle cx="42" cy="42" r="3.4" fill="#fff" stroke="#a0203a" stroke-width=".4"/><circle cx="58" cy="42" r="3.4" fill="#fff" stroke="#a0203a" stroke-width=".4"/>
+ <text x="40" y="49.6" font-size="2.2" fill="#a0203a">eyes ~ y 40</text>
+ <path d="M50 16V6" stroke="#c0405a" stroke-width=".4" stroke-dasharray="1 .8"/><text x="52" y="9" font-size="2.3" fill="#a0203a">hats, horns, crests: up to y 0</text>
+ <!-- front arm + weapon -->
+ <path d="M66 63L84 64" stroke="#ffb0a0" stroke-width="5.5" stroke-linecap="round"/><circle cx="86" cy="64" r="4.5" fill="#ffb0a0" stroke="#d05030" stroke-width=".4"/>
+ <path d="M86 64L95 30" stroke="#d05030" stroke-width="1.2" stroke-dasharray="1.6 1"/><path d="M86 64L104 60" stroke="#d05030" stroke-width="1.2" stroke-dasharray="1.6 1"/>
+ <text x="88" y="25" font-size="2.6" fill="#b03a1a">melee: sword/club points up</text>
+ <text x="88" y="57.6" font-size="2.6" fill="#b03a1a">ranged: gun points out</text>
+ <text x="70" y="71.6" font-size="2.6" fill="#b03a1a">WEAPON HAND (86, 64)</text>
+ <text x="72" y="75" font-size="2.3" fill="#b03a1a">this whole hand swings or kicks back</text>
+ <!-- ground -->
+ <path d="M-10 103.5H110" stroke="#8a90b0" stroke-width=".5"/><text x="80" y="107.4" font-size="2.6" fill="#8a90b0">ground: feet touch here</text>
+ <text x="-12" y="114" font-size="2.6" fill="#8a90b0">Giants use the same template; the game scales them up 1.3x.</text>
+</svg>
+</div>
+<div class="notes">
+<h2>The 3 layers</h2>
+<ul>
+<li><span class="k" style="background:#cfe9ff"></span><b>Back:</b> wings, tail, legs, the back arm</li>
+<li><span class="k" style="background:#ffd0dc"></span><b>Body:</b> head, face, torso, armour (doesn't move)</li>
+<li><span class="k" style="background:#ffb0a0"></span><b>Front:</b> the weapon arm and the weapon</li>
+</ul>
+<h2>Rules that make it work in game</h2>
+<ul>
+<li>Face <b>right</b>. The weapon hand is on the right. The game mirrors the pal when it walks left.</li>
+<li>Anything that should trail behind (tail, ponytail, cape) goes on the <b>left</b>.</li>
+<li>Keep legs and arms as separate pieces so they can swing.</li>
+<li>Big head, bold dark outlines, few small details: pals are about 60 px tall on screen.</li>
+<li>Wings and tails may stick out of the box a bit; keep the feet on the ground line.</li>
+<li>No pictures of the scene or platform, just the character.</li>
+</ul>
+<h2>Keep it original</h2>
+<ul>
+<li>No characters from Skylanders, Spyro or any other game, show or movie, and no look-alikes.</li>
+<li>Good test: if someone could name the character it reminds them of, change the idea, not just the colours.</li>
+<li>Mixing a creature + an outfit + a weapon that don't usually go together keeps it yours.</li>
+</ul>
+<h2>Fill in for each pal</h2>
+<div class="box">
+Name of the look: ________________________<br>
+Element: Fire · Water · Air · Earth · Life · Tech · Undead · Magic<br>
+Fighting style: Melee / Ranged &nbsp;&nbsp; Size: Normal / Giant<br>
+Weapon: _____________________________<br>
+Main colours (2–3): ____________________<br>
+Special shot look (optional): ___________
+</div>
+</div>
+</div></body></html>
