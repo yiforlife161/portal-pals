@@ -22,34 +22,43 @@ async function player(b,uid,name){
 // player-made looks: A makes one from 6 layer pictures and shares it, B sees it after loading, makes a pal with it; A removes it
 // Pal Builder: build a look from parts, check every option draws, save + share, a second player sees it
 (async()=>{const b=await chromium.launch();const OUT=process.argv[2]||'.';
-const A=await player(b,'uidA','Ana');
+const A=await player(b,'uidA','Ana');A.on('pageerror',e=>console.log('PAGEERR',e.message));
 await A.click('button.dbtn[data-tab=pals]');await A.waitForTimeout(400);
 await A.click('button.btn.primary[data-action=new] >> visible=true');await A.waitForTimeout(300);
 await A.click('[data-action=lk-open]');await A.waitForTimeout(400);
-// pick some parts
-await A.fill('#lk-name','Sprout Knight');await A.selectOption('#lk-el','life');
-for(const [k,v] of [['head','wide'],['body','broad'],['pat','armor'],['eyes','angry'],['mouth','grin'],['top','horns'],['back','cape'],['arms','thick'],['legs','normal'],['wpn','sword']])
+await A.fill('#lk-name','Star Gremlin');await A.selectOption('#lk-el','magic');
+for(const [k,v] of [['head','bean'],['body','egg'],['pat','none'],['eyes','cute'],['mouth','tongue'],['top','bunny'],['back','butterfly'],['arms','gloves'],['legs','boots'],['wpn','lantern']])
   await A.click('#bd-ctrl [data-k='+k+'][data-v='+v+']');
-await A.evaluate(()=>{const i=document.querySelector('#bd-ctrl input[data-bdc=c1]');i.value='#4a9a5a';i.dispatchEvent(new Event('input'));});
-await A.waitForTimeout(300);
-const mk=await A.$('#lk-make');await mk.screenshot({path:OUT+'/builder.png'});
-await A.click('[data-action=lk-anim][data-a=walking]');await A.waitForTimeout(250);
-const pv=await A.$('#lk-prev');await pv.screenshot({path:OUT+'/walk.png'});
-// every option of every part draws without errors: render 24 random looks into a sheet
-const sheet=await A.evaluate(()=>{let h='';for(let i=0;i<24;i++){document.querySelector('[data-action=bd-random]').click();const p=document.querySelector('#lk-prev .pbody');h+='<div style="width:120px;height:120px;position:relative;display:inline-block;margin:6px">'+p.outerHTML+'</div>';}
-  const d=document.createElement('div');d.id='bdsheet';d.style.cssText='position:fixed;left:0;top:0;width:820px;background:#cfe8c8;z-index:99999;padding:8px';d.innerHTML=h;document.body.appendChild(d);return 1;});
-await A.waitForTimeout(300);const sh=await A.$('#bdsheet');await sh.screenshot({path:OUT+'/random.png'});await A.evaluate(()=>document.getElementById('bdsheet').remove());
-// back to the knight and save
-for(const [k,v] of [['head','wide'],['body','broad'],['pat','armor'],['eyes','angry'],['mouth','grin'],['top','horns'],['back','cape'],['arms','thick'],['legs','normal'],['wpn','sword']])
-  await A.click('#bd-ctrl [data-k='+k+'][data-v='+v+']');
+await A.click('[data-action=st-tab][data-t=st]');await A.waitForTimeout(200);
+// a yellow star on the belly, dragged a bit, then a mirrored copy; a heart on the left leg; a gear on the lantern
+await A.evaluate(()=>{const i=document.getElementById('st-newc');i.value='#ffd23a';i.dispatchEvent(new Event('input'));});
+await A.click('[data-action=st-add][data-s=star]');await A.waitForTimeout(150);
+const ov=await A.$('#st-ov');const box=await ov.boundingBox();
+const sx=await A.evaluate(()=>{const s=window.__lkB?null:null;return null;});
+// drag the new star from where it is to the left side of the belly
+const st=await A.evaluate(()=>{const ov=document.getElementById('st-ov');const c=ov.querySelector('circle');return c?[+c.getAttribute('cx'),+c.getAttribute('cy')]:null;});
+await A.mouse.move(box.x+st[0]/100*box.width,box.y+st[1]/100*box.height);await A.mouse.down();
+await A.mouse.move(box.x+40/100*box.width,box.y+70/100*box.height,{steps:6});await A.mouse.up();
+await A.fill('#st-size','0.6').catch(()=>{});await A.evaluate(()=>{const r=document.getElementById('st-size');r.value='0.7';r.dispatchEvent(new Event('input'));const t=document.getElementById('st-rot');t.value='20';t.dispatchEvent(new Event('input'));});
+await A.click('[data-action=st-mirror]');await A.waitForTimeout(150);
+await A.selectOption('#st-newL','legL');await A.evaluate(()=>{const i=document.getElementById('st-newc');i.value='#ff5a7a';i.dispatchEvent(new Event('input'));});
+await A.click('[data-action=st-add][data-s=heart]');await A.waitForTimeout(150);
+await A.evaluate(()=>{const r=document.getElementById('st-size');r.value='0.45';r.dispatchEvent(new Event('input'));});
+await A.waitForTimeout(200);
+const mk=await A.$('#lk-make');await mk.screenshot({path:OUT+'/stickers.png'});
+const stinfo=await A.evaluate(()=>document.querySelector('[data-action=st-tab][data-t=st]').textContent);
+console.log('sticker tab:',stinfo);
+await A.click('[data-action=lk-anim][data-a=walking]');await A.waitForTimeout(260);
+const pv=await A.$('#lk-prev');await pv.screenshot({path:OUT+'/walk2.png'});
+// random sheet with all the new parts
+await A.click('[data-action=st-tab][data-t=parts]');await A.waitForTimeout(150);
+await A.evaluate(()=>{let h='';for(let i=0;i<24;i++){document.querySelector('[data-action=bd-random]').click();const p=document.querySelector('#lk-pb');h+='<div style="width:120px;height:120px;position:relative;display:inline-block;margin:6px"><span class="pbody">'+p.innerHTML+'</span></div>';}
+  const d=document.createElement('div');d.id='bdsheet';d.style.cssText='position:fixed;left:0;top:0;width:820px;background:#cfe8c8;z-index:99999;padding:8px';d.innerHTML=h;document.body.appendChild(d);});
+await A.waitForTimeout(300);const sh=await A.$('#bdsheet');await sh.screenshot({path:OUT+'/random2.png'});await A.evaluate(()=>document.getElementById('bdsheet').remove());
 await A.click('[data-action=lk-save]');await A.waitForTimeout(2000);
 const id=await A.evaluate(()=>{const r=document.querySelector('input[name=pbody]:checked');return r&&r.value;});
 const keys=Object.keys(db.DB).filter(k=>k.startsWith('codes/L_'));
-console.log('saved',id,'| shared docs',keys.length,'size bytes',keys.map(k=>JSON.stringify(db.DB[k]).length));
-await A.fill('#f-name','Sprig Two');await A.click('#form-submit');await A.waitForTimeout(400);
-await A.evaluate(id=>{const S=window.__st;const c=S.chars.find(c=>c.body===id);S.island.heroId=c.id;window.__syncHero();const I=S.island;I.lvWon=Object.assign({},I.lvWon,{arena:3});},id);
-await A.evaluate(()=>window.__dfOpen('arena'));await A.waitForTimeout(400);await A.click('[data-action=df-start][data-lv="1"]');await A.waitForTimeout(3000);
-await A.screenshot({path:OUT+'/arena.png'});
+console.log('saved',id,'stickers saved:',keys.map(k=>(db.DB[k].b.st||[]).length),'bytes',keys.map(k=>JSON.stringify(db.DB[k]).length));
 const B=await player(b,'uidB','Boris');await B.waitForTimeout(2500);
 console.log('B sees it:',await B.evaluate(id=>!!(document.querySelector('input[name=pbody][value="'+id+'"]')),id));
 await b.close();process.exit(0);})();
