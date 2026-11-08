@@ -1983,9 +1983,9 @@ function tkFront(c){
     '<g><g class="pump pR"><g class="wpn">' + wrench + '<circle cx="86" cy="64" r="3.9" fill="' + T.S + '" stroke="' + T.SD + '" stroke-width="1.6"/></g></g></g></svg>';
 }
 
-/* Arcane dragon (no name yet): an original deep-violet magic dragon. Teal crystal horns and tail crystal, glowing dark gold runes on
+/* Arcane dragon (no name yet): an original deep-violet magic dragon. Fiery orange crystal horns and tail crystal, glowing dark gold runes on
    his cheeks, amber eyes, starry-night wings, a pale lavender belly, and a magic fireball he throws (Magic, ranged). */
-var AR = { P: '#4e2f8e', PD: '#1e1040', PL: '#b9a3e6', C: '#4fe0d0', CD: '#0e6a66', CL: '#b8fff4', N: '#1b1846', ND: '#0a0820', A: '#ffb21e', G: '#c9961a', GD: '#5e4200' };
+var AR = { P: '#4e2f8e', PD: '#1e1040', PL: '#b9a3e6', C: '#ff7a1e', CD: '#8a2a00', CL: '#ffd84a', N: '#1b1846', ND: '#0a0820', A: '#ffb21e', G: '#c9961a', GD: '#5e4200' };
 function arFireball(cx, cy, s){
   function P(x, y){ return (cx + x * s).toFixed(1) + ' ' + (cy + y * s).toFixed(1); }
   return '<circle cx="' + cx + '" cy="' + cy + '" r="' + (10 * s) + '" fill="#ff9a2e" fill-opacity=".25"/>' +
@@ -2003,7 +2003,7 @@ function arArt(){
     '<path d="M43 71Q50 73 57 71M42.5 77Q50 79 57.5 77M43.5 83Q50 85 56.5 83" fill="none" stroke="#9a84cc" stroke-width="1.3" stroke-linecap="round"/>' +
     /* neck */
     outlined('<path d="M43.5 51L56.5 51L58 65Q50 68 42 65Z"/>', A.P, A.PD, 2.4) +
-    /* teal crystal horns */
+    /* fiery orange crystal horns with yellow glints, like his fireball */
     outlined('<path d="M36 27L28 9L42 22Z"/><path d="M64 27L72 9L58 22Z"/><path d="M47 20L50 9L53 20Z"/>', A.C, A.CD, 1.8) +
     '<path d="M31 13L37 23M69 13L63 23" stroke="' + A.CL + '" stroke-width="1.3" stroke-linecap="round"/>' +
     /* round head with a short snout */
@@ -2042,7 +2042,7 @@ function arBack(c){
       '<path d="' + bone + '" fill="none" stroke="' + A.P + '" stroke-width="2.6" stroke-linecap="round"/>' +
       '<path d="M' + X(0) + ' 30L' + X(-3) + ' 25L' + X(3) + ' 27Z" fill="' + A.G + '" stroke="' + A.GD + '" stroke-width="1.2" stroke-linejoin="round"/>';
   }
-  /* tail out to the left, with a teal crystal at the tip */
+  /* tail out to the left, with a fiery crystal at the tip */
   var tp = 'M39 88Q25 97 13 90';
   var tail = '<path d="' + tp + '" fill="none" stroke="' + A.PD + '" stroke-width="8.4" stroke-linecap="round"/><path d="' + tp + '" fill="none" stroke="' + A.P + '" stroke-width="4.6" stroke-linecap="round"/>' +
     '<path d="M14 90L4 82L9 80L8 72L16 83Z" fill="' + A.C + '" stroke="' + A.CD + '" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 80L13 85" stroke="' + A.CL + '" stroke-width="1.2" stroke-linecap="round"/>';
