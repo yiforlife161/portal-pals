@@ -1,14 +1,17 @@
 /* Winged warrior (no name yet): the owner's armoured warrior in yellow and black: a knight helmet with a black visor and white eye
    slits, a black crest, a yellow breastplate with a black chevron, black shoulder guards, metal blade-feather wings, solid armour
-   plates (no stripes), and big yellow claw gauntlets with blue gems (Air, melee, Giant). (preview only) */
-var SN = { Y: '#f2b81e', YD: '#7a5400', YL: '#ffd968', K: '#2a2830', KD: '#0c0b10', KL: '#4a4652', BL: '#2f9be8', BLD: '#0e3f6a', W: '#d9dee8', WD: '#4a5060' };
-function snClaw(x, y, m){      /* a big yellow claw gauntlet with black claw tips and a blue gem; m = 1 claws right, -1 left */
+   plates (no stripes), and yellow gauntlets with blue gems and two sharp blades sticking out of each (Air, melee, Giant). (preview only) */
+var SN = { Y: '#f2b81e', YD: '#7a5400', YL: '#ffd968', K: '#2a2830', KD: '#0c0b10', KL: '#4a4652', BL: '#2f9be8', BLD: '#0e3f6a', W: '#d9dee8', WD: '#4a5060', ST: '#8fa8d0', STD: '#1e2c4a' };
+function snClaw(x, y, m){      /* a yellow gauntlet with two long sharp blades sticking out past the knuckles; m = 1 blades right, -1 left */
   var S = SN; function X(v){ return x + v * m; }
-  return '<path d="M' + X(-9) + ' ' + (y - 4) + 'Q' + X(-8) + ' ' + (y - 12) + ' ' + X(2) + ' ' + (y - 11) + 'Q' + X(10) + ' ' + (y - 9) + ' ' + X(10) + ' ' + (y - 1) + 'Q' + X(9) + ' ' + (y + 6) + ' ' + X(1) + ' ' + (y + 7) + 'Q' + X(-8) + ' ' + (y + 6) + ' ' + X(-9) + ' ' + (y - 4) + 'Z" fill="' + S.Y + '" stroke="' + S.YD + '" stroke-width="2.2" stroke-linejoin="round"/>' +
-    '<ellipse cx="' + X(-4) + '" cy="' + (y - 5) + '" rx="2.8" ry="2.2" fill="' + S.BL + '" stroke="' + S.BLD + '" stroke-width="1.2"/>' +
-    '<path d="M' + X(8) + ' ' + (y - 8) + 'Q' + X(15) + ' ' + (y - 10) + ' ' + X(16) + ' ' + (y - 3) + 'Q' + X(12) + ' ' + (y - 6) + ' ' + X(9) + ' ' + (y - 4) + 'Z' +
-      'M' + X(9) + ' ' + (y - 1) + 'Q' + X(16) + ' ' + (y - 1) + ' ' + X(16) + ' ' + (y + 6) + 'Q' + X(12) + ' ' + (y + 2) + ' ' + X(8) + ' ' + (y + 3) + 'Z' +
-      'M' + X(4) + ' ' + (y + 5) + 'Q' + X(9) + ' ' + (y + 8) + ' ' + X(7) + ' ' + (y + 13) + 'Q' + X(4) + ' ' + (y + 9) + ' ' + X(1) + ' ' + (y + 7) + 'Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.2" stroke-linejoin="round"/>';
+  function blade(y0, len, rise){
+    return '<path d="M' + X(4) + ' ' + (y0 - 2.2) + 'L' + X(4 + len) + ' ' + (y0 - rise) + 'L' + X(4) + ' ' + (y0 + 2.2) + 'Z" fill="' + S.ST + '" stroke="' + S.STD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+      '<path d="M' + X(6) + ' ' + (y0 - 0.6) + 'L' + X(2 + len * 0.85) + ' ' + (y0 - rise * 0.9) + '" stroke="#fff" stroke-width="1" stroke-linecap="round" stroke-opacity=".85"/>';
+  }
+  return blade(y - 3, 20, -3) + blade(y + 3, 18, -9) +
+    '<path d="M' + X(-8) + ' ' + (y - 4) + 'Q' + X(-7) + ' ' + (y - 11) + ' ' + X(1) + ' ' + (y - 10) + 'Q' + X(8) + ' ' + (y - 9) + ' ' + X(8) + ' ' + (y - 2) + 'Q' + X(8) + ' ' + (y + 5) + ' ' + X(1) + ' ' + (y + 6) + 'Q' + X(-7) + ' ' + (y + 5) + ' ' + X(-8) + ' ' + (y - 4) + 'Z" fill="' + S.Y + '" stroke="' + S.YD + '" stroke-width="2.2" stroke-linejoin="round"/>' +
+    '<path d="M' + X(4) + ' ' + (y - 8) + 'V' + (y + 4) + '" stroke="' + S.K + '" stroke-width="2.6" stroke-linecap="round"/>' +
+    '<ellipse cx="' + X(-3) + '" cy="' + (y - 3) + '" rx="2.8" ry="2.2" fill="' + S.BL + '" stroke="' + S.BLD + '" stroke-width="1.2"/>';
 }
 function snArt(){
   var S = SN;
@@ -60,7 +63,7 @@ function snBack(c){
     '<g><g class="pump pR">' + arm(70, 60, 82, 64) + '</g></g></svg>';
 }
 function snFront(c){
-  /* the front claw gauntlet sits in the weapon group so it slashes when he hits */
+  /* the front gauntlet and its blades sit in the weapon group so they slash when he hits */
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
     '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + snClaw(88, 66, 1) + '</g></g></g></g></svg>';
 }
