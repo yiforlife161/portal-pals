@@ -91,3 +91,20 @@ SRT = {
 "§ needs § level §.": "§1 treba nivo §3 u veštini §2.", "§ +1 pet": "§ +1 ljubimac",
 "Order spoiled! -§": "Narudžbina propala! -§", "Left hungry! -§": "Otišli su gladni! -§", "Burnt! -§": "Zagorelo! -§", "Wrong mix! Boom! -§": "Pogrešna mešavina! Bum! -§", "Beacon out! -§": "Vatra se ugasila! -§",
 }
+# skill challenge achievements
+SR.update({
+"Cave Survivor": "Preživeo pećinu", "Not a Scratch": "Bez ogrebotine", "Gem Hunter": "Lovac na dragulje", "Ore Rush": "Rudna groznica", "Tunnel Veteran": "Veteran tunela",
+"First Catch": "Prvi ulov", "Calm Waters": "Mirne vode", "Golden Hook": "Zlatna udica", "Full Net": "Puna mreža", "Lake Legend": "Legenda jezera",
+"Timber!": "Pada drvo!", "Light on Your Feet": "Lak na nogama", "Domino Master": "Majstor domina", "Lumber Pile": "Gomila drva", "Forest Ranger": "Šumar",
+"First Brew": "Prvi napitak", "Steady Hands": "Mirne ruke", "Master Recipe": "Majstorski recept", "Bubbling Over": "Ključa i kipi", "Potion Professor": "Profesor napitaka",
+"Order Up!": "Narudžbina spremna!", "Cool Chef": "Smireni kuvar", "Star Service": "Zvezdana usluga", "Busy Kitchen": "Užurbana kuhinja", "Head Chef": "Glavni kuvar",
+"Hot Iron": "Vruće gvožđe", "Safe Smith": "Oprezni kovač", "Masterworker": "Majstor zanata", "Anvil Rhythm": "Ritam nakovnja", "Forge Legend": "Legenda kovačnice",
+"Kindled": "Potpaljeno", "Not Burned": "Neopečen", "Never Dark": "Nikad u mraku", "Bonfire Night": "Noć lomača", "Flame Keeper": "Čuvar plamena",
+"Night Shift": "Noćna smena", "Bones Intact": "Cele kosti", "Rest in Peace": "Počivaj u miru", "Bone Collector": "Sakupljač kostiju", "Grave Warden": "Čuvar groblja",
+"Win the challenge": "Pobedi izazov", "Win without dropping below half health": "Pobedi a da ne padneš ispod pola zdravlja",
+"Mine 5 gem veins in one run": "Iskopaj 5 žila sa draguljima u jednoj igri", "Catch 2 golden fish in one run": "Upecaj 2 zlatne ribe u jednoj igri",
+"Knock down 3 trees with one chop": "Obori 3 drveta jednom sečom", "Brew a potion with 4 ingredients": "Skuvaj napitak od 4 sastojka",
+"Serve 3 star customers in one run": "Posluži 3 zvezda-mušterije u jednoj igri", "Forge 5 masterworks in one run": "Iskuj 5 remek-dela u jednoj igri",
+"Clear a wave without any beacon going out": "Pređi talas a da se nijedna signalna vatra ne ugasi", "Clear a wave without any skeleton getting out": "Pređi talas a da nijedan kostur ne izađe",
+"Score 500 points": "Osvoji 500 poena", "Win 5 times": "Pobedi 5 puta",
+})
