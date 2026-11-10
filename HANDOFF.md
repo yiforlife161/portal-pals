@@ -230,3 +230,5 @@ The Look list (`buildBodyPicks`) shows the special pals sorted by element via `p
 Giant pals (lv, sn, tr, mecha, cyc) have permanently glowing eyes in their element colour: `egHalo(el,cx,cy,r)` draws the halo and `egC(el)` gives the eye colour (both next to `wrapSvg`).
 
 Friend message popups (cloud.js `chNotify`/`chnGone`, CSS `.chn*`): when a friend message arrives (and you are not in that chat) a card pops up top-centre with their pal icon, name and the message; click to open the chat, x to close, fades after 7 s (paused on hover), one per friend, max 3. Unread messages sent while you were away pop up once at sign-in (no sound). New sound `msg` (ppGame.sfx). Test: mock2/tch.js prints "B popup".
+
+Skill challenge gate signs show a tool per skill (`sgToolArt(area)`, next to `sgGateSvg`): pickaxe, fishing rod, axe, mortar and pestle, frying pan, hammer, torch, shovel.

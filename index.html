@@ -4182,9 +4182,26 @@ def('afk_potion', 'Bubbling cauldron', 'ore', 11, function(){
 }, { mine:{ area:'potion', kind:'afk' } });
 
 /* the skill challenge portal: a stone arch with a swirl in the skill's colour and its icon on top (level 50+) */
+/* the tool on each skill challenge gate's sign: pickaxe, fishing rod, axe, mortar and pestle, frying pan, hammer, torch, shovel */
+function sgToolArt(area){
+  var W = '#8a5a34', M = '#aab0c4', ML = '#e2e6f0';
+  switch (area){
+    case 'mine': return L('M26 88L64 40', W, 9) + P('M14 40Q46 6 90 28Q62 26 46 44Z', M, 3.5) + L('M30 34Q50 22 74 28', ML, 3);
+    case 'fish': return L('M18 90L70 14', W, 6) + L('M70 14Q88 34 82 62', ML, 2) + P('M76 62Q82 58 88 62Q86 70 82 72Q76 70 76 62Z', '#ff5a4a', 2.4) + L('M24 76L32 82', '#3b2412', 6) + C(28, 79, 5, '#c5ccd8', 2.4);
+    case 'forest': return L('M30 90L62 36', W, 9) + P('M46 14Q76 8 88 34Q66 42 56 36Z', M, 3.5) + L('M60 20Q74 20 82 32', ML, 3);
+    case 'potion': return L('M54 14L74 52', W, 9) + E(70, 50, 6, 6, '#a8703e', 2.4) +
+      P('M14 52H86Q84 80 62 86H38Q16 80 14 52Z', '#b9bfc9', 3.5) + E(50, 52, 36, 7, '#7a8090', 3) + E(50, 52, 30, 4.6, '#c48bff', 0) + L('M24 62Q26 72 34 78', '#fff', 3);
+    case 'cook': return L('M66 52L94 30', '#3b2412', 9) + E(42, 60, 32, 24, '#3a3a44', 3.5) + E(42, 58, 24, 16, '#5a5a66', 0) + E(44, 58, 10, 8, '#fff', 2.4) + C(46, 58, 4.4, '#ffc21e', 0) + L('M24 52Q28 46 34 44', '#8a8a98', 3);
+    case 'smith': return L('M24 88L62 44', W, 10) + '<g transform="rotate(41 64 40)">' + R(42, 30, 44, 20, '#8d91a6', 4, 3.2) + '<rect x="46" y="33" width="30" height="4.4" rx="2" fill="#c5ccd8"/>' + '</g>';
+    case 'fire': return L('M40 90L56 44', W, 10) + R(46, 38, 18, 12, '#5a5a66', 3, 2.6) +
+      P('M56 4Q76 20 70 34Q66 42 56 42Q44 40 44 30Q44 22 52 18Q50 26 56 28Q60 18 56 4Z', '#ff7a1e', 3) + P('M56 20Q64 28 62 34Q58 38 54 36Q50 32 56 20Z', '#ffd23e', 0);
+    case 'grave': return L('M66 10L40 62', W, 8) + L('M56 10H76', W, 7) + P('M28 56L50 66L42 86Q30 92 22 80Z', M, 3.5) + L('M32 62L44 68', ML, 3);
+  }
+  return '';
+}
 function sgGateSvg(area){
   var A = AREAS[area], col = EL[A.el].c, sk = SKILLS.filter(function(k){ return k.key === A.skill; })[0];
-  var ic = sk ? sk.icon().replace('<svg ', '<svg x="33" y="-14" width="34" height="34" ') : '';
+  var ic = '<svg x="33" y="-14" width="34" height="34" viewBox="0 0 100 100" aria-hidden="true">' + sgToolArt(area) + '</svg>';
   return SHD(36) + P('M12 92V46Q12 10 50 8Q88 10 88 46V92H72V48Q72 26 50 26Q28 26 28 48V92Z', '#8a8496', 2.8) +
     L('M18 60H26M18 76H26M74 60H82M74 76H82M30 18L36 26M70 18L64 26', '#5e5868', 2.4) +
     E(50, 62, 21, 30, col, 2.2) + E(50, 62, 15, 22, 'rgba(255,255,255,.35)', 0) + E(50, 62, 8, 12, 'rgba(255,255,255,.55)', 0) +
