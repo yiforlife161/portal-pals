@@ -6460,9 +6460,20 @@ function lkCanvas(){
   var a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = 'portal-pals-canvas.png'; document.body.appendChild(a); a.click(); a.remove();
 }
 function buildPicks(){ buildBodyPicks(); buildElPicks(); }
+/* the Look list grouped by element (in ELEMENTS order); inside an element the pals keep the order they were added,
+   and each Glowcore copy sits right after its original */
+function palBodySorted(){
+  var ei = {}; ELEMENTS.forEach(function(e, i){ ei[e.key] = i; });
+  var pos = {}; PAL_BODY_ORDER.forEach(function(k, i){ pos[k] = i; });
+  function at(k){ return k.indexOf('gc_') === 0 && pos.hasOwnProperty(k.slice(3)) ? pos[k.slice(3)] + 0.5 : pos[k]; }
+  return PAL_BODY_ORDER.filter(function(k){ return PAL_BODIES[k]; }).sort(function(a, b){
+    var d = (ei[PAL_BODIES[a].el] || 0) - (ei[PAL_BODIES[b].el] || 0);
+    return d || at(a) - at(b);
+  });
+}
 function buildBodyPicks(){
   $('#body-picks').innerHTML = '<label class="el-pick body-pick"><input type="radio" name="pbody" value="" checked><span class="box"><span class="mini bp-classic" style="width:40px;height:40px">' + ICON.magic + '</span><span>Classic</span><small>Any element</small></span></label>' +
-    PAL_BODY_ORDER.map(function(k){ var B = PAL_BODIES[k];
+    palBodySorted().map(function(k){ var B = PAL_BODIES[k];
       return '<label class="el-pick body-pick" style="' + EL[B.el].vars + '"><input type="radio" name="pbody" value="' + k + '"><span class="box"><span class="mini" style="width:40px;height:40px">' + palArt({ body: k }) + '</span>' + (B.custom ? '<span data-notr>' + esc(B.label) + '</span>' : '<span>' + B.label + '</span>') + '<small><span>' + EL[B.el].label + '</span> &middot; <span>' + (B.style === 'ranged' ? 'Ranged' : 'Melee') + '</span>' + (B.giant ? ' &middot; <span>Giant</span>' : '') + (B.custom && B.by ? '<br><i data-notr>' + esc(B.by) + '</i>' : '') + '</small></span></label>'; }).join('');
 }
 function buildElPicks(){

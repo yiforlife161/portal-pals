@@ -224,3 +224,5 @@ labelled "Glowcore <name>", with the same element/style/size/shot. Their art/bac
 colour, `EL[el].c`) so CSS `gcflash` pulses a glow + brightness in that colour (static glow under prefers-reduced-motion).
 The owner asked for "LightCore", which is the Skylanders name for their glowing figures, so the prefix is "Glowcore".
 Serbian names in sr4.py ("Sjajni …"). To add another, push its key to `GLOWCORE`.
+
+The Look list (`buildBodyPicks`) shows the special pals sorted by element via `palBodySorted()` (ELEMENTS order; added order inside an element; each Glowcore copy right after its original). `PAL_BODY_ORDER` itself stays in added order.
