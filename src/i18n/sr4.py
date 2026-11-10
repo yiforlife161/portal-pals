@@ -110,3 +110,4 @@ SR.update({
 })
 
 SR.update({"Gem Dragon": "Zmaj od dragulja"})
+SR.update({"Lava Golem": "Lavni golem"})
