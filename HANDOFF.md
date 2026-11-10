@@ -217,3 +217,10 @@ Pals and art must be **original designs**: no characters from Skylanders, Spyro 
 ## Open items
 
 - Sir Rattlebones and Puddle: previews approved in spirit, not added to the roster yet (see `src/previews/`). Adding them needs a per-pal body type (e.g. `c.body`) so `palFigure` draws the custom art.
+
+### Glowcore pals
+`GLOWCORE` (right after `PAL_BODY_ORDER`) makes a copy of 8 special pals (eagle, md, sh, go, ms, ik, mr, wi) as bodies `gc_<key>`,
+labelled "Glowcore <name>", with the same element/style/size/shot. Their art/back/front svgs get `data-gc` and `--gc` (the element
+colour, `EL[el].c`) so CSS `gcflash` pulses a glow + brightness in that colour (static glow under prefers-reduced-motion).
+The owner asked for "LightCore", which is the Skylanders name for their glowing figures, so the prefix is "Glowcore".
+Serbian names in sr4.py ("Sjajni …"). To add another, push its key to `GLOWCORE`.
