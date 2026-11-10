@@ -4180,12 +4180,14 @@ def('afk_potion', 'Bubbling cauldron', 'ore', 11, function(){
 
 /* the skill challenge portal: a stone arch with a swirl in the skill's colour and its icon on top (level 50+) */
 /* the tool on each skill challenge gate's sign: pickaxe, fishing rod, axe, mortar and pestle, frying pan, hammer, torch, shovel */
+/* the pickaxe and axe are the same ones that pop up over your pal's head while mining or chopping */
+function sgToolTop(svg){ return svg.replace('<svg viewBox="0 0 32 32" width="100%" height="100%">', '<svg x="6" y="6" width="88" height="88" viewBox="0 0 32 32">'); }
 function sgToolArt(area){
   var W = '#8a5a34', M = '#aab0c4', ML = '#e2e6f0';
   switch (area){
-    case 'mine': return L('M26 88L64 40', W, 9) + P('M14 40Q46 6 90 28Q62 26 46 44Z', M, 3.5) + L('M30 34Q50 22 74 28', ML, 3);
+    case 'mine': return sgToolTop(pkSvg('#aab0c4'));
     case 'fish': return L('M18 90L70 14', W, 6) + L('M70 14Q88 34 82 62', ML, 2) + P('M76 62Q82 58 88 62Q86 70 82 72Q76 70 76 62Z', '#ff5a4a', 2.4) + L('M24 76L32 82', '#3b2412', 6) + C(28, 79, 5, '#c5ccd8', 2.4);
-    case 'forest': return L('M30 90L62 36', W, 9) + P('M46 14Q76 8 88 34Q66 42 56 36Z', M, 3.5) + L('M60 20Q74 20 82 32', ML, 3);
+    case 'forest': return sgToolTop(axeSvg('#aab0c4'));
     case 'potion': return L('M54 14L74 52', W, 9) + E(70, 50, 6, 6, '#a8703e', 2.4) +
       P('M14 52H86Q84 80 62 86H38Q16 80 14 52Z', '#b9bfc9', 3.5) + E(50, 52, 36, 7, '#7a8090', 3) + E(50, 52, 30, 4.6, '#c48bff', 0) + L('M24 62Q26 72 34 78', '#fff', 3);
     case 'cook': return L('M66 52L94 30', '#3b2412', 9) + E(42, 60, 32, 24, '#3a3a44', 3.5) + E(42, 58, 24, 16, '#5a5a66', 0) + E(44, 58, 10, 8, '#fff', 2.4) + C(46, 58, 4.4, '#ffc21e', 0) + L('M24 52Q28 46 34 44', '#8a8a98', 3);
