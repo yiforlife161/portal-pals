@@ -226,3 +226,5 @@ The owner asked for "LightCore", which is the Skylanders name for their glowing 
 Serbian names in sr4.py ("Sjajni …"). To add another, push its key to `GLOWCORE`.
 
 The Look list (`buildBodyPicks`) shows the special pals sorted by element via `palBodySorted()` (ELEMENTS order; added order inside an element; each Glowcore copy right after its original). `PAL_BODY_ORDER` itself stays in added order.
+
+Giant pals (lv, sn, tr, mecha, cyc) have permanently glowing eyes in their element colour: `egHalo(el,cx,cy,r)` draws the halo and `egC(el)` gives the eye colour (both next to `wrapSvg`).

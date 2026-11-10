@@ -1424,6 +1424,9 @@ ELEMENTS.forEach(function(e){
 function vars(key){ return EL[key].vars; }
 
 var INK = '#1b1730';
+/* giant pals' eyes glow all the time in their element's colour: a soft halo behind, a bright eye and a white-hot core */
+function egC(el){ return EL[el].c; }
+function egHalo(el, cx, cy, r){ var c = EL[el].c; return '<circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 2.4) + '" fill="' + c + '" fill-opacity=".2"/><circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 1.7) + '" fill="' + c + '" fill-opacity=".35"/><circle cx="' + cx + '" cy="' + cy + '" r="' + (r * 1.25) + '" fill="' + c + '" fill-opacity=".55"/>'; }
 function wrapSvg(inner){ return '<svg viewBox="0 0 100 100" aria-hidden="true" focusable="false">' + inner + '</svg>'; }
 function outlined(shapes, fill, stroke, w){
   w = w || 3.2;
@@ -1716,7 +1719,9 @@ function mechaArt(){
     outlined('<path d="M30 30C30 15 39 8 50 8C61 8 70 15 70 30Z"/>', M.Y, M.YD) +
     outlined('<path d="M27 28H73Q74 33 70 33H30Q26 33 27 28Z"/>', M.Y, M.YD, 2.2) +
     '<path d="M36 15Q42 11 48 11" fill="none" stroke="#fff3b8" stroke-width="2.6" stroke-linecap="round" stroke-opacity=".8"/>' +
-    '<circle cx="42" cy="21" r="2.6" fill="' + M.K + '"/><circle cx="58" cy="21" r="2.6" fill="' + M.K + '"/>');
+    '<circle cx="42" cy="21" r="3.4" fill="' + M.K + '"/><circle cx="58" cy="21" r="3.4" fill="' + M.K + '"/>' +
+    egHalo('tech', 42, 21, 3.2) + egHalo('tech', 58, 21, 3.2) +
+    '<circle cx="42" cy="21" r="2.6" fill="' + egC('tech') + '"/><circle cx="58" cy="21" r="2.6" fill="' + egC('tech') + '"/><circle cx="42" cy="21" r="1.1" fill="#fff6d8"/><circle cx="58" cy="21" r="1.1" fill="#fff6d8"/>');
 }
 function mechaBack(c){
   var M = MECHA;
@@ -1777,7 +1782,8 @@ function cycArt(){
     /* round opening with the one big eye */
     '<circle cx="50" cy="35" r="16" fill="' + C.KD + '" stroke="' + C.KL + '" stroke-width="2.4"/>' +
     '<circle cx="50" cy="35.5" r="13.4" fill="#fbf8f0" stroke="' + O + '" stroke-width="1.8"/>' +
-    '<circle cx="50.5" cy="36.2" r="8.2" fill="' + C.E + '" stroke="' + C.ED + '" stroke-width="1.8"/><circle cx="50.5" cy="36.2" r="4" fill="' + O + '"/>' +
+    '<circle cx="50.5" cy="36.2" r="13" fill="' + egC('undead') + '" fill-opacity=".45"/><circle cx="50.5" cy="36.2" r="10.4" fill="' + egC('undead') + '" fill-opacity=".5"/>' +
+    '<circle cx="50.5" cy="36.2" r="8.2" fill="' + egC('undead') + '" stroke="#3b1a66" stroke-width="1.8"/><circle cx="50.5" cy="36.2" r="4.6" fill="#e2c8ff"/><circle cx="50.5" cy="36.2" r="2.2" fill="#fff"/>' +
     '<circle cx="47.4" cy="33" r="2" fill="#fff"/><circle cx="54.6" cy="39.6" r="1.1" fill="#bcd0ff"/>' +
     '<path d="M36 25Q50 18 64 25" fill="none" stroke="' + C.KD + '" stroke-width="3.8" stroke-linecap="round"/>' +
     /* mouth grille */
@@ -2203,7 +2209,9 @@ function snArt(){
     outlined('<path d="M33 27Q22 22 20 6Q28 14 37 20Z"/><path d="M67 27Q78 22 80 6Q72 14 63 20Z"/>', S.Y, S.YD, 2.2) +
     '<path d="M24 12Q27 19 33 22M76 12Q73 19 67 22" fill="none" stroke="' + S.YL + '" stroke-width="1.5" stroke-linecap="round"/>' +
     '<path d="M32 33Q50 27 68 33L67 43Q60 40 50 41Q40 40 33 43Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
-    '<path d="M36 36.5L45 38.5L44 40.5Q39 40.5 36 38.8Z M64 36.5L55 38.5L56 40.5Q61 40.5 64 38.8Z" fill="#fff"/>' +
+    egHalo('air', 40.5, 38.6, 3.6) + egHalo('air', 59.5, 38.6, 3.6) +
+    '<path d="M36 36.5L45 38.5L44 40.5Q39 40.5 36 38.8Z M64 36.5L55 38.5L56 40.5Q61 40.5 64 38.8Z" fill="' + egC('air') + '"/>' +
+    '<path d="M38 37.6L43 38.8M62 37.6L57 38.8" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/>' +
     '<path d="M50 41V53" stroke="' + S.YD + '" stroke-width="1.6" stroke-linecap="round"/>' +
     '<path d="M42 48H47M53 48H58M43 51H47M53 51H57" stroke="' + S.K + '" stroke-width="1.6" stroke-linecap="round"/>');
 }
@@ -2534,8 +2542,8 @@ function lvArt(){
     lvCracks('M33 28L38 30M67 28L62 30M44 18L46 24M56 18L54 24') +
     '<path d="M36 24Q42 20 48 19" fill="none" stroke="' + L.RL + '" stroke-width="2.2" stroke-linecap="round"/>' +
     '<path d="M48 36Q50 40 52 36L50 33Z" fill="' + L.RM + '" stroke="' + L.RD + '" stroke-width="1.4" stroke-linejoin="round"/>' +
-    '<ellipse cx="41" cy="33" rx="5" ry="4.6" fill="' + L.E + '" stroke="' + O + '" stroke-width="1.6"/><circle cx="42" cy="33.6" r="2.3" fill="' + O + '"/><circle cx="43" cy="32.4" r=".9" fill="#fff"/>' +
-    '<ellipse cx="59" cy="33" rx="5" ry="4.6" fill="' + L.E + '" stroke="' + O + '" stroke-width="1.6"/><circle cx="58" cy="33.6" r="2.3" fill="' + O + '"/><circle cx="59" cy="32.4" r=".9" fill="#fff"/>' +
+    egHalo('fire', 41, 33, 4.6) + '<ellipse cx="41" cy="33" rx="5" ry="4.6" fill="' + egC('fire') + '" stroke="' + O + '" stroke-width="1.6"/><circle cx="42" cy="33.6" r="2.4" fill="#ffc23a"/><circle cx="42" cy="33.4" r="1.1" fill="#fff"/>' +
+    egHalo('fire', 59, 33, 4.6) + '<ellipse cx="59" cy="33" rx="5" ry="4.6" fill="' + egC('fire') + '" stroke="' + O + '" stroke-width="1.6"/><circle cx="58" cy="33.6" r="2.4" fill="#ffc23a"/><circle cx="58" cy="33.4" r="1.1" fill="#fff"/>' +
     '<path d="M34 26L47 31M66 26L53 31" stroke="' + L.RD + '" stroke-width="3" stroke-linecap="round"/>' +
     '<path d="M33 41Q50 46 67 41Q64 54 50 56Q36 54 33 41Z" fill="#2a0806" stroke="' + O + '" stroke-width="1.6" stroke-linejoin="round"/>' +
     '<path d="M35 42L37.5 47L40 43.2L42.5 48.4L45 44L47.5 49L50 44.4L52.5 49L55 44L57.5 48.4L60 43.2L62.5 47L65 42" fill="#fff" stroke="' + O + '" stroke-width=".9" stroke-linejoin="round"/>' +
@@ -2854,10 +2862,10 @@ function trArt(){
     '<path d="M36 23Q42 20 48 19.6" fill="none" stroke="' + T.WL + '" stroke-width="2" stroke-linecap="round"/>' +
     /* the leafy crown overlaps the top of the head */
     trLeaves([[34, 25, -50, 1], [40, 23, -20], [46, 22, 0, 1], [52, 22, -8], [58, 22, 12, 1], [64, 23, 30], [67, 26, 55, 1]], 0.95) +
-    /* carved brows over glowing orange eyes */
+    /* carved brows over eyes that glow green (life) */
     '<path d="M35 32L47 36L47 39L35 36Z M65 32L53 36L53 39L65 36Z" fill="' + T.WM + '" stroke="' + T.WD + '" stroke-width="1.5" stroke-linejoin="round"/>' +
-    '<ellipse cx="41" cy="39.6" rx="4.2" ry="3" fill="#ffd23e" stroke="' + O + '" stroke-width="1.5"/><ellipse cx="41.4" cy="39.8" rx="2" ry="1.5" fill="' + T.E + '"/>' +
-    '<ellipse cx="59" cy="39.6" rx="4.2" ry="3" fill="#ffd23e" stroke="' + O + '" stroke-width="1.5"/><ellipse cx="58.6" cy="39.8" rx="2" ry="1.5" fill="' + T.E + '"/>' +
+    egHalo('life', 41, 39.6, 3.6) + '<ellipse cx="41" cy="39.6" rx="4.2" ry="3" fill="' + egC('life') + '" stroke="' + O + '" stroke-width="1.5"/><ellipse cx="41.4" cy="39.8" rx="2" ry="1.5" fill="#e6ffd0"/>' +
+    egHalo('life', 59, 39.6, 3.6) + '<ellipse cx="59" cy="39.6" rx="4.2" ry="3" fill="' + egC('life') + '" stroke="' + O + '" stroke-width="1.5"/><ellipse cx="58.6" cy="39.8" rx="2" ry="1.5" fill="#e6ffd0"/>' +
     /* a carved grin behind the long pointed wooden nose */
     '<path d="M38 47Q50 51 62 47L60 53Q50 56 40 53Z" fill="#2a1406" stroke="' + O + '" stroke-width="1.4" stroke-linejoin="round"/>' +
     '<path d="M40.5 48.4V52.6M44 49.4V53.6M56 49.4V53.6M59.5 48.4V52.6" stroke="' + T.R + '" stroke-width="1.6"/>' +
