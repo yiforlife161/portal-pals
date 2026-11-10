@@ -224,6 +224,21 @@ fcss.textContent = `
 .fr-ch{background:#7a3fd0!important;color:#fff!important;border-color:#7a3fd0!important}
 .fr-chat{background:#2b8fd6!important;color:#fff!important;border-color:#2b8fd6!important}
 .fview.chat{place-items:start center}
+.chn-stack{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);z-index:9000;display:flex;flex-direction:column;gap:8px;width:min(92vw,340px);pointer-events:none}
+.chn{pointer-events:auto;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:10px;padding:9px 8px 9px 10px;border-radius:16px;background:var(--surface,#fff);color:var(--ink,#222);border:2px solid #2b8fd6;box-shadow:0 8px 24px rgba(0,0,0,.28);cursor:pointer;font:inherit;text-align:left;animation:chnIn .28s ease-out}
+.chn.out{animation:chnOut .25s ease-in forwards}
+.chn:hover{border-color:#1a6fb0}
+.chn-ic{position:relative;width:36px;height:36px;display:grid;place-items:center;border-radius:50%;background:#e4f1fc}
+.chn-ic>i{position:absolute;right:-4px;bottom:-4px;font-style:normal;font-size:14px;line-height:1}
+.chn-tx{min-width:0}
+.chn-tx b{display:block;font-size:14px;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chn-tx span{display:block;font-size:13px;line-height:1.3;opacity:.85;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word}
+.chn-tx small{display:block;font-size:11px;font-weight:700;color:#2b8fd6;margin-top:2px}
+.chn-x{width:28px;height:28px;border:0;border-radius:50%;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer;opacity:.6}
+.chn-x:hover{opacity:1;background:rgba(0,0,0,.08)}
+@keyframes chnIn{from{opacity:0;transform:translateY(-14px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes chnOut{to{opacity:0;transform:translateY(-10px) scale(.96)}}
+@media (prefers-reduced-motion:reduce){.chn,.chn.out{animation:none}}
 .ch-card{display:grid;grid-template-rows:auto 1fr auto;gap:8px;width:min(94vw,460px);height:min(86vh,520px);padding:14px;border-radius:20px;background:var(--surface,#fff);color:var(--ink,#222);border:3px solid var(--line,#ccc);box-shadow:0 8px 0 rgba(0,0,0,.25);position:relative}
 .ch-card h2{margin:0;font-size:18px;padding-right:36px}
 .ch-card h2 small{display:block;font-size:12px;font-weight:600;opacity:.7}
@@ -385,7 +400,7 @@ async function friendsStart(user){
 function friendsStop(){
   F.unsub.forEach(u => u()); F.unsub = [];
   Object.keys(F.funsub).forEach(id => F.funsub[id]()); F.funsub = {};
-  Object.keys(CH.sub).forEach(id => CH.sub[id]()); CH.sub = {}; CH.last = {}; chatClose();
+  Object.keys(CH.sub).forEach(id => CH.sub[id]()); CH.sub = {}; CH.last = {}; chatClose(); Object.keys(CHN.on).forEach(chnGone);
   clearInterval(F.beat); F.me = null; F.code = ''; F.reqs = []; F.friends = {}; F.prof = {};
 }
 async function saveName(){
@@ -1120,13 +1135,44 @@ function chatSummary(id, d){
   CH.last[id] = L;
   if (L && was !== undefined && L.from !== me.uid && (!was || (L.t || 0) > (was.t || 0))){
     if (CH.with === id && CH.box && !CH.box.hidden) chMark(id, L.t || 0);
-    else G().flash('💬 ' + friendName(id) + ': ' + String(L.text || '').slice(0, 60));
-  }
+    else chNotify(id, L);
+  } else if (L && was === undefined && L.from !== me.uid && (L.t || 0) > (chSeen()[id] || 0) && !(CH.with === id && CH.box && !CH.box.hidden)) chNotify(id, L, true);
   friendsUi();
+}
+/* a little popup when a friend sends a message: their pal, their name and the message; click it to open the chat.
+   One popup per friend (a newer message updates it), at most 3 at once, each fades after 7 s (paused while hovered). */
+const CHN = { box: null, on: {} };
+function chNotify(id, L, old){
+  if (!CHN.box){ CHN.box = document.createElement('div'); CHN.box.className = 'chn-stack'; CHN.box.setAttribute('aria-live', 'polite'); document.body.appendChild(CHN.box); }
+  let n = CHN.on[id];
+  if (!n){
+    n = { el: document.createElement('div'), t: 0, k: 0 }; CHN.on[id] = n;
+    n.el.className = 'chn'; n.el.setAttribute('role', 'button'); n.el.tabIndex = 0;
+    n.el.onclick = ev => { if (ev.target.closest('.chn-x')){ chnGone(id); return; } chnGone(id); chatOpen(id); };
+    n.el.onkeydown = ev => { if (ev.key === 'Enter' || ev.key === ' '){ ev.preventDefault(); chnGone(id); chatOpen(id); } };
+    n.el.onmouseenter = () => clearTimeout(n.t);
+    n.el.onmouseleave = () => { clearTimeout(n.t); n.t = setTimeout(() => chnGone(id), 3000); };
+    CHN.box.appendChild(n.el);
+    const ids = Object.keys(CHN.on); if (ids.length > 3) chnGone(ids[0]);
+  }
+  n.k++;
+  const p = F.prof[id] || {}, el = p.pal && p.pal.element;
+  n.el.innerHTML = '<span class="chn-ic">' + (el ? G().palIcon(el, 30) : '') + '<i>💬</i></span>' +
+    '<span class="chn-tx"><b data-notr>' + esc(friendName(id)) + '</b><span data-notr>' + esc(String(L.text || '').slice(0, 80)) + '</span>' +
+    '<small>' + (n.k > 1 ? 'New messages' : old ? 'Sent while you were away' : 'New message') + ' · tap to reply</small></span>' +
+    '<button class="chn-x" type="button" aria-label="Close">×</button>';
+  if (!old) G().sfx && G().sfx('msg');
+  clearTimeout(n.t); n.t = setTimeout(() => chnGone(id), 7000);
+}
+function chnGone(id){
+  const n = CHN.on[id]; if (!n) return;
+  delete CHN.on[id]; clearTimeout(n.t);
+  n.el.classList.add('out'); setTimeout(() => n.el.remove(), 260);
 }
 function chTime(t){ const d = new Date(t || 0), n = new Date(); const hm = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); return d.toDateString() === n.toDateString() ? hm : d.toLocaleDateString([], { day: 'numeric', month: 'short' }) + ' ' + hm; }
 function chatOpen(id){
   if (!me || !F.friends[id]) return;
+  chnGone(id);
   friendsToggle(false);
   if (!CH.box){
     CH.box = document.createElement('div'); CH.box.className = 'fview chat'; CH.box.setAttribute('role', 'dialog');

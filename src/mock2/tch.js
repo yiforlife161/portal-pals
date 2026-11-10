@@ -34,6 +34,8 @@ await A.evaluate(s=>document.querySelector(s).click(),'[data-fr-chat]');await A.
 await A.fill('#ch-in','Hi sis! Wanna play arena?');await A.press('#ch-in','Enter');await A.waitForTimeout(300);
 await A.fill('#ch-in','<b>not bold</b>');await A.evaluate(s=>document.querySelector(s).click(),'#ch-send');await A.waitForTimeout(1500);
 console.log('A chat:',await A.evaluate(()=>document.getElementById('ch-list').innerText.replace(/\n/g,' | ')));
+await B.waitForTimeout(500);console.log('B popup:',await B.evaluate(()=>[...document.querySelectorAll('.chn')].map(e=>e.innerText.replace(/\n/g,' | '))));
+await B.screenshot({path:path.join(__dirname,'chn.png')});
 await B.evaluate(()=>{const f=document.getElementById('win-f');if(!f.hidden)document.getElementById('btn-friends').click();});
 await B.waitForTimeout(1200);
 console.log('B badge:',await B.textContent('#btn-friends'),'| hint:',await B.evaluate(()=>(document.getElementById('hint')||{}).textContent));
