@@ -23,7 +23,7 @@ async function player(b,uid,name){
 (async()=>{const b=await chromium.launch();const P=await player(b,'u1','Ana');const OUT=process.argv[2]||'.';
 await P.click('button.dbtn[data-tab=pals]');await P.waitForTimeout(500);
 const made=[];
-for(const [k,name] of [['eagle','Talon'],['wyrm','Gloom'],['knight','Rattles'],['mecha','Bolt'],['cyc','Glare'],['rogue','Wren'],['md','Rex'],['sh','Spore'],['tk','Rivet'],['ar','Ember'],['sn','Aegis'],['go','Boulder'],['dv','Finn'],['ti','Tok']]){
+for(const [k,name] of [['eagle','Talon'],['wyrm','Gloom'],['knight','Rattles'],['mecha','Bolt'],['cyc','Glare'],['rogue','Wren'],['md','Rex'],['sh','Spore'],['tk','Rivet'],['ar','Ember'],['sn','Aegis'],['go','Boulder'],['dv','Finn'],['ti','Tok'],['gm','Prism']]){
   await P.click('button.btn.primary[data-action=new] >> visible=true');await P.waitForTimeout(300);
   await P.evaluate(k=>{const r=document.querySelector('input[name=pbody][value='+k+']');r.scrollIntoView({block:'center'});},k);await P.waitForTimeout(150);await P.click('input[name=pbody][value='+k+']',{force:true});await P.waitForTimeout(200);
   const lock=await P.evaluate(()=>({el:[...document.querySelectorAll('input[name=element]')].filter(r=>!r.disabled).map(r=>r.value+(r.checked?'*':'')),st:[...document.querySelectorAll('input[name=pstyle]')].filter(r=>!r.disabled).map(r=>r.value),size:[...document.querySelectorAll('input[name=psize]')].filter(r=>!r.disabled).map(r=>r.value),imgHidden:document.getElementById('f-img-field').offsetParent===null,sub:document.querySelector('.pv-sub').textContent}));
@@ -40,16 +40,16 @@ await P.screenshot({path:OUT+'/grid.png'});
 await P.evaluate(()=>{const c=window.__st.chars.find(c=>c.body==='eagle');c.giant=true;});await P.click('button.dbtn[data-tab=pals]').catch(()=>{});await P.waitForTimeout(1500);await P.reload();await P.waitForTimeout(1500);await P.click('#pp-signin').catch(()=>{});await P.waitForTimeout(3500);
 await P.evaluate(()=>{const b=document.querySelector('[data-action=menu-play]');b&&b.click();});await P.waitForTimeout(800);
 console.log('after reload',JSON.stringify(await P.evaluate(()=>window.__st.chars.map(c=>[c.name,c.body||'',c.element,c.style,c.giant?'giant':'normal']))));
-for(const k of ['eagle','wyrm','knight','mecha','cyc','rogue','md','sh','tk','ar','sn','go','dv','ti']){
+for(const k of ['eagle','wyrm','knight','mecha','cyc','rogue','md','sh','tk','ar','sn','go','dv','ti','gm']){
   await P.evaluate(k=>{const S=window.__st;const c=S.chars.find(c=>c.body===k);S.island.heroId=c.id;S.island.hero=c.id;window.__syncHero();window.__renderSide();},k);
   await P.waitForTimeout(600);await P.screenshot({path:OUT+'/isl_'+k+'.png'});
 }
-await P.evaluate(()=>{const S=window.__st;const c=S.chars.find(c=>c.body==='wyrm');S.island.heroId=c.id;window.__syncHero();const I=S.island;I.lvWon=Object.assign({},I.lvWon,{arena:3,quest:3});});
+await P.evaluate((SHOT)=>{const S=window.__st;const c=S.chars.find(c=>c.body===SHOT);S.island.heroId=c.id;window.__syncHero();const I=S.island;I.lvWon=Object.assign({},I.lvWon,{arena:3,quest:3});},process.env.SHOT||'wyrm');
 await P.evaluate(()=>window.__dfOpen('arena'));await P.waitForTimeout(400);await P.click('[data-action=df-start][data-lv="1"]');
 for(let i=0;i<30&&await P.evaluate(()=>window.__df.foes.filter(f=>!f.dead).length<1);i++) await P.waitForTimeout(300);
 await P.evaluate(()=>{const df=window.__df,H=df.hero;const f=df.foes.find(f=>!f.dead);f.x=H.x+150;f.y=H.y;f.spd=0;f.T=Object.assign({},f.T,{spd:0});f.hp=f.max=9999;df.aim={x:f.x,y:f.y-22};H.cool=0;window.__dfAim(H);window.__zapNow=df.shots.map(s=>s.p.c.body||'');});
 console.log('shot right after firing:',JSON.stringify(await P.evaluate(()=>window.__zapNow)));
-await P.waitForTimeout(90);await P.screenshot({path:OUT+'/arena_zap.png'});
+await P.waitForTimeout(90);await P.screenshot({path:OUT+'/arena_'+(process.env.SHOT||'wyrm')+'.png'});
 console.log('arena shots zap',JSON.stringify(await P.evaluate(()=>[window.__df.hero&&window.__df.hero.c.body,window.__df.phase,window.__df.foes.length,window.__df.shots.map(s=>s.p.c.body||'')])));
 await P.evaluate(()=>{window.__df.phase='end';});
 await b.close();process.exit(0);})();

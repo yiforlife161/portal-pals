@@ -108,3 +108,5 @@ SR.update({
 "Clear a wave without any beacon going out": "Pređi talas a da se nijedna signalna vatra ne ugasi", "Clear a wave without any skeleton getting out": "Pređi talas a da nijedan kostur ne izađe",
 "Score 500 points": "Osvoji 500 poena", "Win 5 times": "Pobedi 5 puta",
 })
+
+SR.update({"Gem Dragon": "Zmaj od dragulja"})
