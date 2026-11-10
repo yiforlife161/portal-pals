@@ -514,6 +514,8 @@ function pvInvites(list){
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
   else if (inv.game === 'arena' && inv.md === 'quest') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to an Island Quest!</b><small>' + (inv.lv === 4 ? 'Co-op survival · level after level, stop when you like.' : 'Co-op · Level ' + (inv.lv || 1) + '. Carry keys and bombs, open the chests, reach the flag together.') + '</small>' +
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
+  else if (inv.game === 'arena' && inv.md === 'chef') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to the Elemental Kitchen!</b><small>' + (inv.lv === 4 ? 'Co-op survival · kitchen after kitchen, stop when you like.' : 'Co-op · Level ' + (inv.lv || 1) + '. Chop, cook and serve the orders together.') + '</small>' +
+    '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
   else if (inv.game === 'arena' && inv.md === 'sg'){
     const I = (G().sgInfo && G().sgInfo(inv.am)) || { name: 'a skill challenge', skill: 'that skill', el: 'the right', lv: 50 };
     pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to ' + esc(I.name) + '!</b><small><span>' + (inv.lv === 4 ? 'Co-op · Survival, endless waves.' : 'Co-op · 3 waves.') + '</span> <span>Needs ' + esc(I.skill) + ' level ' + I.lv + ' and a pal of the ' + esc(I.el) + ' element.</span> <span>You earn ' + esc(I.skill) + ' xp.</span></small>' +
@@ -825,7 +827,7 @@ function onlineFriends(){
    everyone who says yes joins, and the game starts once nobody is left to answer (or the host starts early) */
 const PT = { on: false, host: false, md: 'arena', lv: 1, am: '', mem: [], waitT: 0, gen: 0, hostId: '', hostName: '', mid: '', unsub: null, started: false, more: false };
 const PT_MAX = 3;
-const PT_TITLE = { sg: 'Skill challenge with friends', cannon: 'Sky Cannon with friends', quest: 'Island Quest with friends', skill: 'Skilling with friends', arena: 'Battle Arena with friends', defense: 'Guard Post with friends', raid: 'Boss Raid with friends', dig: 'Treasure Hunt with friends' };
+const PT_TITLE = { chef: 'Elemental Kitchen with friends', sg: 'Skill challenge with friends', cannon: 'Sky Cannon with friends', quest: 'Island Quest with friends', skill: 'Skilling with friends', arena: 'Battle Arena with friends', defense: 'Guard Post with friends', raid: 'Boss Raid with friends', dig: 'Treasure Hunt with friends' };
 function ptReset(){
   PT.mem.forEach(m => { if (m.unsub) try { m.unsub(); } catch (e){} });
   if (PT.unsub) try { PT.unsub(); } catch (e){}
@@ -898,12 +900,12 @@ function ptWatchdog(){
 }
 async function coopInvite(fid, lv, am, md){
   if (!me || !fid) return;
-  md = md === 'defense' || md === 'raid' || md === 'dig' || md === 'skill' || md === 'quest' || md === 'cannon' || md === 'sg' ? md : 'arena';
+  md = md === 'defense' || md === 'raid' || md === 'dig' || md === 'skill' || md === 'quest' || md === 'cannon' || md === 'sg' || md === 'chef' ? md : 'arena';
   if (md === 'sg'){      /* a friend whose skill is under level 50 can't be invited */
     const I = G().sgInfo && G().sgInfo(am), lvF = I ? friendSkillLv(fid, I.key) : -1;
     if (I && lvF >= 0 && lvF < I.lv){ G().flash(friendName(fid) + ' needs ' + I.skill + ' level ' + I.lv + '.'); return; }
   }
-  const B = { arena: ['arena', 'Build a Battle Arena on your island to invite friends.'], defense: ['guard', 'Build a Guard Post on your island to invite friends.'], raid: ['raid', 'Build a Boss Raid on your island to invite friends.'], dig: ['digsite', 'Build a Dig Site on your island to invite friends.'], quest: ['questgate', 'Build a Quest Gate on your island to invite friends.'], cannon: ['cannon', 'Build a Sky Cannon on your island to invite friends.'] }[md];
+  const B = { chef: ['chefhall', 'Build an Elemental Kitchen on your island to invite friends.'], arena: ['arena', 'Build a Battle Arena on your island to invite friends.'], defense: ['guard', 'Build a Guard Post on your island to invite friends.'], raid: ['raid', 'Build a Boss Raid on your island to invite friends.'], dig: ['digsite', 'Build a Dig Site on your island to invite friends.'], quest: ['questgate', 'Build a Quest Gate on your island to invite friends.'], cannon: ['cannon', 'Build a Sky Cannon on your island to invite friends.'] }[md];
   if (B && G().hasBuilding && !G().hasBuilding(B[0])){ G().flash(B[1]); return; }
   if (!(await rtReady())){ G().flash('Co-op is not set up yet.'); return; }
   if (PT.on && !PT.host && !PT.started){ G().flash('Leave the game you joined first.'); return; }
