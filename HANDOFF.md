@@ -214,6 +214,7 @@ A new game key must be added to every one of these lists, or something quietly b
 - `ACH_GAMES` is unused, so don't rely on it.
 
 ### Known traps
+- Performance on phones: never animate CSS `filter` on pal SVGs; don't rebuild HUD html every tick (update bar widths in place, like the kitchen's `hudBars`); in `frame` the minigame flags are checked before `stage.clientWidth` (reading it forces a layout every frame).
 - `dfLevelMult` exists but is **unused**: pal level doesn't scale damage. Only upgrades (dmg/spd/crit with `EL_CAPS`) do.
 - There are two `dfDrawFoe` definitions. The later override is the live one.
 - Long Python patches break in bash heredocs. Write them to a file. Make `rep()` assert counts and abort before writing.

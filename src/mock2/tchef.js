@@ -26,15 +26,17 @@ async function player(b,uid,name,vp){
 }
 (async()=>{const b=await chromium.launch();
 const P=await player(b,'u1','Ana',process.env.PHONE?{width:390,height:780}:undefined);
-const el=process.env.EL||'fire';
+const el=process.env.EL||'fire';const BODY=process.env.BODY||'';
 for(const lv of lvs){
-  await P.evaluate(([el])=>{const I=window.__st.island;I.lvWon=I.lvWon||{};I.lvWon.chef=3;const h=window.__st.chars.find(c=>c.id===I.heroId)||window.__st.chars[0];h.element=el;h.body='';h.level=30;},[el]);
+  await P.evaluate(([el,process_body])=>{const I=window.__st.island;I.lvWon=I.lvWon||{};I.lvWon.chef=3;const h=window.__st.chars.find(c=>c.id===I.heroId)||window.__st.chars[0];h.element=el;h.body=process_body;h.level=30;},[el,BODY]);
   const g0=await P.evaluate(()=>[window.__st.island.gold,window.__winCount('chef')]);
   await P.evaluate(()=>window.__sgOpen('chef'));
   await P.waitForTimeout(400);
   await P.screenshot({path:out+'/chef_intro.png'});
   await P.evaluate(lv=>window.__sgBegin(lv),lv);
   await P.evaluate(()=>window.__chefBot());
+  if(process.env.THR){const cdp=await P.context().newCDPSession(P);await cdp.send('Emulation.setCPUThrottlingRate',{rate:+process.env.THR});await P.waitForTimeout(3000);const f=await P.evaluate(()=>new Promise(r=>{let n=0,t0=performance.now();function k(){n++;if(performance.now()-t0<5000)requestAnimationFrame(k);else r(n/5);}requestAnimationFrame(k);}));console.log('fps at',process.env.THR+'x slower CPU:',f);
+    if(process.env.PROF){await cdp.send('Profiler.enable');await cdp.send('Profiler.start');await P.waitForTimeout(5000);const {profile}=await cdp.send('Profiler.stop');const self={};const byId={};profile.nodes.forEach(n=>byId[n.id]=n);const dt={};(profile.samples||[]).forEach((id,i)=>{const n=byId[id];const k=n.callFrame.functionName||'(anon)';const u=n.callFrame.url.split('/').pop().slice(0,12);dt[k+' '+u+':'+n.callFrame.lineNumber]=(dt[k+' '+u+':'+n.callFrame.lineNumber]||0)+(profile.timeDeltas[i]||0);});const tot=Object.values(dt).reduce((a,b)=>a+b,0);Object.entries(dt).sort((a,b)=>b[1]-a[1]).slice(0,25).forEach(([k,v])=>console.log((v/tot*100).toFixed(1)+'%',k));}}
   const t0=Date.now(); let shot=0;
   while(Date.now()-t0<secs*1000){
     await P.waitForTimeout(1000);
