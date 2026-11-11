@@ -1420,6 +1420,9 @@ var ELEMENTS = [
   { key:'undead', label:'Undead', c:'#9a58d8', cd:'#3b1a66' },
   { key:'magic',  label:'Magic',  c:'#f6c928', cd:'#8a5e00' }
 ];
+/* co-op patience: a guest gives up on the host after CO_LOST ms of silence, a host drops a quiet friend after CO_GONE ms
+   (short drops on phones, e.g. a moment of bad signal, just freeze the picture and carry on) */
+var CO_LOST = 25000, CO_GONE = 30000;
 var EL = {};
 ELEMENTS.forEach(function(e){
   e.ci = inkFor(e.c);
@@ -7551,12 +7554,12 @@ function cnHostTick(){
     for (var i = 0; i < cn.ships.length; i++) if (cn.ships[i].id === h.id){ s = cn.ships[i]; break; }
     if (s && !s.out && cn.phase === 'play') cnDamage(s, h.by, s.x, s.y, cnElOf(h.by));
   }
-  if (!C.endAt) C.mates.forEach(function(m){ if (!m.gone && now - m.lastIn > 12000){ m.gone = true; cnMatesDom(); cnBanner(m.name + ' left', 'Keep shooting!'); setTimeout(function(){ if (cn.phase === 'play') $('#cn-banner').classList.remove('show'); }, 1600); } });
+  if (!C.endAt) C.mates.forEach(function(m){ if (!m.gone && now - m.lastIn > CO_GONE){ m.gone = true; cnMatesDom(); cnBanner(m.name + ' left', 'Keep shooting!'); setTimeout(function(){ if (cn.phase === 'play') $('#cn-banner').classList.remove('show'); }, 1600); } });
   if (C.endAt && now - C.endAt > 4000) cnCoopStop();
 }
 function cnGuestTick(){
   var C = cn.coop; if (!C) return;
-  if (Date.now() - C.lastIn > 9000 && cn.phase !== 'victory' && cn.phase !== 'lost'){ cnLose('The connection to your friend was lost.'); }
+  if (Date.now() - C.lastIn > CO_LOST && cn.phase !== 'victory' && cn.phase !== 'lost'){ cnLose('The connection to your friend was lost.'); }
 }
 function cnSnap(){
   var C = cn.coop; if (!C || C.role !== 'host') return null;
@@ -8097,7 +8100,7 @@ function dfGuestUpdate(dt){
   if (df.phase === 'play') df.runT = (df.runT || 0) + dt;
   var C = df.coop, i, p = df.hero;
   if (df.phase === 'ending'){ df.endT -= dt; if (df.endT <= 0){ var w = df.endWon; df.coopEnded = C; df.coop = null; dfEnd(w); return; } }
-  if (C && Date.now() - (C.lastIn || Date.now()) > 9000 && !C.done){ C.done = true; df.coop = null; df.mates = []; dfBanner('Connection lost', '', 2000); dfFinish(false); df.gold = 0; df.xp = 0; return; }
+  if (C && Date.now() - (C.lastIn || Date.now()) > CO_LOST && !C.done){ C.done = true; df.coop = null; df.mates = []; dfBanner('Connection lost', '', 2000); dfFinish(false); df.gold = 0; df.xp = 0; return; }
   if (p){
     p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zapT = Math.max(0, (p.zapT || 0) - dt); p.walkT = Math.max(0, (p.walkT || 0) - dt); p.hurt = Math.max(0, (p.hurt || 0) - dt);
     if (p.stunN > 0){ p.mv = null; p.buf = 0; p.bob += dt * 30; }
@@ -10702,7 +10705,7 @@ function thUpdate(dt){
   if (CC) CC.mates.forEach(function(C){
     var me0 = thMateEl(C), k0 = Math.min(1, dt * 10);
     if (!netStep(C, dt) && C.tx !== undefined){ C.x += (C.tx - C.x) * k0; C.y += (C.ty - C.y) * k0; }
-    if (!C.gone && !CC.endAt && Date.now() - C.lastIn > 12000){ C.gone = true; if (me0) me0.classList.add('gone'); thBanner((C.name || 'Your friend') + ' left', 'Keep digging!', 1600); if (th.phase === 'wait' && thMatesDone()){ th.phase = 'ending'; th.endT = 1; } }
+    if (!C.gone && !CC.endAt && Date.now() - C.lastIn > CO_GONE){ C.gone = true; if (me0) me0.classList.add('gone'); thBanner((C.name || 'Your friend') + ' left', 'Keep digging!', 1600); if (th.phase === 'wait' && thMatesDone()){ th.phase = 'ending'; th.endT = 1; } }
   });
   /* camera follows the pal */
   var vw = th.W / th.sc / 2, vh = th.H / th.sc / 2;
@@ -11481,7 +11484,7 @@ function quUpdate(dt){
   qu.P.forEach(function(p){ p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zap = Math.max(0, p.zap - dt); p.walkT = Math.max(0, p.walkT - dt); p.hurt = Math.max(0, p.hurt - dt); });
   if (!C || C.role === 'host'){ if (qu.phase === 'play' || qu.phase === 'ending') quHostTick(dt); }
   else quGuestTick(dt);
-  if (C && C.role === 'host' && !C.endAt) qu.P.forEach(function(p){ if (p.mate && !p.gone && Date.now() - p.lastIn > 12000){ p.gone = true; quDrop(p); p.el.classList.add('gone'); quBanner(p.name + ' left', 'Keep going!', 1600); } });
+  if (C && C.role === 'host' && !C.endAt) qu.P.forEach(function(p){ if (p.mate && !p.gone && Date.now() - p.lastIn > CO_GONE){ p.gone = true; quDrop(p); p.el.classList.add('gone'); quBanner(p.name + ' left', 'Keep going!', 1600); } });
   if (C && C.role === 'host' && C.endAt && Date.now() - C.endAt > 4000){ qu.coop = null; if (window.ppCoop && window.ppCoop.left) window.ppCoop.left(); }
   /* camera follows my pal */
   var B = qu.L, vw = qu.W / qu.sc / 2, vh = qu.H / qu.sc / 2, gx = clamp(me.x, B.bx[0] + vw, B.bx[1] - vw), gy = clamp(me.y, B.by[0] + vh, B.by[1] - vh);
@@ -11845,7 +11848,7 @@ function quApply(S){
 function quGuestTick(dt){
   var C = qu.coop, k = Math.min(1, dt * 12);
   if (!C) return;      /* the party just ended this frame */
-  if (Date.now() - C.lastIn > 9000 && (qu.phase === 'play' || qu.phase === 'between')){ qu.won = false; qu.loseWhy = 'The connection to your friend was lost.'; if (qu.surv) quSurvClaim(false, 'The connection to your friend was lost.'); else quFinish(false); return; }
+  if (Date.now() - C.lastIn > CO_LOST && (qu.phase === 'play' || qu.phase === 'between')){ qu.won = false; qu.loseWhy = 'The connection to your friend was lost.'; if (qu.surv) quSurvClaim(false, 'The connection to your friend was lost.'); else quFinish(false); return; }
   qu.L.foes.forEach(function(f){ if (f.tx !== undefined){ f.x += (f.tx - f.x) * k; f.y += (f.ty - f.y) * k; } f.ph += dt; f.hit = Math.max(0, (f.hit || 0) - dt); if (f.wind > 0) f.wind = Math.max(0.001, f.wind - dt / 0.7); });
   (qu.esh || []).forEach(function(e){ e.x += e.vx * dt; e.y += e.vy * dt; });
   qu.P.forEach(function(p){ if (p.mate) netStep(p, dt); });
@@ -15495,7 +15498,7 @@ function leaveArea(area){
 /* ---------- skilling with friends: up to 4 players on the host's skilling islands. The host's trees, rocks, bone piles
    and fishing spots are shared (guests take over that layout and follow its state); everyone works on their own device
    and gathers into their own bag. Rides on the co-op party link (md 'skill'): the host sends ~8 pictures a second. ---------- */
-var SKP = { coop: null }, SKP_GATHER = ['mine', 'forest', 'grave', 'fish'], SKP_RATE = 60, SKP_LOST = 15000;
+var SKP = { coop: null }, SKP_GATHER = ['mine', 'forest', 'grave', 'fish'], SKP_RATE = 60, SKP_LOST = 25000;
 function skpGather(i){ return SKP_GATHER.some(function(a){ return isNode(i, a); }); }
 function skpAreaFor(el){ return Object.keys(AREAS).filter(function(a){ return AREAS[a].el === el; })[0] || 'forest'; }
 function skpNames(){ var C = SKP.coop; return C ? Object.keys(C.mates).map(function(k){ return C.mates[k].name; }) : []; }
