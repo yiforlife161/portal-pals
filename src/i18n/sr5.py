@@ -121,3 +121,4 @@ SRT = {
   "Chopped tomatoes needed: §": "Potrebno iseckanog paradajza: §",
 }
 SR.update({"Sky Cannon: your cannons fire 40% faster": "Nebeski top: tvoji topovi pucaju 40% brže"})
+SR.update({"Bone Rider": "Koštani jahač"})

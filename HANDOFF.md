@@ -246,3 +246,5 @@ Giant pals (lv, sn, tr, mecha, cyc) have permanently glowing eyes in their eleme
 Friend message popups (cloud.js `chNotify`/`chnGone`, CSS `.chn*`): when a friend message arrives (and you are not in that chat) a card pops up top-centre with their pal icon, name and the message; click to open the chat, x to close, fades after 7 s (paused on hover), one per friend, max 3. Unread messages sent while you were away pop up once at sign-in (no sound). New sound `msg` (ppGame.sfx). Test: mock2/tch.js prints "B popup".
 
 Skill challenge gate signs show a tool per skill (`sgToolArt(area)`, next to `sgGateSvg`; the pickaxe and axe reuse `pkSvg`/`axeSvg`, the ones over the pal's head): pickaxe, fishing rod, axe, mortar and pestle, frying pan, hammer, torch, shovel.
+
+- **Bone Rider (`bn`, Undead, melee, normal):** the owner's own drawing: a teal goblin in a red pointed hood-helmet (gold gem), brown vest and red boots riding a crawling skeleton beast (horned skull with orange eye holes, ribcage, bony tail, 4 clawed bone legs in the walk groups), pointing ahead and chopping with a double-bladed axe. Not a franchise character. Source `src/previews/boneride.js`.
