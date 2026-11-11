@@ -215,7 +215,6 @@ A new game key must be added to every one of these lists, or something quietly b
 - `ACH_GAMES` is unused, so don't rely on it.
 
 ### Known traps
-- **Co-op network:** direct links use WebRTC with STUN plus a **Metered TURN relay** (app `portalpals`, `TURN_URL` in cloud.js with the front-end apiKey; credentials cached 12 h in `pp.turn`; prefetched 4 s after sign-in; 3 s timeout → STUN only). The label shows Direct / Relay (`rtcKind` reads the selected candidate pair) / Server / Reconnecting (no data for 2.5 s, `CO.lastAny`). Patience: `CO_LOST` 25 s (guest gives up on host), `CO_GONE` 30 s (host drops a friend), `SKP_LOST` 25 s. Host snapshots are ~6 KB/s per friend in the kitchen, so relay usage is roughly 45 MB per friend-hour (in + out).
 - Performance on phones: never animate CSS `filter` on pal SVGs; don't rebuild HUD html every tick (update bar widths in place, like the kitchen's `hudBars`); in `frame` the minigame flags are checked before `stage.clientWidth` (reading it forces a layout every frame).
 - `dfLevelMult` exists but is **unused**: pal level doesn't scale damage. Only upgrades (dmg/spd/crit with `EL_CAPS`) do.
 - There are two `dfDrawFoe` definitions. The later override is the live one.

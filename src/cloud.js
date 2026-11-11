@@ -119,7 +119,6 @@ function schedule(){ if (!me || !ready) return; clearTimeout(timer); timer = set
 
 async function onUser(user){
   me = user;
-  setTimeout(() => { if (rtcAllowed()) rtcTurn(); }, 4000);      /* get the relay login ready before any co-op game */
   if (!user){ if (lsGet(USER_KEY)){ lsDel(USER_KEY); location.reload(); return; } render(); friendsUi(); return; }
   if (lsGet(USER_KEY) !== user.uid){
     /* first time this player signs in on this device: boot again with their own save slot and take the cloud world */
@@ -982,27 +981,6 @@ function coSlotPath(n){ return n === 0 ? 'h' : n === 1 ? 'g' : 'g' + n; }
    carries a number (_q) per sender, so a copy arriving by the other road, or late, is skipped. A link counts as
    "live" once it has carried data in the last second and the other side confirms it hears us; while any guest is not live, the host also writes to the database. ---------- */
 const RTC_ICE = [{ urls: ['stun:stun.l.google.com:19302', 'stun:stun1.l.google.com:19302'] }];
-/* a TURN relay (Metered, app "portalpals"): when two homes can't link directly, the traffic goes through it, which is still far
-   quicker than the database. Its login comes from Metered's credentials endpoint with a key that is meant for web pages; it's fetched
-   once and kept for 12 hours. Without it (blocked, quota used up) the game uses STUN + the database as before. */
-const TURN_URL = 'https://portalpals.metered.live/api/v1/turn/credentials?apiKey=cfb1b7303197ac58d29978419af6758b7410';
-let TURN = null, turnP = null;
-function rtcTurn(){
-  if (TURN && Date.now() - TURN.t < 12 * 3600e3) return Promise.resolve(TURN.ice);
-  if (!turnP){
-    try { const c = JSON.parse(localStorage.getItem('pp.turn') || 'null'); if (c && Date.now() - c.t < 12 * 3600e3 && Array.isArray(c.ice)){ TURN = c; return Promise.resolve(c.ice); } } catch (e){}
-    turnP = Promise.race([
-      fetch(TURN_URL).then(r => r.ok ? r.json() : null).then(a => {
-        const ice = Array.isArray(a) ? a.filter(x => x && x.urls) : null;
-        if (ice && ice.length){ TURN = { t: Date.now(), ice: ice }; try { localStorage.setItem('pp.turn', JSON.stringify(TURN)); } catch (e){} }
-        return TURN ? TURN.ice : [];
-      }).catch(() => []),
-      new Promise(r => setTimeout(() => r([]), 3000))
-    ]).then(v => { turnP = null; return v; });
-  }
-  return turnP;
-}
-async function rtcIce(){ const t = await rtcTurn(); return RTC_ICE.concat(t || []); }
 function rtcAllowed(){ try { if (localStorage.getItem('pp.noDirect') === '1') return false; } catch (e){} return typeof RTCPeerConnection === 'function'; }
 function rtcGather(pc, ms){
   return new Promise(res => {
@@ -1022,31 +1000,18 @@ function rtcWire(P, dc){
   dc.onopen = () => { P.openT = Date.now(); };
   dc.onmessage = e => { if (P.dead) return; let v; try { v = JSON.parse(e.data); } catch (er){ return; } P.lastIn = Date.now(); if (v && v._p !== undefined){ if (v._p) P.okT = Date.now(); return; } if (CO.recv) CO.recv(v, P.slot, true); };
 }
-function rtcNew(slot, key, ice){
-  const P = { slot: slot, key: key, pc: new RTCPeerConnection({ iceServers: ice || RTC_ICE }), dc: null, openT: 0, lastIn: 0, okT: 0, pingT: 0, dead: false, unsub: null, done: false };
-  setTimeout(() => { if (!P.dead && !(P.dc && P.dc.readyState === 'open')){ rtcClose(P); } }, 20000);      /* no direct road: stay on the server */
-  P.pc.addEventListener('connectionstatechange', () => { if (P.pc.connectionState === 'connected') rtcKind(P); });
+function rtcNew(slot, key){
+  const P = { slot: slot, key: key, pc: new RTCPeerConnection({ iceServers: RTC_ICE }), dc: null, openT: 0, lastIn: 0, okT: 0, pingT: 0, dead: false, unsub: null, done: false };
+  setTimeout(() => { if (!P.dead && !(P.dc && P.dc.readyState === 'open')){ rtcClose(P); } }, 15000);      /* no direct road: stay on the server */
   return P;
 }
-/* is the link straight between the devices or through the TURN relay? (for the label) */
-function rtcKind(P){
-  P.pc.getStats().then(st => {
-    let pair = null; const loc = {};
-    st.forEach(r => { if (r.type === 'transport' && r.selectedCandidatePairId) pair = st.get(r.selectedCandidatePairId); if (r.type === 'local-candidate') loc[r.id] = r; });
-    if (!pair) st.forEach(r => { if (r.type === 'candidate-pair' && r.state === 'succeeded' && (r.nominated || r.selected)) pair = r; });
-    const c = pair && loc[pair.localCandidateId];
-    P.relay = !!(c && c.candidateType === 'relay');
-  }).catch(() => {});
-}
 async function rtcHost(slot, mid, key){
-  const ice = await rtcIce();
-  if (CO.key !== key) return;
-  const P = rtcNew(slot, key, ice);
+  const P = rtcNew(slot, key);
   CO.peers[slot] = P;
   try {
     rtcWire(P, P.pc.createDataChannel('pp', { ordered: true }));
     await P.pc.setLocalDescription(await P.pc.createOffer());
-    await rtcGather(P.pc, 3500);
+    await rtcGather(P.pc, 2500);
     if (P.dead) return;
     await fs.updateDoc(mref(mid), { rtcO: { k: key, sdp: P.pc.localDescription.sdp }, rtcA: null });
     P.unsub = fs.onSnapshot(mref(mid), snap => {
@@ -1057,10 +1022,8 @@ async function rtcHost(slot, mid, key){
     }, () => {});
   } catch (e){ console.warn('direct link', e); rtcClose(P); }
 }
-async function rtcGuest(mid, key){
-  const ice = await rtcIce();
-  if (CO.key !== key) return;
-  const P = rtcNew(0, key, ice);
+function rtcGuest(mid, key){
+  const P = rtcNew(0, key);
   CO.peers[0] = P;
   P.pc.ondatachannel = e => rtcWire(P, e.channel);
   P.unsub = fs.onSnapshot(mref(mid), async snap => {
@@ -1070,7 +1033,7 @@ async function rtcGuest(mid, key){
     try {
       await P.pc.setRemoteDescription({ type: 'offer', sdp: d.rtcO.sdp });
       await P.pc.setLocalDescription(await P.pc.createAnswer());
-      await rtcGather(P.pc, 3500);
+      await rtcGather(P.pc, 2500);
       if (P.dead) return;
       await fs.updateDoc(mref(mid), { rtcA: { k: key, sdp: P.pc.localDescription.sdp } });
     } catch (e){ console.warn('direct link', e); rtcClose(P); }
@@ -1088,16 +1051,14 @@ function rtcBadge(){
   }
   const top = CO.md === 'cannon';      /* the cannons fill the bottom of the screen there */
   el.style.top = top ? '94px' : ''; el.style.bottom = top ? '' : '4px';
-  const n = CO.links.length, live = CO.links.filter(s => rtcLive(CO.peers[s])), d = live.length, rl = live.filter(s => CO.peers[s].relay).length;
-  const quiet = CO.lastAny && Date.now() - CO.lastAny > 2500;      /* nothing heard for a moment: the game waits for it */
-  const txt = quiet ? '⏳ Reconnecting…' : d === n ? (rl === n ? '🛰 Relay connection' : rl ? '⚡ Direct + relay' : '⚡ Direct connection') : d === 0 ? '☁ Server connection' : '⚡ Direct ' + d + '/' + n;
-  if (el.dataset.k !== txt){ el.dataset.k = txt; el.textContent = txt; el.style.background = quiet ? 'rgba(200,110,20,.9)' : d === n ? (rl === n ? 'rgba(40,110,170,.88)' : 'rgba(25,135,70,.88)') : d ? 'rgba(175,120,20,.88)' : 'rgba(55,65,85,.82)'; }
+  const n = CO.links.length, d = CO.links.filter(s => rtcLive(CO.peers[s])).length;
+  const txt = d === n ? '⚡ Direct connection' : d === 0 ? '☁ Server connection' : '⚡ Direct ' + d + '/' + n;
+  if (el.dataset.k !== txt){ el.dataset.k = txt; el.textContent = txt; el.style.background = d === n ? 'rgba(25,135,70,.88)' : d ? 'rgba(175,120,20,.88)' : 'rgba(55,65,85,.82)'; }
   el.hidden = false;
 }
 /* a message from slot s (by either road): use it only if it is newer than the last one from s */
 function coFresh(v, s){
   if (!v || typeof v !== 'object') return false;
-  CO.lastAny = Date.now();
   const q = +v._q;
   if (!q) return true;      /* an older game version sends no numbers */
   if (q <= (CO.lastQ[s] || 0)) return false;
@@ -1115,7 +1076,7 @@ async function coopLink(key, role, slot, roster){
   if (!ok){ if (role === 'guest') ptLeave(); else ptReset(); return; }
   const gen = PT.gen, md = PT.md;
   coopStop(); PT.started = true;
-  CO.key = key; CO.role = role; CO.idle = 0; CO.gen = gen; CO.md = md; CO.q = 0; CO.lastQ = {}; CO.peers = {}; CO.lastAny = Date.now();
+  CO.key = key; CO.role = role; CO.idle = 0; CO.gen = gen; CO.md = md; CO.q = 0; CO.lastQ = {}; CO.peers = {};
   CO.links = role === 'host' ? mates.map(m => m.slot) : [0];
   const base = 'coop/' + key, direct = rtcAllowed();
   if (role === 'host'){
