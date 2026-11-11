@@ -12012,7 +12012,7 @@ function sgOpen(area){
   sg.decor = G.decor ? G.decor(R) : [];
   $('#sgame').hidden = false; $('#sgame').dataset.g = area; $('.wrap').inert = true; document.body.style.overflow = 'hidden';
   $('#sg-pals').innerHTML = ''; $('#sg-ord').innerHTML = ''; $('#sg-ord').hidden = true; sgMiniUi();
-  sg.phase = 'intro'; sg.w = 0; sg.sc = 0; sg.need = 1; sg.tl = SG_WAVE_T; sg.k = 1; sg.mul = 1; sg.surv = null; sg.coop = null;
+  sg.phase = 'intro'; sg.w = 0; sg.sc = 0; sg.need = 1; sg.tl = G.waveT || SG_WAVE_T; sg.k = 1; sg.mul = 1; sg.surv = null; sg.coop = null;
   if (G.layout){ sg.lv = 1; sg.chL = 0; G.layout(1); if (G.preview) G.preview(); }
   var xl = document.querySelector('.sg-xpc span'); if (xl) xl.textContent = G.mg ? 'Earned' : 'XP';
   sg.cam = { x: sg.I.x, y: sg.I.y };
@@ -12073,7 +12073,7 @@ function sgWave(w){
     var base = G.need[Math.min(G.need.length - 1, sg.surv ? Math.min(2, sg.surv.n - 1) : w - 1)];
     if (sg.surv) base = Math.round(G.need[2] * (1 + 0.04 * Math.max(0, sg.surv.n - 3)));
     if (G.needFor) base = G.needFor(w);
-    sg.need = Math.round(base * sg.mul); sg.sc = 0; sg.tl = SG_WAVE_T;
+    sg.need = Math.round(base * sg.mul); sg.sc = 0; sg.tl = G.waveT || SG_WAVE_T;
     if (sg.rs) sg.rs.wbad = 0;
     G.wave(w, sg.k);
   }
@@ -13445,6 +13445,7 @@ SG_GAMES.chef = { mg: 'chef', name: 'Elemental Kitchen', verb: 'Use', hint: 'Wal
   intro: 'Hungry islanders are ordering! Grab ingredients, chop, cook and plate them, then serve each dish at the hatch before its order runs out.',
   how: 'Press the action button at a crate to grab, at a station to put something in or work on it, and at a counter to put down or pick up. Carry a plate to finished food to plate it. Each station has an element: pals of that element work there twice as fast. Wash dirty plates at the sink.',
   goal: 'Serve the orders before they run out!',
+  waveT: 120,      /* 2 minutes a wave (the skill challenges have 75 s) */
   land: CH_LAY[1].land, sky: CH_LAY[1].sky, cloud: CH_LAY[1].cloud,
   need: CH_NEED[1],
   decor: function(R){ return sgRing(R, 11, 0.86, 0.96, chLay().decor, 80); },
@@ -13520,7 +13521,7 @@ SG_GAMES.chef = { mg: 'chef', name: 'Elemental Kitchen', verb: 'Use', hint: 'Wal
       S.ord = rand(8.5, 12) * sgRate(1) * (ords.length ? 1 : 0.4);
       var pool = L.dishes, dk = pool[Math.floor(Math.random() * pool.length)];
       if (!ords.length && sg.chL === 3 && !sg.rs.icecSeen){ dk = 'icec'; sg.rs.icecSeen = 1; }      /* the crypt kitchen always asks for ice cream once */
-      var T = CH_DISH[dk].T / Math.min(1.45, Math.sqrt(k)) * (1 + 0.12 * (sg.mul - 1));
+      var T = CH_DISH[dk].T * 1.25 / Math.min(1.45, Math.sqrt(k)) * (1 + 0.12 * (sg.mul - 1));
       sgNew('ord', 0, 0, { s: dk, a: T, b: T });
     }
     /* cooking stations cook by themselves, and burn if left too long */
