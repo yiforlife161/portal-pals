@@ -11922,6 +11922,8 @@ function sgDel(e){ var i = sg.E.indexOf(e); if (i >= 0) sg.E.splice(i, 1); }
 function sgAll(k){ return sg.E.filter(function(e){ return e.k === k; }); }
 function sgNear(p, test, r){
   var best = null, bd = r || SG_REACH;
+  /* a tap or click on one thing: only that thing counts (sgPick sets sg.only while the game picks) */
+  if (sg.only){ var oe = sgById(sg.only); return oe && test(oe) && Math.hypot(oe.x - p.x, (oe.y - p.y) * 1.2) < bd ? oe : null; }
   sg.E.forEach(function(e){ if (!test(e)) return; var d = Math.hypot(e.x - p.x, (e.y - p.y) * 1.2); if (d < bd){ bd = d; best = e; } });
   return best;
 }
@@ -12270,9 +12272,10 @@ function sgUpdate(dt){
       if (me.goal){
         var ge = sgById(me.goal);
         if (!ge){ me.goal = 0; me.mv = null; }
-        else if (Math.hypot(ge.x - me.x, (ge.y - me.y) * 1.2) < SG_REACH * 0.9){ me.goal = 0; me.mv = null; sgAct(true); }
+        else if (Math.hypot(ge.x - me.x, (ge.y - me.y) * 1.2) < SG_REACH * 0.9){ me.goal = 0; me.mv = null; sgAct(true, ge.id); }
       }
       if (K.atk) sgAct(false);
+      else if (sg.tapHold && !me.goal) sgAct(false, sg.tapHold);      /* holding a tap/click on a thing keeps working on it */
     } else sgMiniTick(dt);
   } else if (sg.mini) sgMiniStop(false);
   if (G.local) G.local(dt);
@@ -12319,22 +12322,28 @@ function sgLoop(ts){
 }
 
 /* ---------- acting: work on the closest thing (hold to keep going) ---------- */
-function sgPick(p){
-  var mob = sgNear(p, function(e){ return e.k === 'mob'; }, SG_REACH + 10);
-  if (mob) return { t: 'mob', id: mob.id };
-  return sg.G.pick(p);
+/* what the action does: with tid (a tapped or clicked thing) it works on exactly that thing, otherwise on what is
+   closest (the action button and the keyboard) */
+function sgPick(p, tid){
+  var te = tid ? sgById(tid) : null;
+  if (tid && !te) return null;
+  if (te && te.k === 'mob') return Math.hypot(te.x - p.x, (te.y - p.y) * 1.2) < SG_REACH + 10 ? { t: 'mob', id: te.id } : null;
+  if (!te){ var mob = sgNear(p, function(e){ return e.k === 'mob'; }, SG_REACH + 10); if (mob) return { t: 'mob', id: mob.id }; }
+  sg.only = te ? te.id : 0;
+  try { return sg.G.pick(p); } finally { sg.only = 0; }
 }
-function sgAct(first){
+function sgAct(first, tid){
   var me = sg.hero;
   if (!sg.open || sg.phase !== 'play' || !me || me.ko > 0) return;
   if (sg.mini){ if (first) sgMiniPress(); return; }
   if (me.cd > 0) return;
-  var a = sgPick(me);
+  var a = sgPick(me, tid);
   if (!a){
     if (first && !(sg.hintT > sg.t)){ sg.hintT = sg.t + 1.5; sgTxt(me.x, me.y - 120, sg.G.hint || 'Walk closer to something.', '#fff'); }
     return;
   }
   if (a.msg){ if (first || !(sg.hintT > sg.t)){ sg.hintT = sg.t + 1.2; sgTxt(me.x, me.y - 120, a.msg, '#ffe58a'); } return; }
+  if (tid){ if (first) sg.tapT = a.t; else if (a.t !== sg.tapT) return; }      /* a held tap repeats the same kind of action only (chop, chop, chop — not put, take, put) */
   var e = sgById(a.id); if (e && Math.abs(e.x - me.x) > 4) me.face = e.x > me.x ? 1 : -1;
   me.cd = SG_CD * (me.hat ? SG_HAT_CD : 1); me.act = 0.22;
   if (a.mini){ sgMiniStart(a); return; }
@@ -12455,8 +12464,12 @@ function sgDraw(){
   if (me && me.mv){ g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.ellipse(me.mv.x, me.mv.y, 12 + Math.sin(sg.t * 8) * 2, 6, 0, 0, 7); g.stroke(); }
   /* what my action button would work on now */
   if (me && sg.phase === 'play' && !(me.ko > 0) && !sg.mini){
-    var a = sgPick(me), te = a && !a.msg ? sgById(a.id) : null;
-    if (te){ g.strokeStyle = 'rgba(255,255,255,' + (0.55 + 0.3 * Math.sin(sg.t * 6)) + ')'; g.lineWidth = 3; g.setLineDash([7, 6]); g.beginPath(); g.ellipse(te.x, te.y + 2, 42, 15, 0, 0, 7); g.stroke(); g.setLineDash([]); }
+    var ge = me.goal ? sgById(me.goal) : null, hv = sg.hov && !ge ? sgById(sg.hov) : null;
+    if (ge || hv){      /* the thing I tapped (walking there) or the thing under the mouse: a solid yellow ring */
+      var re = ge || hv; g.strokeStyle = ge ? '#ffd23e' : 'rgba(255,240,170,.85)'; g.lineWidth = 3.5; g.beginPath(); g.ellipse(re.x, re.y + 2, 46, 17, 0, 0, 7); g.stroke();
+    }
+    var a = ge ? null : sgPick(me), te = a && !a.msg ? sgById(a.id) : null;
+    if (te && te !== hv){ g.strokeStyle = 'rgba(255,255,255,' + (0.55 + 0.3 * Math.sin(sg.t * 6)) + ')'; g.lineWidth = 3; g.setLineDash([7, 6]); g.beginPath(); g.ellipse(te.x, te.y + 2, 42, 15, 0, 0, 7); g.stroke(); g.setLineDash([]); }
   }
   for (i = 0; i < sg.fx.length; i++){
     var f = sg.fx[i], u = 1 - f.t / f.T;
@@ -12605,6 +12618,26 @@ function sgGuestTick(dt){
 }
 
 /* ---------- input ---------- */
+/* the thing drawn under a tap/click: inside its picture first (nearest centre wins), else the nearest one close by */
+function sgHit(p){
+  var best = null, bd = 1e9, near = null, nd = 64;
+  sg.E.forEach(function(e){
+    if (e.k === 'food' || e.k === 'ord' || e.k === 'bridge') return;
+    var dx = p.x - e.x, dy = p.y - e.y, d = Math.hypot(dx, dy + 30);
+    if (Math.abs(dx) < 54 && dy > -100 && dy < 40){ if (d < bd){ bd = d; best = e; } }
+    else if (d < nd){ nd = d; near = e; }
+  });
+  return best || near;
+}
+/* where to stand to use it: the free side closest to me */
+function sgApproach(me, e){
+  var G = sg.G, c = [[-58, 8], [58, 8], [0, 54], [0, -46], [-46, 40], [46, 40]].map(function(o){ return { x: e.x + o[0], y: e.y + o[1] }; }).filter(function(q){
+    if (!sgWalk(q.x, q.y)) return false;
+    return !sg.E.some(function(o){ var r = o !== e && G.solid ? G.solid(o) : 0; return r && Math.hypot(o.x - q.x, (o.y - q.y) * 1.6) < r + 16; });
+  });
+  c.sort(function(a, b){ return Math.hypot(a.x - me.x, a.y - me.y) - Math.hypot(b.x - me.x, b.y - me.y); });
+  return c[0] || { x: e.x + (me.x < e.x ? -50 : 50), y: e.y + 10 };
+}
 function sgToWorld(cx, cy){ var r = sg.cv.getBoundingClientRect(); return { x: sg.cam.x + (cx - r.left - sg.VW / 2) / sg.zk, y: sg.cam.y + (cy - r.top - sg.VH / 2) / sg.zk }; }
 (function(){
   var cv = $('#sg-canvas'); if (!cv) return;
@@ -12613,16 +12646,21 @@ function sgToWorld(cx, cy){ var r = sg.cv.getBoundingClientRect(); return { x: s
     ev.preventDefault();
     var me = sg.hero; if (!me || me.ko > 0) return;
     if (sg.mini){ sg.ptrHold = true; sgMiniPress(); return; }
-    var p = sgToWorld(ev.clientX, ev.clientY), best = null, bd = 70;
-    sg.E.forEach(function(e){ if (e.k === 'food' || e.k === 'ord') return; var d = Math.hypot(e.x - p.x, e.y - 30 - p.y); if (d < bd){ bd = d; best = e; } });
-    if (best && ev.button !== 2){
-      if (Math.hypot(best.x - me.x, (best.y - me.y) * 1.2) < SG_REACH * 0.9){ me.mv = null; me.goal = 0; sgAct(true); }
-      else { me.goal = best.id; me.mv = { x: best.x + (me.x < best.x ? -50 : 50), y: best.y + 10 }; }
+    var p = sgToWorld(ev.clientX, ev.clientY), best = sgHit(p);
+    if (best && ev.button !== 2){      /* a tap or click works on exactly what was tapped: walk up to it, then act on it */
+      sg.tapHold = best.id;
+      if (Math.hypot(best.x - me.x, (best.y - me.y) * 1.2) < SG_REACH * 0.9){ me.mv = null; me.goal = 0; sgAct(true, best.id); }
+      else { me.goal = best.id; me.mv = sgApproach(me, best); }
       return;
     }
     me.goal = 0; me.mv = { x: p.x, y: p.y + 10 };
   });
-  var up = function(){ sg.ptrHold = false; };
+  cv.addEventListener('pointermove', function(ev){      /* the mouse shows what a click would use */
+    if (!sg.open || ev.pointerType !== 'mouse') return;
+    var h = sg.phase === 'play' ? sgHit(sgToWorld(ev.clientX, ev.clientY)) : null;
+    sg.hov = h ? h.id : 0; cv.style.cursor = h ? 'pointer' : '';
+  });
+  var up = function(){ sg.ptrHold = false; sg.tapHold = 0; };
   cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up); cv.addEventListener('pointerleave', up);
   cv.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   window.addEventListener('resize', sgResize);
@@ -12637,7 +12675,7 @@ function sgToWorld(cx, cy){ var r = sg.cv.getBoundingClientRect(); return { x: s
     sg.keys[k] = true;
   });
   document.addEventListener('keyup', function(ev){ var k = KM[(ev.key || '').toLowerCase()]; if (k) sg.keys[k] = false; });
-  window.addEventListener('blur', function(){ sg.keys = {}; sg.ptrHold = false; });
+  window.addEventListener('blur', function(){ sg.keys = {}; sg.ptrHold = false; sg.tapHold = 0; });
 })();
 
 /* ---------- the 8 games ---------- */
@@ -13562,6 +13600,7 @@ SG_GAMES.chef = { mg: 'chef', name: 'Elemental Kitchen', verb: 'Use', hint: 'Wal
   },
   /* of the stations in reach, the closest one where the button can do something (else the closest one's hint) */
   pick: function(p){
+    if (sg.only){ var oe = sgById(sg.only); return oe && CH_ST[oe.k] && Math.hypot(oe.x - p.x, (oe.y - p.y) * 1.2) < SG_REACH ? this.pickAt(p, oe) : null; }
     var G = this, list = sg.E.filter(function(o){ return CH_ST[o.k] && Math.hypot(o.x - p.x, (o.y - p.y) * 1.2) < SG_REACH; })
       .sort(function(a, b){ return Math.hypot(a.x - p.x, (a.y - p.y) * 1.2) - Math.hypot(b.x - p.x, (b.y - p.y) * 1.2); });
     var first = null;
