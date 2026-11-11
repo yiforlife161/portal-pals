@@ -397,7 +397,10 @@ input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
 /* Glowcore aura: a soft glow behind the pal that only changes opacity (cheap on phones; animated filters were not) */
 .pbody,.dfp-body,.token .body{isolation:isolate}.gcaura{z-index:-1;position:absolute;left:2%;top:4%;width:96%;height:96%;border-radius:50%;background:radial-gradient(closest-side,var(--gc) 0%,var(--gc) 35%,transparent 100%);opacity:.3;animation:gcpulse 1.6s ease-in-out infinite;pointer-events:none;will-change:opacity}
 @keyframes gcpulse{0%,100%{opacity:.22}50%{opacity:.7}}
-@media (prefers-reduced-motion:reduce){.gcaura{animation:none;opacity:.45}}.pbody>svg{display:block;width:100%;height:100%;overflow:visible}
+.gcsil,.gcfl{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none;will-change:opacity}
+.gcsil{z-index:-1;animation:gcglow 1.6s ease-in-out infinite}.gcfl{z-index:1;opacity:0;animation:gcflash 1.6s ease-in-out infinite}
+@keyframes gcglow{0%,100%{opacity:.5}50%{opacity:1}}@keyframes gcflash{0%,100%{opacity:0}50%{opacity:.3}}
+@media (prefers-reduced-motion:reduce){.gcaura,.gcsil,.gcfl{animation:none}.gcaura{opacity:.45}.gcsil{opacity:.8}}.pbody>svg{display:block;width:100%;height:100%;overflow:visible}
 .el-pick input:focus-visible + .box{outline:3px solid var(--accent);outline-offset:2px}
 .lvrow{display:flex;align-items:center;gap:14px}
 .lvrow input[type=range]{flex:1;min-width:0;accent-color:var(--accent)}
@@ -3197,11 +3200,20 @@ var PAL_BODY_ORDER = ['eagle', 'wyrm', 'knight', 'mecha', 'cyc', 'rogue', 'md', 
 /* Glowcore pals: copies of some special pals that pulse with light in their element's colour (a .gcaura glow behind them, CSS gcpulse) */
 var GLOWCORE = ['eagle', 'md', 'sh', 'go', 'ms', 'ik', 'mr', 'wi'];
 function gcAura(fn, el){ return function(c){ return '<span class="gcaura" style="--gc:' + (EL[el] ? EL[el].c : '#fff') + '"></span>' + fn(c); }; }
+/* the glow is drawn once as still pictures (a blurred outline in the element colour behind the pal, and a flat element-coloured copy in front)
+   and only their opacity pulses, which phones handle easily */
+function gcInner(B){ return String(B.art()).replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, ''); }
+function gcGlowBack(B){ var c = EL[B.el] ? EL[B.el].c : '#fff', id = 'gcf-' + B.el;
+  return '<svg class="gcsil" viewBox="0 0 100 100" aria-hidden="true"><defs><filter id="' + id + '" x="-40%" y="-40%" width="180%" height="180%"><feFlood flood-color="' + c + '"/><feComposite in2="SourceAlpha" operator="in"/><feGaussianBlur stdDeviation="3.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="b"/></feMerge></filter></defs><g filter="url(#' + id + ')">' + gcInner(B) + '</g></svg>'; }
+function gcGlowFront(B){ var c = EL[B.el] ? EL[B.el].c : '#fff', id = 'gcs-' + B.el;
+  return '<svg class="gcfl" viewBox="0 0 100 100" aria-hidden="true"><defs><filter id="' + id + '"><feFlood flood-color="' + c + '"/><feComposite in2="SourceAlpha" operator="in"/></filter></defs><g filter="url(#' + id + ')">' + gcInner(B) + '</g></svg>'; }
 GLOWCORE.forEach(function(k){
   var B = PAL_BODIES[k], G = {};
   Object.keys(B).forEach(function(q){ G[q] = B[q]; });
   G.label = 'Glowcore ' + B.label; G.glow = true;
-  G.back = gcAura(B.back, B.el);
+  var bk = gcAura(B.back, B.el), fr = B.front;
+  G.back = function(c){ return gcGlowBack(B) + bk(c); };
+  G.front = function(c){ return fr(c) + gcGlowFront(B); };
   PAL_BODIES['gc_' + k] = G; PAL_BODY_ORDER.push('gc_' + k);
 });
 function palBody(c){ if (c && c.body && !PAL_BODIES[c.body] && LOOK_RE.test(c.body) && typeof lookNeed === 'function') lookNeed(c.body); return c && c.body && PAL_BODIES[c.body] ? PAL_BODIES[c.body] : null; }

@@ -233,7 +233,7 @@ Pals and art must be **original designs**: no characters from Skylanders, Spyro 
 ### Glowcore pals
 `GLOWCORE` (right after `PAL_BODY_ORDER`) makes a copy of 8 special pals (eagle, md, sh, go, ms, ik, mr, wi) as bodies `gc_<key>`,
 labelled "Glowcore <name>", with the same element/style/size/shot. `gcAura` puts a `.gcaura` span (radial gradient in the element
-colour `EL[el].c`) behind the back layer, and CSS `gcpulse` only animates its opacity (steady under prefers-reduced-motion). Don't go back to an
+colour `EL[el].c`) behind the back layer, plus `gcGlowBack` (a still, blurred element-coloured outline of the body, `.gcsil`, behind) and `gcGlowFront` (a flat element-coloured copy, `.gcfl`, in front, flashing up to 30%); the SVG filters there are static so they're drawn once, and CSS only animates opacity (`gcpulse`, `gcglow`, `gcflash`) (steady under prefers-reduced-motion). Don't go back to an
 animated `filter: drop-shadow` on the SVGs: it made phones (Galaxy A33) lag badly. Pal-figure containers (`.pbody`, `.dfp-body`, `.token .body`) have
 `isolation: isolate` so the aura (z-index -1) stays behind the pal.
 The owner asked for "LightCore", which is the Skylanders name for their glowing figures, so the prefix is "Glowcore".
