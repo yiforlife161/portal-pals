@@ -4930,16 +4930,16 @@ function cleanItem(o){
    n vegetables ready. Days are the player's local days (ghDay). ---------- */
 var GH_N = 32, GH_COLS = 8;
 var GH_PLANTS = {
-  daisy:     { kind: 'flower', name: 'Sunny Daisy', days: 2, seed: 20, sell: 55, c: '#ffffff', m: '#ffd23e' },
-  tulip:     { kind: 'flower', name: 'Tulip', days: 3, seed: 35, sell: 95, c: '#ff5a7a', m: '#ffb0c0' },
-  rose:      { kind: 'flower', name: 'Rose', days: 4, seed: 55, sell: 150, c: '#e8304a', m: '#ff8a9a' },
-  moonlily:  { kind: 'flower', name: 'Moon Lily', days: 5, seed: 90, sell: 240, c: '#c8d8ff', m: '#7a8af0' },
-  starbloom: { kind: 'flower', name: 'Starbloom', days: 6, seed: 140, sell: 380, c: '#ffd23e', m: '#ff9a2a' },
-  lettuce:   { kind: 'veg', name: 'Lettuce', days: 2, seed: 25, sell: 45, every: 3, veg: 2, c: '#7ad96a' },
-  carrot:    { kind: 'veg', name: 'Carrot', days: 3, seed: 35, sell: 70, every: 4, veg: 3, c: '#ff8a1e' },
-  tomato:    { kind: 'veg', name: 'Tomato', days: 3, seed: 45, sell: 85, every: 4, veg: 4, c: '#e8402c' },
-  pepper:    { kind: 'veg', name: 'Pepper', days: 4, seed: 60, sell: 110, every: 5, veg: 6, c: '#ffcf2a' },
-  pumpkin:   { kind: 'veg', name: 'Pumpkin', days: 5, seed: 100, sell: 180, every: 8, veg: 12, c: '#ff8a1e' }
+  daisy:     { kind: 'flower', name: 'Sunny Daisy', days: 2, seed: 20, sell: 170, c: '#ffffff', m: '#ffd23e' },
+  tulip:     { kind: 'flower', name: 'Tulip', days: 3, seed: 35, sell: 300, c: '#ff5a7a', m: '#ffb0c0' },
+  rose:      { kind: 'flower', name: 'Rose', days: 4, seed: 55, sell: 480, c: '#e8304a', m: '#ff8a9a' },
+  moonlily:  { kind: 'flower', name: 'Moon Lily', days: 5, seed: 90, sell: 760, c: '#c8d8ff', m: '#7a8af0' },
+  starbloom: { kind: 'flower', name: 'Starbloom', days: 6, seed: 140, sell: 1200, c: '#ffd23e', m: '#ff9a2a' },
+  lettuce:   { kind: 'veg', name: 'Lettuce', days: 2, seed: 25, sell: 140, every: 3, veg: 8, c: '#7ad96a' },
+  carrot:    { kind: 'veg', name: 'Carrot', days: 3, seed: 35, sell: 220, every: 4, veg: 12, c: '#ff8a1e' },
+  tomato:    { kind: 'veg', name: 'Tomato', days: 3, seed: 45, sell: 270, every: 4, veg: 16, c: '#e8402c' },
+  pepper:    { kind: 'veg', name: 'Pepper', days: 4, seed: 60, sell: 350, every: 5, veg: 24, c: '#ffcf2a' },
+  pumpkin:   { kind: 'veg', name: 'Pumpkin', days: 5, seed: 100, sell: 560, every: 8, veg: 48, c: '#ff8a1e' }
 };
 var GH_ORDER = ['daisy', 'tulip', 'rose', 'moonlily', 'starbloom', 'lettuce', 'carrot', 'tomato', 'pepper', 'pumpkin'];
 var GH_VEG = GH_ORDER.filter(function(k){ return GH_PLANTS[k].kind === 'veg'; });
