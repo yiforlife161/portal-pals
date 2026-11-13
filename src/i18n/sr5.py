@@ -122,3 +122,33 @@ SRT = {
 }
 SR.update({"Sky Cannon: your cannons fire 40% faster": "Nebeski top: tvoji topovi pucaju 40% brže"})
 SR.update({"Bone Rider": "Koštani jahač"})
+SR.update({
+  "Greenhouse": "Staklenik", "Sunny Daisy": "Sunčana bela rada", "Tulip": "Lala", "Rose": "Ruža", "Moon Lily": "Mesečev ljiljan", "Starbloom": "Zvezdocvet",
+  "Lettuce": "Zelena salata", "Carrot": "Šargarepa", "Tomato": "Paradajz", "Pepper": "Paprika", "Pumpkin": "Bundeva", "Vegetables": "Povrće",
+  "Seed": "Seme", "Sprout": "Klica", "Young plant": "Mlada biljka", "Budding": "Pupi", "Fully grown": "Potpuno izraslo",
+  "Shovel": "Lopata", "Watering can": "Kanta za zalivanje", "Fertilizer": "Đubrivo", "Bug spray": "Sprej protiv buba", "Basket": "Korpa", "Sell": "Prodaj",
+  "Watering": "Zalivanje", "Fertilize": "Nađubri", "Spray": "Isprskaj", "Collect": "Uberi", "Pantry": "Ostava",
+  "Plant a seed in an empty pot (or dig a plant up).": "Posadi seme u praznu saksiju (ili iskopaj biljku).",
+  "Water each plant once a day. Plants only grow on days they were watered.": "Zalij svaku biljku jednom dnevno. Biljke rastu samo danima kada su zalivene.",
+  "Once a day: cures sickness and keeps it away for 3 days.": "Jednom dnevno: leči bolest i čuva od nje 3 dana.",
+  "Sprays the bugs off a plant (once a day).": "Skida bube sa biljke (jednom dnevno).",
+  "Collect the vegetables a fully grown vegetable plant has made.": "Uberi povrće koje je potpuno izrasla biljka napravila.",
+  "Sell a fully grown plant for gold.": "Prodaj potpuno izraslu biljku za zlato.",
+  "Empty pot": "Prazna saksija", "All watered today": "Sve zaliveno danas", "Watered today": "Zaliveno danas", "Needs water": "Treba zaliti",
+  "Bugs! Spray them": "Bube! Isprskaj ih", "Sick! Fertilize it": "Bolesna! Nađubri je", "Cured!": "Izlečeno!", "Bugs gone!": "Bube nestale!", "Planted!": "Posađeno!",
+  "This pot is empty. Plant something with the shovel.": "Ova saksija je prazna. Posadi nešto lopatom.",
+  "Already watered today.": "Već zalivena danas.", "Already fertilized today.": "Već nađubrena danas.", "No bugs on this plant.": "Na ovoj biljci nema buba.", "Already sprayed today.": "Već isprskana danas.",
+  "Flowers don’t make anything. Sell them once they’re fully grown.": "Cveće ništa ne daje. Prodaj ga kad potpuno izraste.",
+  "It needs to be fully grown first.": "Prvo mora potpuno da izraste.", "Only fully grown plants can be sold.": "Mogu se prodati samo potpuno izrasle biljke.",
+  "The plant will be thrown away.": "Biljka će biti bačena.", "Dig it up": "Iskopaj je", "Keep it": "Zadrži je",
+  "Plant a seed": "Posadi seme", "Flowers": "Cveće", "Cancel": "Otkaži", "Close": "Zatvori",
+  "Vegetables you collected are kept in your bag.": "Ubrano povrće se čuva u tvojoj torbi.",
+  "Plants growing": "Biljke koje rastu"
+})
+SRT.update({
+  "§ / § pots planted": "§ / § saksija zasađeno", "§ need water today": "§ treba zaliti danas", "§ fully grown": "§ potpuno izraslo",
+  "§ / § days": "§ / § dana", "Fertilized (protected § days)": "Nađubreno (zaštićeno § dana)", "Sells for § gold": "Prodaje se za § zlata",
+  "§ days to grow · sells for § gold": "§ dana rasta · prodaje se za § zlata", "You have § gold.": "Imaš § zlata.", "§ gold each": "§ zlata po komadu",
+  "Sell all for § gold": "Prodaj sve za § zlata", "Sold your vegetables for § gold.": "Prodao si povrće za § zlata.", "Dig up the §?": "Iskopati: §?",
+  "+§ gold": "+§ zlata"
+})
