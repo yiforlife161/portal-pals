@@ -1331,7 +1331,7 @@ function lbFmt(c, v){
   if (c.kind === 'skill') return 'Lv ' + G().skillLevel(v) + '<small>' + Number(v || 0).toLocaleString() + ' xp</small>';
   if (c.kind === 'surv') return (v || 0) + (c.k === 's_dig' ? ' islands' : c.k === 's_raid' ? ' bosses' : c.k === 's_quest' ? ' levels' : ' waves');
   if (c.kind === 'hunts') return (v || 0).toLocaleString() + ' hunts';
-  if (c.kind === 'wins') return (v || 0).toLocaleString() + ' wins';
+  if (c.kind === 'wins' || c.kind === 'sgwins') return (v || 0).toLocaleString() + ' wins';
   if (c.kind === 'cards') return (v || 0).toLocaleString() + ' / 500 cards';
   return (v || 0).toLocaleString();
 }
@@ -1353,9 +1353,10 @@ function lbRender(rows, mine){
   let h = '<div class="fv-card"><button class="win-x" type="button" id="lb-x" aria-label="Close panel">&times;</button><h2>Leaderboards</h2>' +
     grp('Skills', cats.filter(x => x.kind === 'lv' || x.kind === 'skill')) +
     grp('Minigame wins', cats.filter(x => x.kind === 'wins' || x.kind === 'hunts')) +
+    grp('Skill challenge wins', cats.filter(x => x.kind === 'sgwins')) +
     grp('Survival best', cats.filter(x => x.kind === 'surv')) +
     grp('Collections', cats.filter(x => x.kind === 'cards')) +
-    '<p class="lvpick-t">' + esc(c ? c.label : '') + (c && c.kind === 'surv' ? ' · Survival' : c && (c.kind === 'wins' || c.kind === 'hunts') ? ' · Wins' : '') + '</p>';
+    '<p class="lvpick-t">' + esc(c ? c.label : '') + (c && c.kind === 'surv' ? ' · Survival' : c && (c.kind === 'wins' || c.kind === 'hunts' || c.kind === 'sgwins') ? ' · Wins' : '') + '</p>';
   if (!rows) h += '<p class="small">Loading…</p>';
   else if (!rows.length) h += '<p class="small">Nobody is on this board yet. Play to be the first!</p>';
   else h += '<div class="lb-list">' + rows.map((r, i) => '<div class="lb-row' + (r.id === (me && me.uid) ? ' me' : '') + '"><span class="rk r' + (i + 1) + '">' + (i + 1) + '</span><span><b data-notr>' + esc(r.name || 'Player') + '</b>' + (r.pal ? '<small data-notr>' + esc(r.pal) + '</small>' : '') + '</span><span class="vl">' + lbFmt(c, r.v) + '</span></div>').join('') + '</div>';

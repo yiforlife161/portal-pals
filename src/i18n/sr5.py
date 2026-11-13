@@ -236,3 +236,4 @@ SRT.update({
   "Win § Elemental Kitchen levels": "Pobedi § nivoa Elementalne kuhinje", "Serve § dishes in the Elemental Kitchen": "Posluži § jela u Elementalnoj kuhinji", "Clear § kitchens in Elemental Kitchen Survival": "Pređi § kuhinja u preživljavanju Elementalne kuhinje",
   "Complete the § challenge": "Završi izazov §", "Clear § waves in §": "Pređi § talasa u izazovu §", "Complete the § challenge § times": "Završi izazov § § puta"
 })
+SR.update({"Wave cleared!": "Talas pređen!", "Skill challenge wins": "Pobede u izazovima veština"})
