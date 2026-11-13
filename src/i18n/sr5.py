@@ -188,3 +188,32 @@ SRT.update({
   "Make it · § dust": "Napravi je · § prašine", "Recycled § spare cards into § card dust.": "Reciklirano § rezervnih kartica u § prašine za kartice.",
   "You collected §! Bonus: §.": "Sakupio si §! Bonus: §.", "§ days": "§ dana", "Free packs: §": "Besplatni paketi: §", "Daily login, day §: § in your Card Binder!": "Dnevna prijava, dan §: § u tvom albumu kartica!", "§ free card packs": "§ besplatna paketa kartica"
 })
+# Element Clash (PvP with cards at stake)
+SR.update({
+  "Element Clash": "Sukob elemenata", "Clash": "Sukob",
+  "Challenge a friend who is online. You both stake up to 5 cards, then pick elements in secret for 5 rounds. Winner takes all the staked cards.": "Izazovi prijatelja koji je na mreži. Oboje ulažete do 5 kartica, pa 5 rundi tajno birate elemente. Pobednik nosi sve uložene kartice.",
+  "beats": "pobeđuje", "Cancel": "Otkaži", "Leave": "Izađi", "Your stake": "Tvoj ulog", "Add cards": "Dodaj kartice", "Undo Ready": "Poništi spremnost",
+  "Stake 1 to 5 cards. You must both stake the same number, within 25% of each other in card dust value. The winner takes all of them.": "Uloži od 1 do 5 kartica. Oboje morate uložiti isti broj, a vrednost u prašini za kartice mora biti u okviru 25%. Pobednik nosi sve.",
+  "You both need to stake at least 1 card.": "Oboje morate uložiti bar 1 karticu.", "You both need to stake the same number of cards.": "Oboje morate uložiti isti broj kartica.",
+  "The stakes are too far apart in value. They must be within 25% of each other in card dust.": "Ulozi se previše razlikuju po vrednosti. Moraju biti u okviru 25% u prašini za kartice.",
+  "Pick your stake, then both press Ready.": "Izaberi ulog, pa oboje pritisnite Spreman.", "You’re ready! Waiting for": "Spreman si! Čeka se", "is ready! Press Ready to start.": "je spreman! Pritisni Spreman da počne.",
+  "Sudden death": "Odlučujuća runda", "You": "Ti", "vs": "protiv", "Pick an element": "Izaberi element", "Checking the picks…": "Proveravaju se izbori…", "Both picked! Revealing…": "Oboje ste izabrali! Otkrivanje…",
+  "has picked. Your turn!": "je izabrao. Tvoj red!", "Each element beats the 3 shown under it. Each can be used once.": "Svaki element pobeđuje 3 prikazana ispod njega. Svaki može da se iskoristi jednom.",
+  "Give up…": "Odustani…", "Give up": "Odustani", "Keep playing": "Igraj dalje", "Leave now and you lose your stake.": "Ako sada izađeš, gubiš ulog.",
+  "You won the clash!": "Pobedio si u sukobu!", "It’s a draw!": "Nerešeno!", "You lost this one.": "Ovaj put si izgubio.", "You won these cards:": "Osvojio si ove kartice:", "And you keep your own:": "I zadržavaš svoje:",
+  "Everyone keeps their own cards.": "Svako zadržava svoje kartice.", "takes your stake:": "uzima tvoj ulog:", "You were away too long.": "Bio si odsutan predugo.", "You gave up.": "Odustao si.",
+  "The other side sent a pick that didn’t match.": "Druga strana je poslala izbor koji se ne poklapa.", "The challenge was called off.": "Izazov je otkazan.",
+  "Time’s up! A random element was picked for you.": "Vreme je isteklo! Izabran ti je nasumičan element.", "This browser can’t play Element Clash.": "Ovaj pregledač ne može da igra Sukob elemenata.",
+  "Sign in to play Element Clash with your friends.": "Prijavi se da igraš Sukob elemenata sa prijateljima.", "Go back to your own world to play Element Clash.": "Vrati se u svoj svet da igraš Sukob elemenata.",
+  "You can stake up to 5 cards.": "Možeš uložiti do 5 kartica.", "You no longer have all the cards you staked.": "Više nemaš sve kartice koje si uložio.",
+  "You are already in an Element Clash.": "Već si u Sukobu elemenata.", "Finish your Element Clash first.": "Prvo završi Sukob elemenata.", "Finish your trade first.": "Prvo završi razmenu.",
+  "Your Element Clash could not be found any more, so your staked cards came back.": "Tvoj Sukob elemenata više ne postoji, pa su ti uložene kartice vraćene.",
+  "You both stake up to 5 cards. Winner takes all.": "Oboje ulažete do 5 kartica. Pobednik nosi sve.", "challenges you to Element Clash!": "te izaziva na Sukob elemenata!",
+  "Could not send the challenge. Try again.": "Izazov nije poslat. Pokušaj ponovo.", "Could not join. Try again.": "Pridruživanje nije uspelo. Pokušaj ponovo.", "That challenge is no longer open.": "Taj izazov više nije otvoren."
+})
+SRT.update({
+  "Element Clash with §": "Sukob elemenata: §", "§ / § cards · § dust": "§ / § kartica · § prašine", "Round § / §": "Runda § / §", "Pot: § cards": "Ulog: § kartica",
+  "You win round §!": "Dobio si rundu §!", "§ wins round §": "§ dobija rundu §", "Round § is a tie": "Runda § je nerešena", "You picked §. Waiting for": "Izabrao si: §. Čeka se",
+  "Pick cards to stake (§ / §)": "Izaberi kartice za ulog (§ / §)", "No § cards here.": "Ovde nema kartica (§).", "§ left the match.": "§ je napustio meč.", "§ gave up.": "§ je odustao.",
+  "§ did not answer.": "§ nije odgovorio.", "§ said no this time.": "§ je ovaj put odbio.", "§ left the challenge. Nothing was staked.": "§ je napustio izazov. Ništa nije uloženo.", "§ s": "§ s"
+})

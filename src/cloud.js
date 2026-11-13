@@ -315,7 +315,7 @@ function friendsUi(){
       return '<div class="fr-item"><div class="fr-ic">' + (el ? G().palIcon(el, 32) : '') + '<i class="fr-dot' + (online(p) ? ' on' : '') + '"></i></div>' +
         '<div class="fr-who"><b data-notr>' + esc(p.name || F.friends[id].name || 'Player') + '</b><small>' + palLine(p) + '</small><small>' + seen(p) + '</small>' + (p.playMs >= 60000 ? '<small>' + playedText(p.playMs) + '</small>' : '') + '</div>' +
         '<div class="fr-acts"><button class="btn sm primary" type="button" data-fr-visit="' + id + '">Visit</button>' +
-        (online(p) ? '<button class="btn sm" type="button" data-fr-trade="' + id + '">Trade</button>' : '') +
+        (online(p) ? '<button class="btn sm" type="button" data-fr-trade="' + id + '">Trade</button><button class="btn sm" type="button" data-fr-clash="' + id + '">Clash</button>' : '') +
         '<button class="btn sm fr-chat" type="button" data-fr-chat="' + id + '">Chat' + (chUnread(id) ? '<span class="fr-badge">' + chUnread(id) + '</span>' : '') + '</button>' +
         '<button class="btn sm fr-x' + (F.sure === id ? ' sure' : '') + '" type="button" data-fr-rem="' + id + '">' + (F.sure === id ? 'Tap again' : 'Remove') + '</button></div></div>';
     }).join('') : '<p class="fr-empty">No friends yet. Share your code or add a friend\'s code above.</p>') + '</div></div>';
@@ -345,6 +345,7 @@ function wire(){
   fwin.querySelectorAll('[data-fr-visit]').forEach(b => b.onclick = () => visitFriend(b.dataset.frVisit, b));
   fwin.querySelectorAll('[data-fr-chat]').forEach(b => b.onclick = () => chatOpen(b.dataset.frChat));
   fwin.querySelectorAll('[data-fr-trade]').forEach(b => b.onclick = () => { friendsToggle(false); trInvite(b.dataset.frTrade); });
+  fwin.querySelectorAll('[data-fr-clash]').forEach(b => b.onclick = () => { friendsToggle(false); clInvite(b.dataset.frClash); });
 }
 function uref(...p){ return fs.doc(db, 'users', ...p); }
 function profileData(){
@@ -394,6 +395,7 @@ async function friendsStart(user){
   }, e => console.warn(e)));
   setInterval(pvWatchdog, 5000);
   setTimeout(trResume, 3000);
+  setTimeout(clResume, 3500);
   setTimeout(lkLoad, 1500);
   friendsUi();
 }
@@ -505,10 +507,12 @@ function pvInvites(list){
   const inv = fresh[0];
   if (!inv){ if (PV.inv){ PV.inv = null; if (!PV.mid) pvShow(''); } return; }
   if (PV.inv && PV.inv.id === inv.id && PV.inv.at === inv.at) return;
-  if ((PV.mid && PV.started && !PV.ended) || (CO.key && G().coopRole()) || (PT.on && !PT.started) || (TR.mid && inv.game === 'trade')) return;      /* already playing or waiting in a co-op lobby (a finished co-op game does not count) */
+  if ((PV.mid && PV.started && !PV.ended) || (CO.key && G().coopRole()) || (PT.on && !PT.started) || (TR.mid && inv.game === 'trade') || (CL.mid && inv.game === 'clash')) return;      /* already playing or waiting in a co-op lobby (a finished co-op game does not count) */
   PV.inv = inv;
   const AM = { classic: 'Classic', fire: 'Fire Pit', blades: 'Blade Ring' };
-  if (inv.game === 'trade') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> wants to trade cards!</b><small>You both pick cards to give, then both press Ready to swap.</small>' +
+  if (inv.game === 'clash') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> challenges you to Element Clash!</b><small>You both stake up to 5 cards. Winner takes all.</small>' +
+    '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
+  else if (inv.game === 'trade') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> wants to trade cards!</b><small>You both pick cards to give, then both press Ready to swap.</small>' +
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
   else if (inv.game === 'arena' && inv.md === 'cannon') pvShow('<b><span data-notr>' + esc(inv.name || 'A friend') + '</span> invites you to the Sky Cannon!</b><small>' + (inv.lv === 4 ? 'Co-op survival · endless waves.' : 'Co-op · Level ' + (inv.lv || 1) + '.') + ' Everyone gets their own cannon.</small>' +
     '<div class="row"><button class="btn sm primary" type="button" id="pv-acc">Accept</button><button class="btn sm" type="button" id="pv-dec">Decline</button></div>');
@@ -543,6 +547,7 @@ async function pvDecline(inv){
 }
 async function pvAccept(inv){
   if (inv.game === 'trade') return trAccept(inv);
+  if (inv.game === 'clash') return clAccept(inv);
   if (G().busy && G().busy() && !(inv.game === 'arena' && G().arenaOpen && G().arenaOpen())){ G().flash('Finish your game first.'); return; }
   if (inv.game === 'arena' && inv.md === 'sg'){      /* skill challenges: only with the skill at level 50 and a pal of its element (switch pals and accept again) */
     const why = G().sgCanJoin ? G().sgCanJoin(inv.am) : 'Reload the game to play this.';
@@ -598,7 +603,7 @@ function pvWatch(mid, other, name, role){
 }
 /* if your friend stops answering (closed the game, lost connection) you win after a while */
 function pvWatchdog(){
-  ptWatchdog(); trWatchdog();
+  ptWatchdog(); trWatchdog(); clWatchdog();
   if (!PV.mid){ if (PV.inv && nowS() - PV.inv.at > 65000){ PV.inv = null; pvShow(''); } return; }
   if (!PV.started){ if (PV.role === 'a' && Date.now() - PV.waitT > 60000){ const nm = PV.otherName; pvCancel(); G().flash(nm + ' did not answer.'); } return; }
   if (PV.ended || !G().pvpActive()) return;
@@ -798,6 +803,86 @@ window.ppLooks = {
     if (L && off && off.exists() && off.data().uid === L.uid) return null;
     return L;
   }
+};
+
+/* ---------- Element Clash (PvP, cards at stake): one match document per pair (game 'clash').
+   cloud.js only moves data: the game (portal-pals-play.html, clash module) runs the rules, checks the stakes, holds the
+   staked cards and settles. Each side writes only its own fields (stA/vA/okA, cA/rA, hbA for player a; ...B for b), plus
+   st/winner/why/pA/pB when a phase ends. The game gets every server snapshot through G().clashSync. ---------- */
+const CL_PV = 1;
+const CL = { mid: '', other: '', name: '', role: '', n: 0, cid: '', unsub: null, waitT: 0, lastThem: 0, hbSeen: 0, hbT: 0 };
+function clStop(){ if (CL.unsub) CL.unsub(); CL.unsub = null; CL.mid = ''; }
+async function clInvite(fid){
+  if (!me || !fid) return;
+  if (G().visiting && G().visiting()){ G().flash('Go back to your own world to play Element Clash.'); return; }
+  if (CL.mid){ G().flash('You are already in an Element Clash.'); return; }
+  if (G().clashBusy && G().clashBusy()){ G().flash('Finish your Element Clash first.'); return; }
+  if (TR.mid){ G().flash('Finish your trade first.'); return; }
+  const mid = pairId(fid), name = friendName(fid);
+  try {
+    const old = await fs.getDoc(mref(mid)), n = (old.exists() ? (old.data().n || 0) : 0) + 1, cid = trId();
+    Object.assign(CL, { mid: mid, other: fid, name: name, role: 'a', n: n, cid: cid, waitT: Date.now(), lastThem: Date.now(), hbSeen: 0 });
+    await fs.setDoc(mref(mid), { game: 'clash', pv: CL_PV, cid: cid, a: me.uid, b: fid, nameA: F.name || 'Friend', nameB: name, st: 'invite', n: n,
+      stA: [], stB: [], vA: 0, vB: 0, okA: '', okB: '', pA: [], pB: [], cA: [], cB: [], rA: [], rB: [], winner: '', why: '', hbA: nowS(), hbB: 0, at: nowS() });
+    await fs.setDoc(uref(fid, 'invites', me.uid), { mid: mid, name: F.name || 'Friend', at: nowS(), game: 'clash', pv: CL_PV });
+    clWatch();
+  } catch (e){ console.warn(e); clStop(); G().flash('Could not send the challenge. Try again.'); }
+}
+async function clAccept(inv){
+  invDone[inv.id + ':' + inv.at] = 1;
+  PV.inv = null; pvShow('');
+  fs.deleteDoc(uref(me.uid, 'invites', inv.id)).catch(() => {});
+  if ((G().visiting && G().visiting()) || CL.mid || (G().clashBusy && G().clashBusy())){ G().flash(CL.mid ? 'You are already in an Element Clash.' : 'Go back to your own world to play Element Clash.'); fs.updateDoc(mref(inv.mid), { st: 'declined' }).catch(() => {}); return; }
+  try {
+    const s2 = await fs.getDoc(mref(inv.mid)), m = s2.exists() ? s2.data() : null;
+    if (!m || m.game !== 'clash' || m.st !== 'invite' || m.a !== inv.id){ G().flash('That challenge is no longer open.'); return; }
+    if (m.pv !== CL_PV){ G().flash((inv.name || 'Your friend') + ' has a different version of the game open. Both of you reload the game, then try again.'); fs.updateDoc(mref(inv.mid), { st: 'cancel', by: me.uid }).catch(() => {}); return; }
+    Object.assign(CL, { mid: inv.mid, other: inv.id, name: inv.name || m.nameA || 'Friend', role: 'b', n: m.n || 0, cid: m.cid || '', waitT: Date.now(), lastThem: Date.now(), hbSeen: 0 });
+    await fs.updateDoc(mref(inv.mid), { st: 'open', nameB: F.name || 'Friend', hbB: nowS() });
+    clWatch();
+  } catch (e){ console.warn(e); clStop(); G().flash('Could not join. Try again.'); }
+}
+function clWatch(){
+  const mid = CL.mid, n = CL.n, A = CL.role === 'a';
+  if (CL.unsub) CL.unsub();
+  CL.unsub = fs.onSnapshot(mref(mid), { includeMetadataChanges: true }, snap => {
+    if (CL.mid !== mid || CL.n !== n) return;
+    const pend = !!(snap.metadata && snap.metadata.hasPendingWrites);
+    const d = snap.exists() ? snap.data() : null;
+    if (d && d.game === 'clash' && d.n === n){
+      const hb = A ? d.hbB : d.hbA;
+      if (hb && hb !== CL.hbSeen){ CL.hbSeen = hb; CL.lastThem = Date.now(); }
+    }
+    if (G().clashSync) G().clashSync({ d: d && d.game === 'clash' && d.n === n && d.cid === CL.cid ? d : null, pend: pend, role: CL.role, me: me.uid, other: CL.other, name: CL.name, mid: mid, n: n, cid: CL.cid, quiet: Date.now() - CL.lastThem });
+  }, e => console.warn(e));
+}
+function clWatchdog(){
+  if (!CL.mid) return;
+  const A = CL.role === 'a';
+  if (Date.now() - (CL.hbT || 0) > 8000){ CL.hbT = Date.now(); const up = {}; up[A ? 'hbA' : 'hbB'] = nowS(); fs.updateDoc(mref(CL.mid), up).catch(() => {}); }
+  if (G().clashTick) G().clashTick({ quiet: Date.now() - CL.lastThem, wait: Date.now() - CL.waitT });
+}
+/* a clash with your cards at stake that was still going when the game closed: rejoin it (or settle / refund it) */
+async function clResume(){
+  const p = G().clashPend && G().clashPend();
+  if (!p || !me || CL.mid) return;
+  try {
+    const s2 = await fs.getDoc(mref(p.mid)), d = s2.exists() ? s2.data() : null;
+    if (!d || d.game !== 'clash' || d.n !== p.n || d.cid !== p.cid){ if (G().clashSync) G().clashSync({ d: null, gone: true, pend: false, role: p.role, me: me.uid, mid: p.mid, n: p.n, cid: p.cid }); return; }
+    const A = p.role === 'a';
+    Object.assign(CL, { mid: p.mid, other: A ? d.b : d.a, name: A ? (d.nameB || 'Friend') : (d.nameA || 'Friend'), role: p.role, n: p.n, cid: p.cid, waitT: Date.now(), lastThem: Date.now(), hbSeen: 0 });
+    clWatch();
+  } catch (e){ console.warn(e); }
+}
+window.ppClash = {
+  ready: () => !!(me && F.code),
+  friends: () => onlineFriends(),
+  invite: fid => clInvite(fid),
+  /* write fields of this match; mine(...) adds this player's A/B suffix */
+  up: obj => { if (CL.mid) return fs.updateDoc(mref(CL.mid), obj).catch(e => console.warn(e)); },
+  mine: obj => { if (!CL.mid) return; const up = {}, sfx = CL.role === 'a' ? 'A' : 'B'; Object.keys(obj).forEach(k => { up[k + sfx] = obj[k]; }); return fs.updateDoc(mref(CL.mid), up).catch(e => console.warn(e)); },
+  cancel: () => { const mid = CL.mid, other = CL.other, A = CL.role === 'a'; clStop(); if (mid){ fs.updateDoc(mref(mid), { st: 'cancel', by: me.uid }).catch(() => {}); if (A) fs.deleteDoc(uref(other, 'invites', me.uid)).catch(() => {}); } },
+  stop: () => clStop()
 };
 
 window.ppTrade = {
