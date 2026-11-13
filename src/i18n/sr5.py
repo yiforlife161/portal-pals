@@ -237,3 +237,40 @@ SRT.update({
   "Complete the § challenge": "Završi izazov §", "Clear § waves in §": "Pređi § talasa u izazovu §", "Complete the § challenge § times": "Završi izazov § § puta"
 })
 SR.update({"Wave cleared!": "Talas pređen!", "Skill challenge wins": "Pobede u izazovima veština"})
+# Pal Towers (tower defense)
+SR.update({
+  "Pal Towers": "Kule drugara", "Pal Towers Cape": "Plašt Kula drugara", "Watchtower Helm": "Kaciga stražarske kule", "Pebble the Tower Turtle": "Kamenko, kornjača sa kulom",
+  "A little turtle with a watchtower on its shell. In Pal Towers you start every game with 60 more energy.": "Mala kornjača sa stražarskom kulom na oklopu. U Kulama drugara svaku igru počinješ sa 60 energije više.",
+  "+25% gold from Pal Towers": "+25% zlata iz Kula drugara", "Pal Towers: your towers shoot 25% faster": "Kule drugara: tvoje kule pucaju 25% brže",
+  "Meadow Road": "Livadski put", "Twin Bridges": "Dva mosta", "Moonlit Crypt": "Mesečeva kripta", "Endless Road": "Beskrajni put",
+  "Foes march down the road to your crystal. Pick 4 of your pals and put them on the spots by the road as towers, as many times as you like. Every element has its own power, and higher level pals hit harder.": "Neprijatelji marširaju putem do tvog kristala. Izaberi 4 drugara i postavljaj ih kao kule na mesta pored puta, koliko god puta želiš. Svaki element ima svoju moć, a drugari višeg nivoa jače udaraju.",
+  "Change team": "Promeni tim", "Pick your 4 pals": "Izaberi 4 drugara", "Tap pals to add or take them out. Higher level pals hit harder.": "Dodirni drugare da ih dodaš ili skloniš. Drugari višeg nivoa jače udaraju.",
+  "Defend with friends": "Branite zajedno", "Invite up to 3 friends. Everyone brings their own 4 pals and their own energy, and the foes get tougher for every extra player.": "Pozovi do 3 prijatelja. Svako donosi svoja 4 drugara i svoju energiju, a neprijatelji su jači za svakog dodatnog igrača.",
+  "Helpers": "Pomagači", "Your towers shoot 25% faster.": "Tvoje kule pucaju 25% brže.", "You start every game with 60 more energy.": "Svaku igru počinješ sa 60 energije više.",
+  "Build a tower": "Napravi kulu", "Upgrade": "Unapredi", "Tower": "Kula", "Tower ★": "Kula ★", "Tower ★★": "Kula ★★", "Not enough energy yet.": "Još nemaš dovoljno energije.",
+  "Empty tower spot": "Prazno mesto za kulu", "The crystal is safe!": "Kristal je bezbedan!", "The crystal broke!": "Kristal je slomljen!", "Survival over": "Preživljavanje je gotovo",
+  "foes beaten": "pobeđenih neprijatelja", "by your towers": "tvojim kulama", "Not a single foe got through!": "Nijedan neprijatelj nije prošao!", "The Gloom King is coming!": "Dolazi Kralj Tmine!",
+  "Their towers keep guarding.": "Njihove kule i dalje čuvaju.", "Get ready!": "Spremi se!", "the crystal healed": "kristal se izlečio", "You": "Ti", "Friend": "Prijatelj",
+  "Pick a pal, then tap a spot": "Izaberi drugara, pa dodirni mesto",
+  "Sets foes on fire: they keep burning for 3 seconds.": "Pali neprijatelje: gore još 3 sekunde.", "Slows foes down by 40%.": "Usporava neprijatelje za 40%.",
+  "Very fast shots and the longest reach.": "Veoma brzi pucnji i najveći domet.", "Smashes every foe around its target, but can’t reach flyers.": "Udara sve neprijatelje oko mete, ali ne može da pogodi leteće.",
+  "Towers close to it hit 20% harder, and it heals the crystal after every wave.": "Kule blizu nje udaraju 20% jače, a posle svakog talasa leči kristal.",
+  "Its zaps jump on to 2 more foes.": "Njene munje preskaču na još 2 neprijatelja.", "Curses foes: they take 30% more damage from every tower.": "Proklinje neprijatelje: primaju 30% više štete od svake kule.",
+  "Goes right through shields, and gives you 2 extra energy for each foe it beats.": "Prolazi kroz štitove i daje ti 2 energije više za svakog neprijatelja kog pobedi.",
+  "First Line": "Prva linija", "Win a level of Pal Towers": "Pobedi nivo Kula drugara", "Crystal Keeper": "Čuvar kristala", "Not One Through": "Niko nije prošao",
+  "Win level 2 or 3 without losing a single life": "Pobedi nivo 2 ili 3 bez ijednog izgubljenog života", "Full Team": "Pun tim", "Win with 4 pals of 4 different elements": "Pobedi sa 4 drugara 4 različita elementa",
+  "Busy Builder": "Vredni graditelj", "Build 20 towers in one winning game": "Napravi 20 kula u jednoj pobedničkoj igri", "King Toppler": "Rušitelj kraljeva", "Beat 10 Gloom Kings": "Pobedi 10 Kraljeva Tmine",
+  "Road Warden": "Čuvar puta", "Beat 3,000 foes with your towers": "Pobedi 3.000 neprijatelja svojim kulama", "Foes beaten": "Pobeđeni neprijatelji",
+  "Build Pal Towers on your island to invite friends.": "Izgradi Kule drugara na ostrvu da pozoveš prijatelje.", "Pal Towers with friends": "Kule drugara sa prijateljima",
+  "invites you to Pal Towers!": "te poziva u Kule drugara!", "You bring the 4 pals of your Pal Towers team.": "Donosiš 4 drugara iz svog tima za Kule drugara.",
+  "You opened Pal Towers, so you stopped skilling together.": "Otvorio si Kule drugara, pa ste prestali da zajedno vežbate veštine."
+})
+SRT.update({
+  "Wave § of §": "Talas § od §", "Wave § (survival)": "Talas § (preživljavanje)", "§ foes are coming": "Dolazi § neprijatelja", "Wave § cleared!": "Talas § pređen!", "+§ energy": "+§ energije",
+  "+§ energy · the crystal healed": "+§ energije · kristal se izlečio", "Next wave in § s · Start now": "Sledeći talas za § s · Počni sad", "Upgrade · §": "Unapredi · §", "Sell · +§": "Prodaj · +§",
+  "Damage § · § shots a second": "Šteta § · § pucnja u sekundi", "Built by §.": "Napravio: §.", "Lv § · ×§ damage": "Nv § · ×§ šteta", "Done (§ / 4)": "Gotovo (§ / 4)",
+  "Level §: all § waves stopped.": "Nivo §: zaustavljeno svih § talasa.", "You stopped § of § waves. Try other pals or spots!": "Zaustavio si § od § talasa. Probaj druge drugare ili mesta!",
+  "You held out for § waves.": "Izdržao si § talasa.", "You held out for § wave.": "Izdržao si § talas.", "§ left": "§ je otišao",
+  "Win § Pal Towers levels": "Pobedi § nivoa Kula drugara", "Beat § foes in Pal Towers": "Pobedi § neprijatelja u Kulama drugara", "Survive § waves in Pal Towers Survival": "Preživi § talasa u preživljavanju Kula drugara",
+  "Pal Towers with §": "Kule drugara sa: §"
+})
