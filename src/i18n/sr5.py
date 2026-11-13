@@ -254,7 +254,7 @@ SR.update({
   "Pick a pal, then tap a spot": "Izaberi drugara, pa dodirni mesto",
   "Sets foes on fire: they keep burning for 3 seconds.": "Pali neprijatelje: gore još 3 sekunde.", "Slows foes down by 40%.": "Usporava neprijatelje za 40%.",
   "Very fast shots and the longest reach.": "Veoma brzi pucnji i najveći domet.", "Smashes every foe around its target, but can’t reach flyers.": "Udara sve neprijatelje oko mete, ali ne može da pogodi leteće.",
-  "Towers close to it hit 25% harder (up to 2 Life towers count).": "Kule blizu nje udaraju 25% jače (računaju se do 2 kule Života).",
+  "Towers close to it hit 20% harder, and it heals the crystal after every wave.": "Kule blizu nje udaraju 20% jače, a posle svakog talasa leči kristal.",
   "Its zaps jump on to 2 more foes.": "Njene munje preskaču na još 2 neprijatelja.", "Curses foes: they take 30% more damage from every tower.": "Proklinje neprijatelje: primaju 30% više štete od svake kule.",
   "Goes right through shields, and gives you 2 extra energy for each foe it beats.": "Prolazi kroz štitove i daje ti 2 energije više za svakog neprijatelja kog pobedi.",
   "First Line": "Prva linija", "Win a level of Pal Towers": "Pobedi nivo Kula drugara", "Crystal Keeper": "Čuvar kristala", "Not One Through": "Niko nije prošao",
