@@ -217,3 +217,22 @@ SRT.update({
   "Pick cards to stake (§ / §)": "Izaberi kartice za ulog (§ / §)", "No § cards here.": "Ovde nema kartica (§).", "§ left the match.": "§ je napustio meč.", "§ gave up.": "§ je odustao.",
   "§ did not answer.": "§ nije odgovorio.", "§ said no this time.": "§ je ovaj put odbio.", "§ left the challenge. Nothing was staked.": "§ je napustio izazov. Ništa nije uloženo.", "§ s": "§ s"
 })
+# daily missions
+SR.update({
+  "Missions": "Misije", "Daily missions": "Dnevne misije", "Reward": "Nagrada", "gold": "zlata", "Win a Boss Raid": "Pobedi u Napadu na bosa",
+  "All daily missions done!": "Sve dnevne misije završene!", "A free card pack is waiting in your Card Binder.": "Besplatan paket kartica te čeka u albumu kartica.",
+  "✓ All done today! Your free card pack is in the Card Binder.": "✓ Sve završeno za danas! Tvoj besplatan paket kartica je u albumu.",
+  "Build a minigame (or get a skill to level 50 for its skill challenge) to get daily missions.": "Izgradi mini-igru (ili podigni veštinu na nivo 50 za njen izazov) da dobiješ dnevne misije."
+})
+SRT.update({
+  "New missions in §": "Nove misije za §", "§ / § done": "§ / § završeno", "Daily mission complete! +§ gold": "Dnevna misija završena! +§ zlata", "Finish all § for a free card pack.": "Završi sve § za besplatan paket kartica.",
+  "Win § Sky Cannon levels": "Pobedi § nivoa Nebeskog topa", "Shoot down § airships": "Obori § vazdušnih brodova", "Survive § waves in Sky Cannon Survival": "Preživi § talasa u preživljavanju Nebeskog topa",
+  "Win § Guard Post levels": "Pobedi § nivoa Stražarnice", "Stop § thieves at the Guard Post": "Zaustavi § lopova kod Stražarnice", "Survive § waves in Guard Post Survival": "Preživi § talasa u preživljavanju Stražarnice",
+  "Win § Battle Arena levels": "Pobedi § nivoa Borilačke arene", "Beat § monsters in the Battle Arena": "Pobedi § čudovišta u Borilačkoj areni", "Survive § waves in Battle Arena Survival": "Preživi § talasa u preživljavanju Borilačke arene",
+  "Beat § monsters in Boss Raids": "Pobedi § čudovišta u Napadima na bosa", "Beat § bosses in Boss Raid Survival": "Pobedi § bosova u preživljavanju Napada na bosa",
+  "Win § Starstones matches": "Pobedi u § mečeva Zvezdanih kamenova", "Play § Starstones matches": "Odigraj § mečeva Zvezdanih kamenova", "Capture 3 or more stones in one move § times": "Osvoji 3 ili više kamenčića jednim potezom § puta",
+  "Finish § Treasure Hunts": "Završi § lova na blago", "Dig up § coins in Treasure Hunts": "Iskopaj § novčića u lovovima na blago", "Clear § islands in Treasure Hunt Survival": "Pređi § ostrva u preživljavanju Lova na blago",
+  "Finish § Island Quest levels": "Završi § nivoa Ostrvske potrage", "Open § chests in Island Quests": "Otvori § kovčega u Ostrvskim potragama", "Clear § levels in Island Quest Survival": "Pređi § nivoa u preživljavanju Ostrvske potrage",
+  "Win § Elemental Kitchen levels": "Pobedi § nivoa Elementalne kuhinje", "Serve § dishes in the Elemental Kitchen": "Posluži § jela u Elementalnoj kuhinji", "Clear § kitchens in Elemental Kitchen Survival": "Pređi § kuhinja u preživljavanju Elementalne kuhinje",
+  "Complete the § challenge": "Završi izazov §", "Clear § waves in §": "Pređi § talasa u izazovu §", "Complete the § challenge § times": "Završi izazov § § puta"
+})
