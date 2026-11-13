@@ -157,12 +157,12 @@ SR.update({
   "Dust": "Prašina", "Bonuses": "Bonusi", "Recycle": "Recikliraj", "Free daily pack": "Besplatan dnevni paket",
   "Collection bonuses": "Bonusi kolekcije",
   "The more different cards of an element you own, the more skill xp you get in that element’s skill challenge. Normal, silver and gold cards each count.": "Što više različitih kartica jednog elementa imaš, to više xp-a veštine dobijaš u izazovu veštine tog elementa. Broje se i normalne, i srebrne, i zlatne kartice.",
-  "Full collection rewards": "Nagrade za punu kolekciju",
-  "Collector’s Cape": "Kolekcionarski plašt", "Silver Collector’s Crown": "Srebrna kolekcionarska kruna", "Goldie the Card Sprite": "Zlatko, vilenjak kartica", "Prismatic Cape": "Prizmatični plašt",
-  "All 500 normal cards: the cape and +5% gold from minigames.": "Svih 500 normalnih kartica: plašt i +5% zlata iz mini-igara.",
-  "All 500 silver cards: the crown and +10% xp in every skill.": "Svih 500 srebrnih kartica: kruna i +10% xp-a u svakoj veštini.",
-  "All 500 gold cards: a golden pet and +10% gold from minigames.": "Svih 500 zlatnih kartica: zlatni ljubimac i +10% zlata iz mini-igara.",
-  "All three collections: the cape and a free card pack every day.": "Sve tri kolekcije: plašt i besplatan paket kartica svaki dan.",
+  "Full collection bonuses": "Bonusi pune kolekcije", "Daily login packs": "Dnevni paketi za prijavu",
+  "All normal cards": "Sve normalne kartice", "All silver cards": "Sve srebrne kartice", "All gold cards": "Sve zlatne kartice",
+  "+5% gold from minigames": "+5% zlata iz mini-igara", "+10% xp in every skill": "+10% xp-a u svakoj veštini", "+10% gold from minigames": "+10% zlata iz mini-igara",
+  "Play on day 1 of a streak for 1 free pack, day 2 for 2 and day 3 for 3. Keep the streak going for 3 free packs every day after that. Missing a day starts it over.": "Igraj 1. dan niza za 1 besplatan paket, 2. dan za 2 i 3. dan za 3. Nastavi niz i dobijaćeš 3 besplatna paketa svaki sledeći dan. Ako propustiš dan, niz kreće ispočetka.",
+  "Streak:": "Niz:", "Free packs waiting:": "Besplatni paketi na čekanju:", "1 day": "1 dan", "Free pack": "Besplatan paket", "1 free card pack": "1 besplatan paket kartica",
+  "✓ Active": "✓ Aktivno",
   "✓ Yours": "✓ Tvoje",
   "Recycle spare cards?": "Reciklirati rezervne kartice?", "You have no spare copies right now.": "Trenutno nemaš rezervnih kopija.",
   "You have": "Imaš", "spare copies. Recycling them gives": "rezervnih kopija. Recikliranjem dobijaš", ". You keep one of every card in every version.": ". Zadržavaš po jednu od svake kartice u svakoj verziji.",
@@ -186,5 +186,5 @@ SRT.update({
   "Dust per card: common §, uncommon §, rare §, legendary § (silver ×§, gold ×§). Making a card costs §× that.": "Prašina po kartici: obična §, neobična §, retka §, legendarna § (srebrna ×§, zlatna ×§). Pravljenje kartice košta §× toliko.",
   "Recycle § cards": "Recikliraj kartice: §", "Recycle 1 spare · +§ dust": "Recikliraj 1 rezervnu · +§ prašine", "Recycle all § spares · +§": "Recikliraj svih § rezervnih · +§",
   "Make it · § dust": "Napravi je · § prašine", "Recycled § spare cards into § card dust.": "Reciklirano § rezervnih kartica u § prašine za kartice.",
-  "You collected §! You get §.": "Sakupio si §! Dobijaš §.", "§ / § cards": "§ / § kartica", "§ / § silver cards": "§ / § srebrnih kartica"
+  "You collected §! Bonus: §.": "Sakupio si §! Bonus: §.", "§ days": "§ dana", "Free packs: §": "Besplatni paketi: §", "Daily login, day §: § in your Card Binder!": "Dnevna prijava, dan §: § u tvom albumu kartica!", "§ free card packs": "§ besplatna paketa kartica"
 })
