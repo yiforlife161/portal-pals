@@ -274,3 +274,7 @@ SRT.update({
   "Win § Pal Towers levels": "Pobedi § nivoa Kula drugara", "Beat § foes in Pal Towers": "Pobedi § neprijatelja u Kulama drugara", "Survive § waves in Pal Towers Survival": "Preživi § talasa u preživljavanju Kula drugara",
   "Pal Towers with §": "Kule drugara sa: §"
 })
+# build mode: element / look buttons
+SR.update({"Element: Normal": "Element: običan", "Change its element": "Promeni element", "Change how it looks": "Promeni izgled",
+  "Click the ground to walk there (right-click works too). Click minigames and skill spots to use them. To give decorations an element or another look, select them in Build mode.": "Klikni na tlo da odšetaš tamo (radi i desni klik). Klikni na mini-igre i mesta za veštine da ih koristiš. Da ukrasima daš element ili drugi izgled, izaberi ih u režimu gradnje."})
+SRT.update({"Look § / §": "Izgled § / §"})
