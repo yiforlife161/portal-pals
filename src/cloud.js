@@ -811,7 +811,7 @@ window.ppLooks = {
    cloud.js only moves data: the game (portal-pals-play.html, clash module) runs the rules, checks the stakes, holds the
    staked cards and settles. Each side writes only its own fields (stA/vA/okA, cA/rA, hbA for player a; ...B for b), plus
    st/winner/why/pA/pB when a phase ends. The game gets every server snapshot through G().clashSync. ---------- */
-const CL_PV = 1;
+const CL_PV = 2;
 const CL = { mid: '', other: '', name: '', role: '', n: 0, cid: '', unsub: null, waitT: 0, lastThem: 0, hbSeen: 0, hbT: 0 };
 function clStop(){ if (CL.unsub) CL.unsub(); CL.unsub = null; CL.mid = ''; }
 async function clInvite(fid){

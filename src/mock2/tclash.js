@@ -44,13 +44,17 @@ await B.click('[data-action=kc-add]');await B.click('[data-action=kc-give][data-
 await W(1500);
 console.log('A note:',await A.evaluate(()=>(document.querySelector('.kc-view .kt-note')||{}).innerText),'| ready disabled',await A.evaluate(()=>document.querySelector('[data-action=kc-ready]').disabled));
 await B.click('[data-action=kc-add]');await B.click('[data-action=kc-give][data-k="33"]');await B.click('[data-action=kc-pdone]');await W(1500);
+await A.click('[data-action=kc-add]');await A.click('[data-action=kc-give][data-k="6"]');await A.click('[data-action=kc-pdone]');await W(800);console.log('A stake before rm',await A.evaluate(()=>JSON.stringify(window.__kd.KC.d[window.__kd.KC.S.role==='a'?'stA':'stB'])));await A.click('[data-action=kc-rm][data-k="6"]');await W(1200);console.log('A stake after rm',await A.evaluate(()=>JSON.stringify(window.__kd.KC.d[window.__kd.KC.S.role==='a'?'stA':'stB'])));
+// flicker check: count DOM rebuilds of the clash window during play
+
 console.log('B:',await head(B));
 await A.click('[data-action=kc-ready]');await W(900);await B.click('[data-action=kc-ready]');await W(2500);
 console.log('A play:',await head(A));
 console.log('A cards (2 staked)',await o(A),'| B',await o(B));
 // play rounds: A picks wheel order, B picks reversed
 const WH=['water','fire','life','earth','air','tech','magic','undead'];
-for(let r=0;r<8;r++){
+await A.evaluate(()=>{window.__mut=0;new MutationObserver(m=>{window.__mut+=m.length;}).observe(document.querySelector('.kc-view'),{childList:true});});
+for(let r=0;r<10;r++){
   const st=await A.evaluate(()=>{const d=window.__kd.KC.d;return d&&d.st;});
   if(st!=='play'||await A.evaluate(()=>!!window.__kd.KC.res))break;
   await A.evaluate(e=>window.__kd.kcPick(e),WH[r]);await W(300);
@@ -58,7 +62,7 @@ for(let r=0;r<8;r++){
   console.log('round',r+1,'A:',await head(A));
 }
 await W(1500);
-console.log('END A:',await head(A));console.log('END B:',await head(B));
+console.log('rebuilds during play',await A.evaluate(()=>window.__mut));console.log('END A:',await head(A));console.log('END B:',await head(B));
 console.log('A cards',await o(A),'| B cards',await o(B),'| A cl',await A.evaluate(()=>JSON.stringify(window.__st.island.cards.cl)));
 await A.screenshot({path:'/tmp/kc_end.png'});
 // 2) forfeit: new clash, B closes the game mid-match

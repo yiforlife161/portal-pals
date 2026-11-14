@@ -191,14 +191,14 @@ SRT.update({
 # Element Clash (PvP with cards at stake)
 SR.update({
   "Element Clash": "Sukob elemenata", "Clash": "Sukob",
-  "Challenge a friend who is online. You both stake up to 5 cards, then pick elements in secret for 5 rounds. Winner takes all the staked cards.": "Izazovi prijatelja koji je na mreži. Oboje ulažete do 5 kartica, pa 5 rundi tajno birate elemente. Pobednik nosi sve uložene kartice.",
+  "Challenge a friend who is online. You both stake up to 5 cards, then pick elements in secret, round after round. The first to win 5 rounds takes all the staked cards.": "Izazovi prijatelja koji je na mreži. Oboje ulažete do 5 kartica, pa rundu za rundom tajno birate elemente. Ko prvi dobije 5 rundi, nosi sve uložene kartice.",
   "beats": "pobeđuje", "Cancel": "Otkaži", "Leave": "Izađi", "Your stake": "Tvoj ulog", "Add cards": "Dodaj kartice", "Undo Ready": "Poništi spremnost",
   "Stake 1 to 5 cards. You must both stake the same number, within 25% of each other in card dust value. The winner takes all of them.": "Uloži od 1 do 5 kartica. Oboje morate uložiti isti broj, a vrednost u prašini za kartice mora biti u okviru 25%. Pobednik nosi sve.",
   "You both need to stake at least 1 card.": "Oboje morate uložiti bar 1 karticu.", "You both need to stake the same number of cards.": "Oboje morate uložiti isti broj kartica.",
   "The stakes are too far apart in value. They must be within 25% of each other in card dust.": "Ulozi se previše razlikuju po vrednosti. Moraju biti u okviru 25% u prašini za kartice.",
   "Pick your stake, then both press Ready.": "Izaberi ulog, pa oboje pritisnite Spreman.", "You’re ready! Waiting for": "Spreman si! Čeka se", "is ready! Press Ready to start.": "je spreman! Pritisni Spreman da počne.",
   "Sudden death": "Odlučujuća runda", "You": "Ti", "vs": "protiv", "Pick an element": "Izaberi element", "Checking the picks…": "Proveravaju se izbori…", "Both picked! Revealing…": "Oboje ste izabrali! Otkrivanje…",
-  "has picked. Your turn!": "je izabrao. Tvoj red!", "Each element beats the 3 shown under it. Each can be used once.": "Svaki element pobeđuje 3 prikazana ispod njega. Svaki može da se iskoristi jednom.",
+  "has picked. Your turn!": "je izabrao. Tvoj red!", "Each element beats the 3 shown under it. Each can be used once, then all 8 come back after 8 rounds.": "Svaki element pobeđuje 3 prikazana ispod njega. Svaki može jednom, a posle 8 rundi svih 8 se vraćaju.",
   "Give up…": "Odustani…", "Give up": "Odustani", "Keep playing": "Igraj dalje", "Leave now and you lose your stake.": "Ako sada izađeš, gubiš ulog.",
   "You won the clash!": "Pobedio si u sukobu!", "It’s a draw!": "Nerešeno!", "You lost this one.": "Ovaj put si izgubio.", "You won these cards:": "Osvojio si ove kartice:", "And you keep your own:": "I zadržavaš svoje:",
   "Everyone keeps their own cards.": "Svako zadržava svoje kartice.", "takes your stake:": "uzima tvoj ulog:", "You were away too long.": "Bio si odsutan predugo.", "You gave up.": "Odustao si.",
@@ -212,7 +212,7 @@ SR.update({
   "Could not send the challenge. Try again.": "Izazov nije poslat. Pokušaj ponovo.", "Could not join. Try again.": "Pridruživanje nije uspelo. Pokušaj ponovo.", "That challenge is no longer open.": "Taj izazov više nije otvoren."
 })
 SRT.update({
-  "Element Clash with §": "Sukob elemenata: §", "§ / § cards · § dust": "§ / § kartica · § prašine", "Round § / §": "Runda § / §", "Pot: § cards": "Ulog: § kartica",
+  "Element Clash with §": "Sukob elemenata: §", "§ / § cards · § dust": "§ / § kartica · § prašine", "Round §": "Runda §", "First to § wins": "Ko prvi do §, pobeđuje", "Pot: § cards": "Ulog: § kartica",
   "You win round §!": "Dobio si rundu §!", "§ wins round §": "§ dobija rundu §", "Round § is a tie": "Runda § je nerešena", "You picked §. Waiting for": "Izabrao si: §. Čeka se",
   "Pick cards to stake (§ / §)": "Izaberi kartice za ulog (§ / §)", "No § cards here.": "Ovde nema kartica (§).", "§ left the match.": "§ je napustio meč.", "§ gave up.": "§ je odustao.",
   "§ did not answer.": "§ nije odgovorio.", "§ said no this time.": "§ je ovaj put odbio.", "§ left the challenge. Nothing was staked.": "§ je napustio izazov. Ništa nije uloženo.", "§ s": "§ s"
