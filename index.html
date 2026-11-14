@@ -6757,7 +6757,7 @@ function cardHtml(c){
 function sortChars(){
   var ei = {}; ELEMENTS.forEach(function(e, i){ ei[e.key] = i; });
   var L = state.chars.map(function(c, i){ return [c, i]; });
-  L.sort(function(a, b){ return ((ei[a[0].element] || 0) - (ei[b[0].element] || 0)) || a[1] - b[1]; });
+  L.sort(function(a, b){ return ((ei[a[0].element] || 0) - (ei[b[0].element] || 0)) || ((b[0].giant ? 1 : 0) - (a[0].giant ? 1 : 0)) || a[1] - b[1]; });      /* by element, giants first, then the order you made them */
   for (var i = 0; i < L.length; i++) state.chars[i] = L[i][0];
 }
 function renderPals(){
