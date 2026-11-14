@@ -280,3 +280,4 @@ SR.update({"Element: Normal": "Element: običan", "Change its element": "Promeni
 SRT.update({"Look § / §": "Izgled § / §"})
 SR.update({"Night Raven": "Noćni gavran"})
 SR.update({"Emerald Warden": "Smaragdni čuvar"})
+SR.update({"Anchor Brute": "Sidrolomac"})
