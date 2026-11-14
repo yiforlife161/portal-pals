@@ -577,7 +577,8 @@ body.visiting #dock-l{display:none}
 #tdgame canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 .td-hud{display:flex;align-items:center;gap:8px;flex-wrap:wrap;z-index:6}
 .td-st{display:flex;gap:12px;font-size:17px}.td-st i{font-style:normal}
-.td-go{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(max(8px,env(safe-area-inset-bottom)) + 66px);z-index:6;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.3)}.td-go[hidden]{display:none}
+#tdgame{cursor:default}#tdgame button{cursor:pointer}
+.td-go{position:absolute;left:0;right:0;margin:0 auto;width:max-content;min-width:250px;font-variant-numeric:tabular-nums;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 66px);z-index:6;white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.3)}.td-go[hidden]{display:none}
 .td-slots{position:absolute;inset:0;pointer-events:none;z-index:3}
 .td-spot,.td-tw{position:absolute;width:var(--s);height:var(--s);margin:calc(var(--s) * -.5) 0 0 calc(var(--s) * -.5);pointer-events:auto;border:0;padding:0;background:none;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .td-spot{border-radius:50%;border:3px dashed rgba(255,255,255,.75);background:rgba(40,30,20,.22)}
