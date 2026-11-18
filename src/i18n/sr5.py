@@ -285,3 +285,6 @@ SR.update({"Moonblade": "Mesečeva oštrica"})
 SR.update({"Crystal Dragon": "Kristalni zmaj"})
 SR.update({"Spares only": "Samo duplikati"})
 SRT.update({"No spare § cards here.": "Ovde nema duplikata (§)."})
+# skill challenges and the kitchen: one long wave
+SR.update({"Wave cleared! +1 win": "Talas pređen! +1 pobeda", "Reach the goal!": "Dostigni cilj!", "Challenge": "Izazov",
+  "One long wave · reach the goal before time runs out": "Jedan dug talas · dostigni cilj pre isteka vremena"})
