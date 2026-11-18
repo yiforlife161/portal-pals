@@ -290,3 +290,4 @@ SR.update({"Wave cleared! +1 win": "Talas pređen! +1 pobeda", "Reach the goal!"
   "One long wave · reach the goal before time runs out": "Jedan dug talas · dostigni cilj pre isteka vremena"})
 SR.update({"Spikeback": "Šiljoleđi"})
 SR.update({"Goblin Archer": "Goblin strelac"})
+SR.update({"Flame Knight": "Plameni vitez"})
