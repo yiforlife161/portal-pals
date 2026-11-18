@@ -567,7 +567,7 @@ input[type=text]:focus,input[type=number]:focus{border-color:var(--accent)}
 .fv-card .lvpick-t{margin:4px 0 0}
 body.visiting #dock-l{display:none}
 @media (max-width:700px){.visitbar{top:auto;bottom:74px;max-width:92vw}}
-.cn{position:fixed;inset:0;z-index:9000;background:#120c26;color:#fff;display:flex;touch-action:none;user-select:none;-webkit-user-select:none;cursor:none}
+.cn{position:fixed;inset:0;z-index:9000;background:#120c26;color:#fff;display:flex;touch-action:none;user-select:none;-webkit-user-select:none;cursor:var(--cur,default)}
 .cn[hidden]{display:none}
 .cn canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 .cn-hud{position:absolute;left:0;right:0;top:0;padding:max(10px,env(safe-area-inset-top)) 14px 0;display:flex;gap:10px;align-items:flex-start;justify-content:space-between;pointer-events:none}
@@ -641,7 +641,7 @@ body.visiting #dock-l{display:none}
 .lvpick{width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .lvpick .lvb{display:grid;gap:2px;padding:10px 6px;border-radius:14px;color:#fff;border:0;text-align:center}
 .lvpick .lvb b{font-size:16px}.lvpick .lvb small{font-size:11px;opacity:.95}
-.df-cv-aim{cursor:crosshair}
+.df-cv-aim{cursor:var(--cur,crosshair)}
 .tut{position:fixed;left:50%;top:max(84px,env(safe-area-inset-top));transform:translateX(-50%);z-index:6500;width:min(92vw,420px);padding:12px 14px 10px;border-radius:16px;background:rgba(24,14,48,.94);color:#fff;border:3px solid #ffd23e;box-shadow:0 6px 0 rgba(0,0,0,.35),0 0 24px -6px #ffd23e;display:grid;gap:4px}
 .tut[hidden]{display:none}
 .tut-t{font-size:17px}.tut-step{position:absolute;right:14px;top:12px;font-size:11px;font-weight:800;color:#ffd23e}
@@ -8261,6 +8261,7 @@ function cnConsole(g){
   }
 }
 function cnReticle(g){
+  if (cn.mouseAim) return;      /* aiming with the mouse: the element pointer is the sight; the drawn sight is for keys and touch */
   var x = cn.aim.x, y = cn.aim.y, s = 24 * cn.sc, over = null, i;
   for (i = 0; i < cn.ships.length; i++) if (cnHitShip(cn.ships[i], x, y, 0)) over = cn.ships[i];
   g.strokeStyle = over && cn.pal ? EL[cn.pal.element].c : '#ffffff'; g.lineWidth = 4; g.lineCap = 'round';
@@ -8759,7 +8760,7 @@ function cnCoopBox(){
 }
 (function(){
   var cv = $('#cn-canvas');
-  cv.addEventListener('pointermove', function(ev){ if (cn.open) cnAim(ev); });
+  cv.addEventListener('pointermove', function(ev){ if (cn.open){ cn.mouseAim = ev.pointerType === 'mouse'; cnAim(ev); } });
   cv.addEventListener('pointerdown', function(ev){
     if (!cn.open) return;
     ev.preventDefault(); cnAim(ev); cn.hold = true; cnFire();
@@ -8778,6 +8779,7 @@ function cnCoopBox(){
       ev.preventDefault(); cn.hold = true; cnFire(); return;
     }
     var st = 36;
+    if (/^Arrow/.test(ev.key)) cn.mouseAim = false;
     if (ev.key === 'ArrowLeft') cn.aim.x = clamp(cn.aim.x - st, 0, cn.W);
     else if (ev.key === 'ArrowRight') cn.aim.x = clamp(cn.aim.x + st, 0, cn.W);
     else if (ev.key === 'ArrowUp') cn.aim.y = clamp(cn.aim.y - st, 0, cn.H * 0.8);
@@ -12630,7 +12632,7 @@ function thLoop(ts){
   cv.addEventListener('pointermove', function(ev){
     if (!th.open) return;
     var p = thToWorld(ev.clientX, ev.clientY); th.hover = thSpotAt(p.x, p.y);
-    cv.style.cursor = th.hover >= 0 && th.phase === 'play' ? 'pointer' : 'default';
+    cv.style.cursor = th.hover >= 0 && th.phase === 'play' ? 'var(--curp,pointer)' : '';
   });
   cv.addEventListener('contextmenu', function(ev){ ev.preventDefault(); });
   window.addEventListener('resize', thResize);
