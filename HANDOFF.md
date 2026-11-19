@@ -247,10 +247,6 @@ A new game key must be added to every one of these lists, or something quietly b
 - Multi-browser tests: invite every player first, then accept, or the first accept auto-starts the game.
 - Bot stalls in tests are often caused by running tests in parallel. Rerun the test alone first.
 
-## Content rule
-
-Pals and art must be **original designs**: no characters from Skylanders, Spyro or other franchises, and no look-alikes.
-
 ## Open items
 
 - Sir Rattlebones and Puddle: previews approved in spirit, not added to the roster yet (see `src/previews/`). Adding them needs a per-pal body type (e.g. `c.body`) so `palFigure` draws the custom art.
