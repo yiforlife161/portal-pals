@@ -302,3 +302,23 @@ SR.update({"Hothorn": "Vrućirog"})
 SR.update({"Fizzgrin": "Kežoni"})
 SR.update({"Hive Knight": "Vitez košnice"})
 SR.update({"Bat's Eye": "Šišmišje oko"})
+# Boss Gallery (Boss Raid)
+SR.update({
+  "Eight bosses, one for each element, each with its own attacks. Every attack is marked in red first: get out of the circles, step aside from charges and dodge the shots. At two thirds and one third of its health a boss calls in helpers, and below one third it gets angry and attacks faster.": "Osam bosova, po jedan za svaki element, svaki sa svojim napadima. Svaki napad je prvo označen crvenom bojom: izađi iz krugova, skloni se od juriša i izbegni hice. Na dve trećine i jednoj trećini zdravlja bos poziva pomoćnike, a ispod jedne trećine se razljuti i napada brže.",
+  ". On a touch screen, tap near your pal to attack and farther away to move. In Survival you face the whole gallery in turn, stronger every time round, with food after each boss.": ". Na ekranu osetljivom na dodir, dodirni blizu drugara za napad, a dalje za kretanje. U Preživljavanju se boriš protiv svih bosova redom, sve jačih u svakom krugu, a posle svakog bosa pada hrana.",
+  "Choose a boss": "Izaberi bosa", "weak to": "slab na", "Weak spot!": "Slaba tačka!", "is now open!": "je sada otvoren!",
+  "Pick a boss above, then invite up to 3 friends to take it on together. Everyone gets the full gold and xp.": "Izaberi bosa iznad, pa pozovi do 3 prijatelja da se zajedno borite. Svi dobijaju puno zlato i xp.",
+  "Boulderback": "Gromadoleđi", "Magmaw": "Magmoždrelo", "Tidejaw": "Plimoklešta", "Thornmother": "Majka trnja", "Gearlord": "Gospodar zupčanika", "Stormwing": "Olujno krilo", "Hexweaver": "Tkačica čini", "Bone Tyrant": "Koštani tiranin",
+  "the Rolling Mountain": "kotrljajuća planina", "the Lava Turtle": "lavena kornjača", "the Reef Crab": "grebenski rak", "the Wild Bloom": "divlji cvet", "the Iron Engine": "gvozdena mašina", "the Thunder Hawk": "gromoviti jastreb", "the Star Witch": "zvezdana veštica", "the Grave King": "kralj groblja",
+  "Gallery Guest": "Gost galerije", "Defeat 4 different bosses": "Pobedi 4 različita bosa", "Boss Gallery": "Galerija bosova", "Defeat all 8 bosses": "Pobedi svih 8 bosova",
+  "Gallery Master": "Majstor galerije", "Defeat all 8 bosses on Hard": "Pobedi svih 8 bosova na Teškom", "Weak Spot": "Slaba tačka", "Defeat a boss on Hard with a pal of its weak element": "Pobedi bosa na Teškom drugarom elementa na koji je slab",
+  "Element Expert": "Stručnjak za elemente", "Deal 20,000 weak-spot damage": "Nanesi 20.000 štete u slabu tačku", "Full Circle": "Pun krug", "Beat all 8 bosses in one Survival run": "Pobedi svih 8 bosova u jednom Preživljavanju",
+  "Defeat any boss on Hard": "Pobedi bilo kog bosa na Teškom", "Co-op · Survival (every boss in turn). Everyone gets the full gold and xp.": "Saradnja · Preživljavanje (svi bosovi redom). Svi dobijaju puno zlato i xp."
+})
+SRT.update({
+  "Beat §": "Pobedi §", "§ defeated!": "§ je pobeđen!", "Boss #§: §": "Bos #§: §", "§ · weak to §": "§ · slab na §",
+  "Easy: §": "Lako: §", "Medium: §": "Srednje: §", "Hard: §": "Teško: §", "Survival: §": "Preživljavanje: §",
+  ", §. § pals hit it 50% harder.": ", §. Drugari elementa § ga udaraju 50% jače.",
+  "§ was too strong this time. You still keep the gold and xp you earned.": "§ je ovaj put bio prejak. I dalje zadržavaš zlato i xp koje si zaradio.",
+  "§ raises the dead!": "§ podiže mrtve!", "§ sprouts helpers!": "§ pušta pomoćnike!"
+})

@@ -32,6 +32,7 @@ await B.click('[data-fr-acc]');await B.waitForTimeout(1200);
 await A.evaluate(()=>document.getElementById('btn-friends').click());await B.evaluate(()=>document.getElementById('btn-friends').click());
 const g0=[await gold(A),await gold(B)];
 // A opens the arena, picks Fire Pit, invites B for level 1
+await A.evaluate(k=>{const I=window.__st.island;I.rbw={earth:1,fire:1,water:1,life:1,tech:1,air:1};I.raidBoss=k;},process.env.BOSS||'magic');
 await A.evaluate(()=>window.__dfOpen('raid'));await A.waitForTimeout(400);
 await A.click('[data-action=coop-list]');await A.waitForTimeout(200);
 console.log('coop list:',await A.evaluate(()=>document.getElementById('coop-list').innerText.replace(/\n/g,' | ')));
@@ -46,6 +47,6 @@ for(let i=0;i<24;i++){await A.waitForTimeout(500);const q=await st(B);if(q.stun>
 await A.waitForTimeout(4000);
 console.log('A',JSON.stringify(await st(A)));console.log('B',JSON.stringify(await st(B)));
 await A.screenshot({path:path.join(__dirname,'co1.png')});await B.screenshot({path:path.join(__dirname,'co2.png')});
-console.log('A boss:',await A.evaluate(()=>{const f=window.__df.foes.find(f=>f.k==='boss');return f?Math.round(f.hp)+'/'+Math.round(f.max):'none';}),'B boss:',await B.evaluate(()=>{const f=window.__df.foes.find(f=>f.k==='boss');return f?Math.round(f.hp)+'/'+Math.round(f.max):'none';}));
+console.log('A boss:',await A.evaluate(()=>{const f=window.__df.foes.find(f=>f.k==='boss');return f?f.bk+' '+Math.round(f.hp)+'/'+Math.round(f.max):'none';}),'B boss:',await B.evaluate(()=>{const f=window.__df.foes.find(f=>f.k==='boss');return f?f.bk+' '+Math.round(f.hp)+'/'+Math.round(f.max)+' es:'+window.__df.eshots.map(e=>e.el).join(','):'none';}),'B hud:',await B.evaluate(()=>document.getElementById('df-wave').textContent));
 await B.screenshot({path:require('path').join(__dirname,'raidB.png')});
 await b.close();})();
