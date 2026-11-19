@@ -1900,66 +1900,6 @@ function mechaFront(c){
     '<g><g class="pump pR"><g class="wpn">' + arm + '</g></g></g></svg>';
 }
 
-/* One-eyed soldier (no name yet): an original pal in the owner's black-and-gold colours. An all-black full helmet,
-   one big blue eye showing through a round opening, a mouth grille, black plate armour with gold trim, and big gauntlet fists
-   (Undead, melee, Giant). */
-var CYC = { K: '#24222a', KD: '#0b0a0f', KL: '#46424f', Y: '#f2b81e', YD: '#7a5400', E: '#2f5fd8', ED: '#13286a' };
-function cycFist(x, y, m){      /* a black gauntlet fist with gold knuckles; m = 1 knuckles right, -1 left */
-  var C = CYC; function X(v){ return x + v * m; }
-  return '<path d="M' + X(-6) + ' ' + (y - 6) + 'Q' + X(5) + ' ' + (y - 9) + ' ' + X(8) + ' ' + (y - 2) + 'Q' + X(9) + ' ' + (y + 5) + ' ' + X(3) + ' ' + (y + 7) + 'Q' + X(-5) + ' ' + (y + 8) + ' ' + X(-8) + ' ' + (y + 2) + 'Q' + X(-9) + ' ' + (y - 4) + ' ' + X(-6) + ' ' + (y - 6) + 'Z" fill="' + C.K + '" stroke="' + C.KD + '" stroke-width="2.2" stroke-linejoin="round"/>' +
-    '<path d="M' + X(4) + ' ' + (y - 6) + 'Q' + X(8) + ' ' + (y - 1) + ' ' + X(5) + ' ' + (y + 4) + '" fill="none" stroke="' + C.Y + '" stroke-width="2.6" stroke-linecap="round"/>' +
-    '<path d="M' + X(-3) + ' ' + (y + 1) + 'H' + X(2) + '" stroke="' + C.KL + '" stroke-width="1.4" stroke-linecap="round"/>';
-}
-function cycArt(){
-  var C = CYC, O = '#120f18';
-  return wrapSvg(
-    /* black breastplate with gold trim, a gold chevron and a gold belt */
-    outlined('<path d="M30 58Q50 51 70 58L72 80Q50 88 28 80Z"/>', C.K, C.KD) +
-    '<path d="M33 60Q50 54 67 60" fill="none" stroke="' + C.Y + '" stroke-width="2.6" stroke-linecap="round"/>' +
-    '<path d="M42 66L50 71L58 66" fill="none" stroke="' + C.Y + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>' +
-    '<path d="M38 64Q40 72 38 78M62 64Q60 72 62 78" fill="none" stroke="' + C.KL + '" stroke-width="1.6" stroke-linecap="round"/>' +
-    outlined('<path d="M29 78Q50 85 71 78L71 84Q50 91 29 84Z"/>', C.Y, C.YD, 2) +
-    '<rect x="46.5" y="80.5" width="7" height="6" rx="1.5" fill="' + C.K + '" stroke="' + C.YD + '" stroke-width="1.4"/>' +
-    /* shoulder plates */
-    outlined('<path d="M20 52Q24 44 35 47L37 58Q28 60 21 58Z"/><path d="M80 52Q76 44 65 47L63 58Q72 60 79 58Z"/>', C.K, C.KD, 2.4) +
-    '<path d="M22 53Q26 47 34 49M78 53Q74 47 66 49" fill="none" stroke="' + C.Y + '" stroke-width="2.4" stroke-linecap="round"/>' +
-    /* all-black full helmet */
-    outlined('<path d="M50 12C64 12 72 22 72 36L71 52Q68 59 62 60L38 60Q32 59 29 52L28 36C28 22 36 12 50 12Z"/>', C.K, C.KD) +
-    '<path d="M35 20Q41 15 48 14.5" fill="none" stroke="' + C.KL + '" stroke-width="2.6" stroke-linecap="round"/>' +
-    '<path d="M29.5 44H35M70.5 44H65" stroke="' + C.KL + '" stroke-width="1.8" stroke-linecap="round"/>' +
-    /* round opening with the one big eye */
-    '<circle cx="50" cy="35" r="16" fill="' + C.KD + '" stroke="' + C.KL + '" stroke-width="2.4"/>' +
-    '<circle cx="50" cy="35.5" r="13.4" fill="#fbf8f0" stroke="' + O + '" stroke-width="1.8"/>' +
-    '<circle cx="50.5" cy="36.2" r="13" fill="' + egC('undead') + '" fill-opacity=".45"/><circle cx="50.5" cy="36.2" r="10.4" fill="' + egC('undead') + '" fill-opacity=".5"/>' +
-    '<circle cx="50.5" cy="36.2" r="8.2" fill="' + egC('undead') + '" stroke="#3b1a66" stroke-width="1.8"/><circle cx="50.5" cy="36.2" r="4.6" fill="#e2c8ff"/><circle cx="50.5" cy="36.2" r="2.2" fill="#fff"/>' +
-    '<circle cx="47.4" cy="33" r="2" fill="#fff"/><circle cx="54.6" cy="39.6" r="1.1" fill="#bcd0ff"/>' +
-    '<path d="M36 25Q50 18 64 25" fill="none" stroke="' + C.KD + '" stroke-width="3.8" stroke-linecap="round"/>' +
-    /* mouth grille */
-    '<path d="M42 53.5H58M43.5 57H56.5" stroke="' + C.KD + '" stroke-width="2.4" stroke-linecap="round"/>');
-}
-function cycBack(c){
-  var C = CYC;
-  function leg(cls, x1, x2, fx){
-    return '<g class="lg ' + cls + '"><path d="M' + x1 + ' 84L' + x2 + ' 96" stroke="' + C.KD + '" stroke-width="11" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' 84L' + x2 + ' 96" stroke="' + C.K + '" stroke-width="7" stroke-linecap="round"/>' +
-      '<circle cx="' + (x1 + (x2 - x1) * 0.45) + '" cy="89.5" r="3.2" fill="' + C.Y + '" stroke="' + C.YD + '" stroke-width="1.4"/>' +
-      '<path d="M' + (fx - 8.5) + ' 104Q' + (fx - 8.5) + ' 95 ' + fx + ' 95Q' + (fx + 9.5) + ' 95 ' + (fx + 9.5) + ' 104Z" fill="' + C.K + '" stroke="' + C.KD + '" stroke-width="2.2" stroke-linejoin="round"/>' +
-      '<path d="M' + (fx - 7) + ' 102H' + (fx + 8) + '" stroke="' + C.Y + '" stroke-width="2.2" stroke-linecap="round"/></g>';
-  }
-  function arm(x1, y1, x2, y2){
-    return '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + C.KD + '" stroke-width="12" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + C.K + '" stroke-width="8" stroke-linecap="round"/>';
-  }
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + leg('lgL', 41, 38, 35) + leg('lgR', 59, 62, 65) +
-    '<g><g class="pump pL">' + arm(32, 60, 17, 68) + '<path d="M19 63.5L22 70" stroke="' + C.Y + '" stroke-width="3.4" stroke-linecap="round"/>' + cycFist(13, 72, -1) + '</g></g>' +
-    '<g><g class="pump pR">' + arm(68, 60, 82, 64) + '<path d="M79 59.5L78 66.5" stroke="' + C.Y + '" stroke-width="3.4" stroke-linecap="round"/></g></g></svg>';
-}
-function cycFront(c){
-  /* the front fist sits in the weapon group so it punches forward when he hits */
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + cycFist(89, 66, 1) + '</g></g></g></g></svg>';
-}
-
 /* Masked rogue (no name yet): an original human girl in full leather armour, with a green eye mask, a brown bandana over her
    nose and mouth, a dark blue ponytail, and a dagger in each hand (melee). */
 var ROGUE = { S: '#f2c9a5', SD: '#8a5a3c', H: '#243a7a', HD: '#0c1538', HL: '#4a68b8', L: '#8a5530', LD: '#3a200e', LL: '#b07444', M: '#2fa86a', MD: '#0f4a2c', B: '#6a3f22', BD: '#2e170a', ST: '#d9dde6', STD: '#4a5060' };
@@ -2322,78 +2262,6 @@ function arFront(c){
     '<circle cx="84" cy="65.5" r="4.2" fill="' + AR.P + '" stroke="' + AR.PD + '" stroke-width="1.8"/></g></g></g></svg>';
 }
 
-/* Winged warrior (no name yet): the owner's armoured warrior in yellow and black: a knight helmet with two curved yellow horns and a black visor and white eye
-   slits, a black crest, a yellow breastplate with a black chevron, black shoulder guards, a big silver blade-wing hanging down behind each shoulder, solid armour
-   plates (no stripes), and yellow gauntlets with blue gems and one big blade sticking out of each (Air, melee, Giant). */
-var SN = { Y: '#f2b81e', YD: '#7a5400', YL: '#ffd968', K: '#2a2830', KD: '#0c0b10', KL: '#4a4652', BL: '#2f9be8', BLD: '#0e3f6a', W: '#d9dee8', WD: '#4a5060', ST: '#8fa8d0', STD: '#1e2c4a' };
-function snClaw(x, y, m){      /* a yellow gauntlet with one big blade sticking out past the knuckles; m = 1 blades right, -1 left */
-  var S = SN; function X(v){ return x + v * m; }
-  /* one big, broad blade out of the knuckles, slightly curved, with a bright edge */
-  var big = '<path d="M' + X(4) + ' ' + (y - 6) + 'Q' + X(18) + ' ' + (y - 7) + ' ' + X(30) + ' ' + (y - 2) + 'Q' + X(18) + ' ' + (y + 3) + ' ' + X(4) + ' ' + (y + 5) + 'Z" fill="' + S.ST + '" stroke="' + S.STD + '" stroke-width="1.8" stroke-linejoin="round"/>' +
-    '<path d="M' + X(6) + ' ' + (y - 4.6) + 'Q' + X(18) + ' ' + (y - 5.4) + ' ' + X(27) + ' ' + (y - 2.2) + '" fill="none" stroke="#eef4ff" stroke-width="1.4" stroke-linecap="round"/>' +
-    '<path d="M' + X(6) + ' ' + (y + 0.5) + 'Q' + X(16) + ' ' + (y - 0.5) + ' ' + X(24) + ' ' + (y - 1.8) + '" fill="none" stroke="' + S.STD + '" stroke-width="1" stroke-linecap="round" stroke-opacity=".5"/>';
-  return big +
-    '<path d="M' + X(-8) + ' ' + (y - 4) + 'Q' + X(-7) + ' ' + (y - 11) + ' ' + X(1) + ' ' + (y - 10) + 'Q' + X(8) + ' ' + (y - 9) + ' ' + X(8) + ' ' + (y - 2) + 'Q' + X(8) + ' ' + (y + 5) + ' ' + X(1) + ' ' + (y + 6) + 'Q' + X(-7) + ' ' + (y + 5) + ' ' + X(-8) + ' ' + (y - 4) + 'Z" fill="' + S.Y + '" stroke="' + S.YD + '" stroke-width="2.2" stroke-linejoin="round"/>' +
-    '<path d="M' + X(4) + ' ' + (y - 8) + 'V' + (y + 4) + '" stroke="' + S.K + '" stroke-width="2.6" stroke-linecap="round"/>' +
-    '<ellipse cx="' + X(-3) + '" cy="' + (y - 3) + '" rx="2.8" ry="2.2" fill="' + S.BL + '" stroke="' + S.BLD + '" stroke-width="1.2"/>';
-}
-function snArt(){
-  var S = SN;
-  return wrapSvg(
-    /* yellow breastplate with a black chevron, a black waist and a yellow plate belt */
-    outlined('<path d="M31 56Q50 49 69 56L67 78Q50 84 33 78Z"/>', S.Y, S.YD) +
-    '<path d="M38 60L50 71L62 60L62 65L50 76L38 65Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.2" stroke-linejoin="round"/>' +
-    '<path d="M36 58Q42 56 46 57" fill="none" stroke="' + S.YL + '" stroke-width="2" stroke-linecap="round"/>' +
-    outlined('<path d="M35 77Q50 82 65 77L64 84Q50 89 36 84Z"/>', S.K, S.KD, 2) +
-    outlined('<path d="M37 83Q50 87 63 83L60 91Q50 94 40 91Z"/>', S.Y, S.YD, 2) +
-    /* black round shoulder guards */
-    outlined('<path d="M19 54Q20 44 32 46L35 58Q26 61 20 59Z"/><path d="M81 54Q80 44 68 46L65 58Q74 61 80 59Z"/>', S.K, S.KD, 2.4) +
-    '<path d="M22 51Q25 47 31 48M78 51Q75 47 69 48" fill="none" stroke="' + S.KL + '" stroke-width="2" stroke-linecap="round"/>' +
-    /* knight helmet: yellow dome, black crest, black visor with white eye slits */
-    outlined('<path d="M47 14Q50 4 53 14L53 24H47Z"/>', S.K, S.KD, 2) +
-    outlined('<path d="M50 13C63 13 70 23 70 35L69 47Q65 54 58 55L42 55Q35 54 31 47L30 35C30 23 37 13 50 13Z"/>', S.Y, S.YD) +
-    '<path d="M36 20Q42 16 48 15.5" fill="none" stroke="' + S.YL + '" stroke-width="2.6" stroke-linecap="round"/>' +
-    /* two curved yellow horns on the sides of the helmet */
-    outlined('<path d="M33 27Q22 22 20 6Q28 14 37 20Z"/><path d="M67 27Q78 22 80 6Q72 14 63 20Z"/>', S.Y, S.YD, 2.2) +
-    '<path d="M24 12Q27 19 33 22M76 12Q73 19 67 22" fill="none" stroke="' + S.YL + '" stroke-width="1.5" stroke-linecap="round"/>' +
-    '<path d="M32 33Q50 27 68 33L67 43Q60 40 50 41Q40 40 33 43Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
-    egHalo('air', 40.5, 38.6, 3.6) + egHalo('air', 59.5, 38.6, 3.6) +
-    '<path d="M36 36.5L45 38.5L44 40.5Q39 40.5 36 38.8Z M64 36.5L55 38.5L56 40.5Q61 40.5 64 38.8Z" fill="' + egC('air') + '"/>' +
-    '<path d="M38 37.6L43 38.8M62 37.6L57 38.8" stroke="#fff" stroke-width="1.1" stroke-linecap="round"/>' +
-    '<path d="M50 41V53" stroke="' + S.YD + '" stroke-width="1.6" stroke-linecap="round"/>' +
-    '<path d="M42 48H47M53 48H58M43 51H47M53 51H57" stroke="' + S.K + '" stroke-width="1.6" stroke-linecap="round"/>');
-}
-function snBack(c){
-  var S = SN;
-  function leg(cls, x1, x2, fx){
-    return '<g class="lg ' + cls + '"><path d="M' + x1 + ' 86L' + x2 + ' 95" stroke="' + S.KD + '" stroke-width="11" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' 86L' + x2 + ' 95" stroke="' + S.K + '" stroke-width="7" stroke-linecap="round"/>' +
-      '<circle cx="' + (x1 + (x2 - x1) * 0.4) + '" cy="89.5" r="3.4" fill="' + S.Y + '" stroke="' + S.YD + '" stroke-width="1.4"/>' +
-      '<path d="M' + (fx - 8) + ' 104L' + (fx - 7) + ' 94H' + (fx + 6) + 'L' + (fx + 7) + ' 98Q' + (fx + 12) + ' 100 ' + (fx + 12) + ' 104Z" fill="' + S.Y + '" stroke="' + S.YD + '" stroke-width="2.2" stroke-linejoin="round"/>' +
-      '<path d="M' + (fx - 7) + ' 98H' + (fx + 6) + '" stroke="' + S.K + '" stroke-width="2.2" stroke-linecap="round"/></g>';
-  }
-  function arm(x1, y1, x2, y2){
-    return '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + S.YD + '" stroke-width="10" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + S.Y + '" stroke-width="6.4" stroke-linecap="round"/>';
-  }
-  /* wings: one big silver blade on each side, hanging down behind him from the shoulders */
-  function wing(m){
-    function X(x){ return (50 + (x - 50) * m).toFixed(1); }
-    return '<path d="M' + X(36) + ' 47Q' + X(16) + ' 52 ' + X(8) + ' 70Q' + X(4) + ' 82 ' + X(10) + ' 96Q' + X(16) + ' 80 ' + X(24) + ' 70Q' + X(31) + ' 62 ' + X(36) + ' 60Z" fill="' + S.W + '" stroke="' + S.WD + '" stroke-width="2" stroke-linejoin="round"/>' +
-      '<path d="M' + X(32) + ' 50Q' + X(16) + ' 57 ' + X(10) + ' 74Q' + X(8) + ' 83 ' + X(10) + ' 91" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-opacity=".85"/>' +
-      '<path d="M' + X(33) + ' 57Q' + X(24) + ' 63 ' + X(18) + ' 74" fill="none" stroke="' + S.WD + '" stroke-width="1.1" stroke-linecap="round" stroke-opacity=".5"/>' +
-      '<path d="M' + X(37) + ' 46L' + X(29) + ' 46L' + X(27) + ' 61L' + X(37) + ' 61Z" fill="' + S.K + '" stroke="' + S.KD + '" stroke-width="1.8" stroke-linejoin="round"/>';
-  }
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + wing(-1) + wing(1) + leg('lgL', 41, 38, 35) + leg('lgR', 59, 62, 65) +
-    '<g><g class="pump pL">' + arm(30, 60, 17, 67) + snClaw(12, 72, -1) + '</g></g>' +
-    '<g><g class="pump pR">' + arm(70, 60, 82, 64) + '</g></g></svg>';
-}
-function snFront(c){
-  /* the front gauntlet and its blade sit in the weapon group so they slash when he hits */
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + snClaw(88, 66, 1) + '</g></g></g></g></svg>';
-}
-
 /* Rock golem (no name yet): the owner's own rock warrior: a body of stone blocks, a heavy brow with glowing orange eyes, a wide
    jagged grin, a green crystal glowing in his chest, small crystals at the knees, and big rock fists holding green crystals he
    throws (Earth, ranged). */
@@ -2456,72 +2324,6 @@ function goFront(c){
   /* the front fist holds up a green crystal, ready to throw; it sits in the weapon group so it jerks when he throws */
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
     '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + goFist(88, 67, 1) + goCrystal(89, 55, 1.45, true) + '</g></g></g></g></svg>';
-}
-
-/* Bubble Trooper (no name yet): an original blue fish soldier: a round blue fish face inside a water-filled glass dome helmet,
-   a steel deep-sea armour suit with rivets over a navy undersuit, heavy steel boots, and a steel bubble blaster with an air
-   tank (Water, ranged). */
-var DV = { F: '#2f7fe0', FD: '#0e2f6a', FL: '#8cc4ff', FB: '#ffd23a', G: '#bfe8ff', GD: '#3a6a8a', BR: '#9aa6b6', BRD: '#2e3644', BRL: '#dfe6ef', CU: '#6c7888', N: '#1e2c56', ND: '#0a1028' };
-function dvRivets(pts){ var D = DV; return pts.map(function(p){ return '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="1.1" fill="' + D.BRL + '" stroke="' + D.BRD + '" stroke-width=".7"/>'; }).join(''); }
-function dvArt(){
-  var D = DV, O = '#0a0e1a';
-  return wrapSvg(
-    /* navy undersuit, steel chest plate with a darker band, a round air gauge */
-    outlined('<path d="M33 60Q50 54 67 60L68 86Q50 92 32 86Z"/>', D.N, D.ND) +
-    outlined('<path d="M35 60Q50 55 65 60L64 78Q50 83 36 78Z"/>', D.BR, D.BRD) +
-    '<path d="M38 62Q42 59 47 59" fill="none" stroke="' + D.BRL + '" stroke-width="2" stroke-linecap="round"/>' +
-    outlined('<path d="M35 76Q50 81 65 76L65 81Q50 86 35 81Z"/>', D.CU, D.BRD, 1.8) +
-    '<circle cx="50" cy="68" r="5" fill="#f2efe4" stroke="' + D.BRD + '" stroke-width="1.6"/><path d="M50 68L52.6 65.4" stroke="#c0382a" stroke-width="1.3" stroke-linecap="round"/><circle cx="50" cy="68" r="0.9" fill="' + D.BRD + '"/>' +
-    dvRivets([[38, 64], [62, 64], [38, 73], [62, 73]]) +
-    /* steel diving collar */
-    outlined('<path d="M28 56Q50 46 72 56L70 62Q50 54 30 62Z"/>', D.BR, D.BRD, 2.2) + dvRivets([[33, 56], [42, 52.6], [50, 51.6], [58, 52.6], [67, 56]]) +
-    /* glass dome helmet full of water */
-    '<circle cx="50" cy="33" r="22" fill="' + D.G + '" fill-opacity=".55" stroke="' + D.GD + '" stroke-width="2.4"/>' +
-    /* the round blue fish inside: big eyes, pouty lips, a little top fin and side fins */
-    outlined('<path d="M44 16Q50 9 57 15Q53 15 50 19Z"/>', D.F, D.FD, 1.6) +
-    outlined('<path d="M30 34Q24 30 23 38Q27 38 30 38Z"/><path d="M70 34Q76 30 77 38Q73 38 70 38Z"/>', D.FL, D.FD, 1.6) +
-    outlined('<path d="M50 15C62 15 69 24 69 35C69 46 61 52 50 52C39 52 31 46 31 35C31 24 38 15 50 15Z"/>', D.F, D.FD) +
-    '<path d="M36 23Q41 18 48 18" fill="none" stroke="' + D.FL + '" stroke-width="2.2" stroke-linecap="round"/>' +
-    '<path d="M36 40Q50 50 64 40Q62 49 50 50Q38 49 36 40Z" fill="' + D.FL + '" fill-opacity=".55"/>' +
-    '<circle cx="41" cy="33" r="6.4" fill="#fff" stroke="' + O + '" stroke-width="1.6"/><circle cx="42" cy="34" r="3.6" fill="' + O + '"/><circle cx="43.4" cy="32.4" r="1.3" fill="#fff"/>' +
-    '<circle cx="59" cy="33" r="6.4" fill="#fff" stroke="' + O + '" stroke-width="1.6"/><circle cx="58" cy="34" r="3.6" fill="' + O + '"/><circle cx="59.4" cy="32.4" r="1.3" fill="#fff"/>' +
-    '<path d="M35 25.5L46 28M65 25.5L54 28" stroke="' + D.FD + '" stroke-width="2.2" stroke-linecap="round"/>' +
-    '<ellipse cx="50" cy="44.2" rx="7" ry="3.4" fill="#ff8a7a" stroke="' + D.FD + '" stroke-width="1.4"/><path d="M43.6 44.2H56.4" stroke="' + D.FD + '" stroke-width="1" stroke-linecap="round"/>' +
-    /* glass shine and a couple of bubbles inside the helmet */
-    '<path d="M34 18Q40 13 47 12.5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-opacity=".9"/>' +
-    '<circle cx="66" cy="22" r="1.6" fill="none" stroke="#fff" stroke-width="1"/><circle cx="63" cy="17" r="1" fill="none" stroke="#fff" stroke-width=".9"/>');
-}
-function dvBack(c){
-  var D = DV;
-  function leg(cls, x1, x2, fx){
-    return '<g class="lg ' + cls + '"><path d="M' + x1 + ' 86L' + x2 + ' 95" stroke="' + D.ND + '" stroke-width="10" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' 86L' + x2 + ' 95" stroke="' + D.N + '" stroke-width="6.4" stroke-linecap="round"/>' +
-      '<path d="M' + (fx - 9) + ' 104L' + (fx - 8) + ' 94H' + (fx + 7) + 'L' + (fx + 8) + ' 98Q' + (fx + 12) + ' 100 ' + (fx + 12) + ' 104Z" fill="' + D.BR + '" stroke="' + D.BRD + '" stroke-width="2" stroke-linejoin="round"/>' +
-      '<path d="M' + (fx - 8) + ' 97.5H' + (fx + 7) + '" stroke="' + D.CU + '" stroke-width="2.2" stroke-linecap="round"/>' + dvRivets([[fx - 5, 101], [fx + 5, 101]]) + '</g>';
-  }
-  function arm(x1, y1, x2, y2){
-    return '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + D.ND + '" stroke-width="9" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + D.N + '" stroke-width="5.4" stroke-linecap="round"/>';
-  }
-  function glove(x, y){ return '<circle cx="' + x + '" cy="' + y + '" r="4.6" fill="' + D.BR + '" stroke="' + D.BRD + '" stroke-width="1.8"/><path d="M' + (x - 3) + ' ' + (y - 1) + 'H' + (x + 3) + '" stroke="' + D.CU + '" stroke-width="1.4" stroke-linecap="round"/>'; }
-  /* steel shoulder pads */
-  var pads = outlined('<path d="M24 58Q25 50 35 51L36 61Q29 63 25 61Z"/><path d="M76 58Q75 50 65 51L64 61Q71 63 75 61Z"/>', D.BR, D.BRD, 2) + dvRivets([[29, 56], [71, 56]]);
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + leg('lgL', 42, 39, 36) + leg('lgR', 58, 61, 64) +
-    '<g><g class="pump pL">' + arm(33, 63, 18, 68) + glove(15, 69) + '</g></g>' +
-    '<g><g class="pump pR">' + arm(67, 63, 83, 65) + '</g></g>' + pads + '</svg>';
-}
-function dvFront(c){
-  var D = DV;
-  /* steel bubble blaster: a round air tank on top, a flared bell muzzle, and a bubble ready to go */
-  var gun = '<g transform="rotate(-18 86 64)">' +
-    '<rect x="78" y="58" width="22" height="9" rx="3" fill="' + D.BR + '" stroke="' + D.BRD + '" stroke-width="2"/>' +
-    '<path d="M81 60.5H96" stroke="' + D.BRL + '" stroke-width="1.6" stroke-linecap="round"/>' +
-    '<path d="M100 56.5L106 53.5V71.5L100 68.5Z" fill="' + D.CU + '" stroke="' + D.BRD + '" stroke-width="1.8" stroke-linejoin="round"/>' +
-    '<rect x="82" y="50" width="11" height="8" rx="4" fill="' + D.FL + '" stroke="' + D.GD + '" stroke-width="1.6"/><path d="M84.5 52.5H89" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>' +
-    '<rect x="83" y="66" width="5" height="8" rx="1.4" fill="' + D.CU + '" stroke="' + D.BRD + '" stroke-width="1.4"/>' +
-    '<circle cx="110" cy="62" r="3.6" fill="' + D.G + '" fill-opacity=".6" stroke="#fff" stroke-width="1.2"/><circle cx="109" cy="60.8" r="1" fill="#fff"/></g>';
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR"><g class="wpn">' + gun + '<circle cx="84.5" cy="66" r="4.6" fill="' + D.BR + '" stroke="' + D.BRD + '" stroke-width="1.8"/></g></g></g></svg>';
 }
 
 /* Tiki shaman (no name yet): the owner's own drawing: a carved wooden tiki mask with a pointed crown and a teal gem, gold brows,
@@ -2791,66 +2593,6 @@ function zsFront(c){
     '</g></g></g></g></svg>';
 }
 
-/* Blaster Bear: an original round little red bear cub whose head and body are one shape, without a snout: round ears with tan insides, a flat face
-   with a small dark nose, bright brown eyes under cocky brows, a cheeky lopsided smile, tan paws with claws, and a chunky steel blaster in each paw (dual-wield; Tech, ranged, Normal). */
-var BR = { R: '#c23a2a', RD: '#3a0c08', RL: '#e8664e', T: '#e8c08a', TD: '#7a5430', V: '#7a4a26', VD: '#2e1a0a', VL: '#a8703e', S: '#9aa4b2', SD: '#2c323c', SL: '#d4dbe4', SM: '#6a7480', Y: '#ffc23a', K: '#1a0e0c' };
-function brBlaster(x, y, s){      /* a chunky steel blaster with a muzzle flash, pointing right; (x, y) is the grip */
-  var B = BR; function P(a, b){ return (x + a * s).toFixed(1) + ' ' + (y + b * s).toFixed(1); }
-  return '<path d="M' + P(-3, -1) + 'L' + P(-5, 9) + 'L' + P(1, 10) + 'L' + P(3, 0) + 'Z" fill="' + B.SM + '" stroke="' + B.SD + '" stroke-width="1.6" stroke-linejoin="round"/>' +
-    '<path d="M' + P(-6, -8) + 'H' + P(14, -8).split(' ')[0] + 'L' + P(15, -1) + 'H' + P(-6, -1).split(' ')[0] + 'Z" fill="' + B.S + '" stroke="' + B.SD + '" stroke-width="1.8" stroke-linejoin="round"/>' +
-    '<rect x="' + (x + 13 * s) + '" y="' + (y - 7 * s) + '" width="' + (6 * s) + '" height="' + (5 * s) + '" rx="' + s + '" fill="' + B.SM + '" stroke="' + B.SD + '" stroke-width="1.5"/>' +
-    '<path d="M' + P(-4, -6) + 'H' + P(10, -6).split(' ')[0] + '" stroke="' + B.SL + '" stroke-width="1.3" stroke-linecap="round"/>' +
-    '<rect x="' + (x - 2 * s) + '" y="' + (y - 11 * s) + '" width="' + (6 * s) + '" height="' + (3.5 * s) + '" rx="' + s + '" fill="' + B.SM + '" stroke="' + B.SD + '" stroke-width="1.3"/>' +
-    '<path d="M' + P(20, -4.5) + 'L' + P(25, -10) + 'L' + P(25, -6) + 'L' + P(30, -7) + 'L' + P(26, -4) + 'L' + P(30, -1) + 'L' + P(25, -2) + 'L' + P(25, 1.5) + 'Z" fill="' + B.Y + '" stroke="#b85a00" stroke-width="1.1" stroke-linejoin="round"/>' +
-    '<circle cx="' + (x + 22 * s) + '" cy="' + (y - 4.5 * s) + '" r="' + (1.6 * s) + '" fill="#fff6c0"/>';
-}
-function brArt(){
-  var B = BR, O = '#1a0604';
-  return wrapSvg(
-    /* round ears with tan insides, behind his head */
-    '<circle cx="32" cy="21" r="8.5" fill="' + B.R + '" stroke="' + B.RD + '" stroke-width="2.2"/><circle cx="32.6" cy="21.6" r="4.6" fill="' + B.T + '"/>' +
-    '<circle cx="68" cy="21" r="8.5" fill="' + B.R + '" stroke="' + B.RD + '" stroke-width="2.2"/><circle cx="67.4" cy="21.6" r="4.6" fill="' + B.T + '"/>' +
-    /* head and body are one round, furry bear shape (no neck), with a tan belly patch and a few fur tufts */
-    outlined('<path d="M50 16C64 16 71 25 71 37C71 46 74 56 74 68C74 84 64 93 50 93C36 93 26 84 26 68C26 56 29 46 29 37C29 25 36 16 50 16Z"/>', B.R, B.RD) +
-    '<path d="M37 59Q50 52 63 59Q69 74 61 88Q50 92 39 88Q31 74 37 59Z" fill="' + B.T + '"/>' +
-    '<path d="M27.6 62L31 63M27 70L30.4 70.4M72.4 62L69 63M73 70L69.6 70.4M43 82Q50 84 57 82" fill="none" stroke="' + B.RD + '" stroke-width="1.3" stroke-linecap="round"/>' +
-    '<path d="M36 23Q42 19 49 18.5" fill="none" stroke="' + B.RL + '" stroke-width="2.4" stroke-linecap="round"/>' +
-    '<path d="M46 17L48 21L50 16.5L52 21L54 17" fill="none" stroke="' + B.RD + '" stroke-width="1.4" stroke-linejoin="round"/>' +
-    /* small determined eyes, cocky brows */
-    '<ellipse cx="41" cy="34.5" rx="5.2" ry="5.6" fill="#fff" stroke="' + O + '" stroke-width="1.6"/><circle cx="42" cy="35" r="3.2" fill="#6a3a1a"/><circle cx="42.2" cy="35.2" r="1.8" fill="' + O + '"/><circle cx="43.4" cy="33.6" r="1.1" fill="#fff"/>' +
-    '<ellipse cx="59" cy="34.5" rx="5.2" ry="5.6" fill="#fff" stroke="' + O + '" stroke-width="1.6"/><circle cx="58" cy="35" r="3.2" fill="#6a3a1a"/><circle cx="57.8" cy="35.2" r="1.8" fill="' + O + '"/><circle cx="59.2" cy="33.6" r="1.1" fill="#fff"/>' +
-    '<path d="M35.5 27.5L45 29.6M64.5 26.6L55 29.6" stroke="' + B.RD + '" stroke-width="2.4" stroke-linecap="round"/>' +
-    /* small dark nose right on the face, and a cheeky lopsided smile */
-    '<path d="M47.2 41Q50 39.6 52.8 41Q52.2 43.6 50 44.2Q47.8 43.6 47.2 41Z" fill="' + B.K + '"/><circle cx="48.8" cy="40.9" r=".7" fill="#fff" fill-opacity=".8"/>' +
-    '<path d="M50 44.2V46M43 46Q49 50 58 45" fill="none" stroke="' + O + '" stroke-width="1.8" stroke-linecap="round"/>' +
-    '<path d="M57 45.4L59.4 44" stroke="' + O + '" stroke-width="1.6" stroke-linecap="round"/>' +
-    '<ellipse cx="35" cy="43" rx="3.6" ry="2.2" fill="#ff8a8a" fill-opacity=".45"/><ellipse cx="65" cy="43" rx="3.6" ry="2.2" fill="#ff8a8a" fill-opacity=".45"/>');
-}
-function brBack(c){
-  var B = BR;
-  function leg(cls, x1, x2, fx){
-    return '<g class="lg ' + cls + '"><path d="M' + x1 + ' 86L' + x2 + ' 95" stroke="' + B.RD + '" stroke-width="11" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' 86L' + x2 + ' 95" stroke="' + B.R + '" stroke-width="7" stroke-linecap="round"/>' +
-      '<path d="M' + (fx - 8) + ' 103Q' + (fx - 8) + ' 95 ' + fx + ' 95Q' + (fx + 8) + ' 95 ' + (fx + 8) + ' 103Z" fill="' + B.R + '" stroke="' + B.RD + '" stroke-width="2" stroke-linejoin="round"/>' +
-      '<path d="M' + (fx - 4.5) + ' 103V100.4M' + fx + ' 103V100M' + (fx + 4.5) + ' 103V100.4" stroke="' + B.T + '" stroke-width="1.8" stroke-linecap="round"/></g>';
-  }
-  function arm(x1, y1, x2, y2){
-    return '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + B.RD + '" stroke-width="10" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + B.R + '" stroke-width="6.4" stroke-linecap="round"/>';
-  }
-  function paw(x, y){ return '<circle cx="' + x + '" cy="' + y + '" r="4.8" fill="' + B.R + '" stroke="' + B.RD + '" stroke-width="1.8"/><path d="M' + (x - 2.6) + ' ' + (y - 3.4) + 'L' + (x - 3.4) + ' ' + (y - 5.6) + 'M' + x + ' ' + (y - 4) + 'V' + (y - 6.4) + 'M' + (x + 2.6) + ' ' + (y - 3.4) + 'L' + (x + 3.4) + ' ' + (y - 5.6) + '" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/>'; }
-  /* the back blaster, held out to the other side */
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + leg('lgL', 41, 38, 35) + leg('lgR', 59, 62, 65) +
-    '<g><g class="pump pL">' + arm(32, 63, 17, 68) + '<g transform="translate(34 0) scale(-1 1)">' + brBlaster(19, 69, 0.95) + '</g>' + paw(15, 69) + '</g></g>' +
-    '<g><g class="pump pR">' + arm(68, 63, 83, 65) + '</g></g></svg>';
-}
-function brFront(c){
-  /* the front blaster; it sits in the weapon group so it kicks back when he fires */
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + brBlaster(86, 67, 1.05) +
-    '<circle cx="85" cy="66" r="4.8" fill="' + BR.R + '" stroke="' + BR.RD + '" stroke-width="1.8"/><path d="M82.4 62.6L81.6 60.4M85 62V59.6M87.6 62.6L88.4 60.4" stroke="#fff" stroke-width="1.3" stroke-linecap="round"/></g></g></g></g></svg>';
-}
-
 /* Fire Pup: an original fire dog after the owner's idea: a red pup standing on two legs, with perky ears that flop
    over at the tips, a small flame crest, round amber eyes, a long cream muzzle with a big dark nose, a toothy grin with two fangs, a cream chest ruff, ember speckles, flames at his wrists and ankles and a blazing tail
    and he throws ember balls (Fire, ranged, Normal). */
@@ -3048,76 +2790,6 @@ function trFront(c){
     '<path d="M80 60H97M80 70H97" stroke="' + T.WM + '" stroke-width="1.1" stroke-linecap="round"/>' +
     trRing(84, 60, 4.2) + trRing(93.6, 60, 4.2) + trRing(84, 70, 4) + trRing(93.6, 70, 4) +
     '</g></g></g></g></svg>';
-}
-
-/* Potion Bear: an original potion-thrower after the owner's idea: a blue bear cub with round ears, brass goggles
-   pushed up on his head, a flat face with a small dark bear nose, bright eyes, a wide open happy mouth, a white lab coat with potion pockets, a stubby tail, and a bubbling purple potion flask in his paw
-   (Magic, ranged, Normal). */
-var MS = { F: '#3f7ad8', FD: '#0e2456', FL: '#a8c8f4', P: '#2a5aaa', PD: '#0e2456', C: '#f6f4ee', CD: '#7a7468', G: '#d2a03a', GD: '#5a3e0a', GL: '#7ad8ff', V: '#a24ae0', VD: '#3a0e6a', VL: '#e4b8ff', E: '#5a2e14' };
-function msFlask(cx, cy, s){      /* a round flask of bubbling purple potion with a cork */
-  var M = MS; function P(x, y){ return (cx + x * s).toFixed(1) + ' ' + (cy + y * s).toFixed(1); }
-  return '<circle cx="' + cx + '" cy="' + (cy + 2 * s) + '" r="' + (12 * s) + '" fill="' + M.V + '" fill-opacity=".18"/>' +
-    '<path d="M' + P(-3, -11) + 'H' + P(3, -11).split(' ')[0] + 'V' + (cy - 5 * s).toFixed(1) + 'Q' + P(9, -3) + ' ' + P(9, 3) + 'Q' + P(9, 10) + ' ' + P(0, 10) + 'Q' + P(-9, 10) + ' ' + P(-9, 3) + 'Q' + P(-9, -3) + ' ' + P(-3, -5) + 'Z" fill="#e8f6ff" fill-opacity=".85" stroke="' + M.VD + '" stroke-width="1.5" stroke-linejoin="round"/>' +
-    '<path d="M' + P(-8.4, 1) + 'Q' + P(0, -1) + ' ' + P(8.4, 1) + 'Q' + P(8.6, 9) + ' ' + P(0, 9.4) + 'Q' + P(-8.6, 9) + ' ' + P(-8.4, 1) + 'Z" fill="' + M.V + '"/>' +
-    '<rect x="' + (cx - 3.4 * s) + '" y="' + (cy - 15 * s) + '" width="' + (6.8 * s) + '" height="' + (4.4 * s) + '" rx="' + s + '" fill="#a8703e" stroke="' + M.GD + '" stroke-width="1.2"/>' +
-    '<path d="M' + P(-5, -1) + 'Q' + P(-6, 4) + ' ' + P(-4, 7) + '" fill="none" stroke="#fff" stroke-width="1.3" stroke-linecap="round" stroke-opacity=".9"/>' +
-    '<circle cx="' + (cx + 2 * s) + '" cy="' + (cy + 3 * s) + '" r="' + (1.2 * s) + '" fill="' + M.VL + '"/><circle cx="' + (cx - 1 * s) + '" cy="' + (cy + 6 * s) + '" r="' + (0.8 * s) + '" fill="' + M.VL + '"/>' +
-    '<circle cx="' + (cx + 5 * s) + '" cy="' + (cy - 15 * s) + '" r="' + (1.6 * s) + '" fill="none" stroke="' + M.V + '" stroke-width="1"/><circle cx="' + (cx + 8 * s) + '" cy="' + (cy - 19 * s) + '" r="' + (1 * s) + '" fill="none" stroke="' + M.V + '" stroke-width=".9"/>';
-}
-function msArt(){
-  var M = MS, O = '#1a120c';
-  return wrapSvg(
-    /* white lab coat over a furry body, with potion pockets */
-    outlined('<path d="M38 60Q50 56 62 60Q65 72 61 86Q50 89 39 86Q35 72 38 60Z"/>', M.C, M.CD) +
-    '<path d="M50 58V87M45 58L50 66L55 58" fill="none" stroke="' + M.CD + '" stroke-width="1.4" stroke-linejoin="round"/>' +
-    '<path d="M45.5 59L50 65.5L54.5 59Z" fill="' + M.F + '"/>' +
-    '<rect x="40" y="72" width="7.4" height="7" rx="1.4" fill="#e8e4da" stroke="' + M.CD + '" stroke-width="1.1"/><rect x="41.4" y="68.2" width="2.2" height="4.4" rx="1" fill="#5ad86a" stroke="#1e5a24" stroke-width=".8"/><rect x="44.4" y="69" width="2.2" height="3.6" rx="1" fill="#ffb21e" stroke="#7a4a00" stroke-width=".8"/>' +
-    '<circle cx="50" cy="71" r="1" fill="' + M.CD + '"/><circle cx="50" cy="78" r="1" fill="' + M.CD + '"/>' +
-    /* big round ears with pink insides */
-    '<circle cx="32" cy="22" r="7.6" fill="' + M.F + '" stroke="' + M.FD + '" stroke-width="2.2"/><circle cx="32.6" cy="22.6" r="4.2" fill="' + M.FL + '"/>' +
-    '<circle cx="68" cy="22" r="7.6" fill="' + M.F + '" stroke="' + M.FD + '" stroke-width="2.2"/><circle cx="67.4" cy="22.6" r="4.2" fill="' + M.FL + '"/>' +
-    /* soft mouse head that narrows to the nose, with a pale muzzle */
-    outlined('<path d="M50 19C63 19 71 27 71 38C71 49 62 57 50 57C38 57 29 49 29 38C29 27 37 19 50 19Z"/>', M.F, M.FD) +
-
-    '<path d="M37 25Q43 21 49 21" fill="none" stroke="#7aa8f0" stroke-width="2.2" stroke-linecap="round"/>' +
-    /* brass goggles pushed up on his head */
-    '<path d="M31 27Q50 21 69 27" fill="none" stroke="' + M.GD + '" stroke-width="2.6" stroke-linecap="round"/>' +
-    '<circle cx="42" cy="25.4" r="5" fill="' + M.GL + '" stroke="' + M.G + '" stroke-width="2.4"/><circle cx="58" cy="25.4" r="5" fill="' + M.GL + '" stroke="' + M.G + '" stroke-width="2.4"/>' +
-    '<path d="M40 23.4L42.6 22.6M56 23.4L58.6 22.6" stroke="#fff" stroke-width="1.2" stroke-linecap="round"/>' +
-    /* bright brown eyes */
-    '<ellipse cx="42.5" cy="37" rx="3.4" ry="4" fill="' + O + '"/><circle cx="43.6" cy="35.6" r="1.3" fill="#fff"/>' +
-    '<ellipse cx="57.5" cy="37" rx="3.4" ry="4" fill="' + O + '"/><circle cx="58.6" cy="35.6" r="1.3" fill="#fff"/>' +
-    /* pink nose, whiskers, a friendly smile with two buck teeth */
-    '<path d="M47.6 42.6Q50 41.4 52.4 42.6Q51.8 44.6 50 45Q48.2 44.6 47.6 42.6Z" fill="' + O + '"/><ellipse cx="49" cy="42.5" rx=".8" ry=".5" fill="#fff" fill-opacity=".8"/>' +
-    /* a wide open happy mouth with a pink tongue */
-    '<path d="M39 46.6Q50 49 61 46.6Q59.6 56 50 56.6Q40.4 56 39 46.6Z" fill="#5a1420" stroke="' + O + '" stroke-width="1.6" stroke-linejoin="round"/>' +
-    '<path d="M42.6 53.4Q50 49.4 57.4 53.4Q54.6 56.2 50 56.4Q45.4 56.2 42.6 53.4Z" fill="#ff7a8a"/>' +
-    '<path d="M40.4 47.2L42 50L43.6 47.8L45.4 50.4L47.2 48L49 50.6L50.8 48L52.6 50.6L54.4 48L56.2 50.4L58 47.8L59.6 50L60.6 47.2" fill="#fff" stroke="' + O + '" stroke-width=".7" stroke-linejoin="round"/>' +
-    '<path d="M44 54.6L45.4 52.6L46.8 54.9M48.6 55.6L50 53.4L51.4 55.6M53.2 54.9L54.6 52.6L56 54.6" fill="#fff" stroke="' + O + '" stroke-width=".7" stroke-linejoin="round"/>' +
-    '<ellipse cx="36.5" cy="45" rx="3" ry="1.8" fill="#ff9ab0" fill-opacity=".45"/><ellipse cx="63.5" cy="45" rx="3" ry="1.8" fill="#ff9ab0" fill-opacity=".45"/>');
-}
-function msBack(c){
-  var M = MS;
-  function leg(cls, x1, x2, fx){
-    return '<g class="lg ' + cls + '"><path d="M' + x1 + ' 88L' + x2 + ' 96" stroke="' + M.FD + '" stroke-width="8.4" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' 88L' + x2 + ' 96" stroke="' + M.F + '" stroke-width="4.8" stroke-linecap="round"/>' +
-      '<path d="M' + (fx - 6) + ' 103Q' + (fx - 7) + ' 95.6 ' + fx + ' 95.6Q' + (fx + 8) + ' 95.6 ' + (fx + 8) + ' 103Z" fill="' + M.F + '" stroke="' + M.FD + '" stroke-width="1.8" stroke-linejoin="round"/></g>';
-  }
-  function arm(x1, y1, x2, y2){
-    return '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + M.CD + '" stroke-width="9" stroke-linecap="round"/>' +
-      '<path d="M' + x1 + ' ' + y1 + 'L' + x2 + ' ' + y2 + '" stroke="' + M.C + '" stroke-width="5.4" stroke-linecap="round"/>';
-  }
-  /* a long thin tail curling out to the left */
-  var tail = '<circle cx="34" cy="87" r="4.4" fill="' + M.F + '" stroke="' + M.FD + '" stroke-width="1.8"/>';
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + tail + leg('lgL', 44, 42, 40) + leg('lgR', 56, 58, 60) +
-    '<g><g class="pump pL">' + arm(39, 64, 22, 69) + '<circle cx="18.4" cy="70" r="4" fill="' + M.F + '" stroke="' + M.FD + '" stroke-width="1.6"/></g></g>' +
-    '<g><g class="pump pR">' + arm(61, 64, 81, 66) + '</g></g></svg>';
-}
-function msFront(c){
-  /* the purple potion flask he throws, held up in his paw; it sits in the weapon group so it jolts when he throws */
-  return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR"><g class="wpn"><g transform="rotate(-18 86 64)">' + msFlask(92, 56, 1.05) + '</g>' +
-    '<circle cx="84" cy="66" r="4" fill="' + MS.F + '" stroke="' + MS.FD + '" stroke-width="1.6"/></g></g></g></svg>';
 }
 
 /* Ice Knightess: the owner's own drawing: a knight in silver armour trimmed with ice, a crested helmet with a dark
@@ -5003,24 +4675,19 @@ var PAL_BODIES = {
   wyrm:   { label: 'Grave Dragon',    el: 'undead', style: 'ranged', giant: false, art: wyrmArt,   back: wyrmBack,   front: wyrmFront, shot: 'zap' },
   knight: { label: 'Skeleton Knight', el: 'undead', style: 'melee',  giant: false, art: knightArt, back: knightBack, front: knightFront },
   mecha:  { label: 'Wheel Bot',       el: 'tech',   style: 'ranged', giant: true,  art: mechaArt,  back: mechaBack,  front: mechaFront },
-  cyc:    { label: 'Iron Cyclops',    el: 'undead', style: 'melee',  giant: true,  art: cycArt,    back: cycBack,    front: cycFront },
   rogue:  { label: 'Masked Rogue',    el: 'life',   style: 'melee',  giant: false, art: rogueArt,  back: rogueBack,  front: rogueFront },
   md:     { label: 'Mech Dragon',     el: 'tech',   style: 'ranged', giant: false, art: mdArt,     back: mdBack,     front: mdFront },
   sh:     { label: 'Mushroom Guy',    el: 'life',   style: 'ranged', giant: false, art: shArt,     back: shBack,     front: shFront },
   tk:     { label: 'Technician',      el: 'tech',   style: 'melee',  giant: false, art: tkArt,     back: tkBack,     front: tkFront },
   ar:     { label: 'Arcane Dragon',   el: 'magic',  style: 'ranged', giant: false, art: arArt,     back: arBack,     front: arFront },
-  sn:     { label: 'Winged Sentinel', el: 'air',    style: 'melee',  giant: true,  art: snArt,     back: snBack,     front: snFront },
   go:     { label: 'Rock Golem',      el: 'earth',  style: 'ranged', giant: false, art: goArt,     back: goBack,     front: goFront },
-  dv:     { label: 'Bubble Trooper',  el: 'water',  style: 'ranged', giant: false, art: dvArt,     back: dvBack,     front: dvFront },
   ti:     { label: 'Tiki Shaman',     el: 'magic',  style: 'ranged', giant: false, art: tiArt,     back: tiBack,     front: tiFront },
   gm:     { label: 'Gem Dragon',      el: 'air',    style: 'ranged', giant: false, art: gmArt,     back: gmBack,     front: gmFront, shot: 'rainbow' },
   lv:     { label: 'Lava Golem',      el: 'fire',   style: 'ranged', giant: true,  art: lvArt,     back: lvBack,     front: lvFront },
   zs:     { label: 'Storm God',       el: 'air',    style: 'ranged', giant: false, art: zsArt,     back: zsBack,     front: zsFront, shot: 'bolt' },
-  br:     { label: 'Blaster Bear',    el: 'tech',   style: 'ranged', giant: false, art: brArt,     back: brBack,     front: brFront },
   fd:     { label: 'Fire Pup',        el: 'fire',   style: 'ranged', giant: false, art: fdArt,     back: fdBack,     front: fdFront },
   ss:     { label: 'Shark Suit',      el: 'earth',  style: 'melee',  giant: false, art: ssArt,     back: ssBack,     front: ssFront },
   tr:     { label: 'Tree Giant',      el: 'life',   style: 'melee',  giant: true,  art: trArt,     back: trBack,     front: trFront },
-  ms:     { label: 'Potion Bear',     el: 'magic',  style: 'ranged', giant: false, art: msArt,     back: msBack,     front: msFront },
   ik:     { label: 'Ice Knightess',   el: 'water',  style: 'ranged', giant: false, art: ikArt,     back: ikBack,     front: ikFront },
   mr:     { label: 'Magma Brute',     el: 'fire',   style: 'ranged', giant: false, art: mrArt,     back: mrBack,     front: mrFront },
   wi:     { label: 'Skull Witch',     el: 'undead', style: 'ranged', giant: false, art: wiArt,     back: wiBack,     front: wiFront, shot: 'skull' },
@@ -5045,9 +4712,9 @@ var PAL_BODIES = {
   hk:     { label: 'Hive Knight',     el: 'air',    style: 'melee',  giant: true,  art: hkArt,     back: hkBack,     front: hkFront },
   be:     { label: "Bat's Eye",       el: 'undead', style: 'melee',  giant: true,  art: beArt,     back: beBack,     front: beFront }
 };
-var PAL_BODY_ORDER = ['eagle', 'wyrm', 'knight', 'mecha', 'cyc', 'rogue', 'md', 'sh', 'tk', 'ar', 'sn', 'go', 'dv', 'ti', 'gm', 'lv', 'zs', 'br', 'fd', 'ss', 'tr', 'ms', 'ik', 'mr', 'wi', 'bn', 'rv', 'gw', 'wh', 'mb', 'cd', 'sb', 'ga', 'fk', 'ls', 'rr', 'tm', 'db', 'yt', 'bi', 'rg', 'hh', 'fz', 'hk', 'be'];
+var PAL_BODY_ORDER = ['eagle', 'wyrm', 'knight', 'mecha', 'rogue', 'md', 'sh', 'tk', 'ar', 'go', 'ti', 'gm', 'lv', 'zs', 'fd', 'ss', 'tr', 'ik', 'mr', 'wi', 'bn', 'rv', 'gw', 'wh', 'mb', 'cd', 'sb', 'ga', 'fk', 'ls', 'rr', 'tm', 'db', 'yt', 'bi', 'rg', 'hh', 'fz', 'hk', 'be'];
 /* Glowcore pals: copies of some special pals that pulse with light in their element's colour (a .gcaura glow behind them, CSS gcpulse) */
-var GLOWCORE = ['eagle', 'md', 'sh', 'go', 'ms', 'ik', 'mr', 'wi'];
+var GLOWCORE = ['eagle', 'md', 'sh', 'go', 'fz', 'ik', 'mr', 'wi'];
 function gcAura(fn, el){ return function(c){ return '<span class="gcaura" style="--gc:' + (EL[el] ? EL[el].c : '#fff') + '"></span>' + fn(c); }; }
 /* the glow is drawn once as still pictures (a blurred outline in the element colour behind the pal, and a flat element-coloured copy in front)
    and only their opacity pulses, which phones handle easily */
@@ -6676,6 +6343,9 @@ function cleanChar(o){
     up: cleanUp(o.up), hat: typeof o.hat === 'string' && HATS[o.hat] ? o.hat : '',
     cape: typeof o.cape === 'string' && CAPES[o.cape] ? o.cape : ''
   };
+  /* looks that were taken out of the game: the Glowcore Potion Bear became the Glowcore Fizzgrin; the rest (Iron Cyclops, Winged
+     Sentinel, Bubble Trooper, Blaster Bear, Potion Bear) fall back to Classic, keeping element, level and style */
+  if (o.body === 'gc_ms') o.body = 'gc_fz';
   var B = typeof o.body === 'string' && PAL_BODIES.hasOwnProperty(o.body) ? PAL_BODIES[o.body] : null;
   if (B){ out.body = o.body; out.element = B.el; out.style = B.style; out.giant = !!B.giant; out.img = ''; }
   else if (typeof o.body === 'string' && LOOK_RE.test(o.body)){ out.body = o.body; out.img = ''; }      /* a player-made look that has not loaded yet */
