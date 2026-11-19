@@ -87,14 +87,15 @@ function sbBack(c){
     sbScales([[26, 57], [19, 58]]) + sbSpike(24, 62, 100, 5, 2.4) + sbPaw(10, 58, 180, 6.6);
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + tail + ball +
     leg('lgL', 41, 39, -1) + leg('lgR', 59, 61, 1) +
-    '<g><g class="pump pL">' + arm + '</g></g></svg>';
+    '<g><g class="pump pL">' + arm + '</g></g>' +
+    /* the front arm grows out from under the body; only its clawed paw is in the front layer */
+    '<g><g class="pump pR">' + sbSpike(76, 52, -80, 7, 2.8) + sbSpike(85, 54, -70, 6, 2.6) +
+    '<path d="M67 51Q78 52 87 54.5L87 62Q78 63.5 67 63Z" fill="' + Z.B + '" stroke="' + Z.BD + '" stroke-width="1.8" stroke-linejoin="round"/>' +
+    sbScales([[74, 57], [81, 58]]) + sbSpike(76, 62, 80, 5, 2.4) + '</g></g></svg>';
 }
 function sbFront(c){
   var Z = SB;
-  /* front arm: reaching out to the right; the claws are his weapon, so the hand sits in the weapon group */
-  var arm = sbSpike(76, 52, -80, 7, 2.8) + sbSpike(85, 54, -70, 6, 2.6) +
-    '<path d="M67 51Q78 52 87 54.5L87 62Q78 63.5 67 63Z" fill="' + Z.B + '" stroke="' + Z.BD + '" stroke-width="1.8" stroke-linejoin="round"/>' +
-    sbScales([[74, 57], [81, 58]]) + sbSpike(76, 62, 80, 5, 2.4);
+  /* the front paw: the claws are his weapon, so the paw sits in the weapon group */
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR">' + arm + '<g class="wpn">' + sbPaw(90, 58, 0, 6.6) + '</g></g></g></svg>';
+    '<g><g class="pump pR"><g class="wpn">' + sbPaw(90, 58, 0, 6.6) + '</g></g></g></svg>';
 }

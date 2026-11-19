@@ -64,12 +64,13 @@ function lsBack(c){
   /* back arm: a long branch out to the left with a moss patch, ending in a log hammer */
   var arm = lsP('M38 25L19 52L25 57L39 34Z', Z.W, Z.WD, 1.9) + lsGrain('M34 33L25 46M36 36L28 49') + lsMoss(31, 38, 6, 5) + lsHammer(14, 58, -1);
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + leg('lgL', 44, 34, -1) + leg('lgR', 56, 66, 1) +
-    '<g><g class="pump pL">' + arm + '</g></g></svg>';
+    '<g><g class="pump pL">' + arm + '</g></g>' +
+    /* the front branch arm grows out from under the body */
+    '<g><g class="pump pR">' + lsP('M62 25L81 52L75 57L61 34Z', Z.W, Z.WD, 1.9) + lsGrain('M66 33L75 46M64 36L72 49') + lsMoss(69, 38, 6, 5) + '</g></g></svg>';
 }
 function lsFront(c){
   var Z = LS;
-  /* front arm: the same long branch to the right; the log hammer is his weapon */
-  var arm = lsP('M62 25L81 52L75 57L61 34Z', Z.W, Z.WD, 1.9) + lsGrain('M66 33L75 46M64 36L72 49') + lsMoss(69, 38, 6, 5);
+  /* the front log hammer is his weapon (the branch arm holding it is in the back layer) */
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' +
-    '<g><g class="pump pR">' + arm + '<g class="wpn">' + lsHammer(85, 61, 1) + '</g></g></g></svg>';
+    '<g><g class="pump pR"><g class="wpn">' + lsHammer(85, 61, 1) + '</g></g></g></svg>';
 }
