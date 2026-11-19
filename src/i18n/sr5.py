@@ -291,3 +291,4 @@ SR.update({"Wave cleared! +1 win": "Talas pređen! +1 pobeda", "Reach the goal!"
 SR.update({"Spikeback": "Šiljoleđi"})
 SR.update({"Goblin Archer": "Goblin strelac"})
 SR.update({"Flame Knight": "Plameni vitez"})
+SR.update({"Log Smasher": "Klada razbijač"})
