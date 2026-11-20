@@ -4716,7 +4716,7 @@ var PAL_BODIES = {
   tk:     { label: 'Technician',      el: 'tech',   style: 'melee',  giant: false, art: tkArt,     back: tkBack,     front: tkFront },
   ar:     { label: 'Arcane Dragon',   el: 'magic',  style: 'ranged', giant: false, art: arArt,     back: arBack,     front: arFront },
   go:     { label: 'Rock Golem',      el: 'earth',  style: 'ranged', giant: false, art: goArt,     back: goBack,     front: goFront, beam: 'laser' },
-  ti:     { label: 'Tiki Shaman',     el: 'magic',  style: 'ranged', giant: false, art: tiArt,     back: tiBack,     front: tiFront },
+  ti:     { label: 'Tiki Shaman',     el: 'magic',  style: 'ranged', giant: false, art: tiArt,     back: tiBack,     front: tiFront, beam: 'ray' },
   gm:     { label: 'Gem Dragon',      el: 'air',    style: 'ranged', giant: false, art: gmArt,     back: gmBack,     front: gmFront, shot: 'rainbow' },
   lv:     { label: 'Lava Golem',      el: 'fire',   style: 'ranged', giant: true,  art: lvArt,     back: lvBack,     front: lvFront, beam: 'flame' },
   zs:     { label: 'Storm God',       el: 'air',    style: 'ranged', giant: false, art: zsArt,     back: zsBack,     front: zsFront, shot: 'bolt' },
@@ -4786,7 +4786,11 @@ var BEAM_MAX = 2, BEAM_TICK = 0.1, BEAM_A = 0.42, BEAM_L = 160;
 function palBeam(c){ var B = c && c.body && PAL_BODIES[c.body]; return !!(B && B.beam && c.style === 'ranged'); }
 /* Rock Golem's twin lasers (beam: 'laser'): two green beams, one from each hand crystal, that meet at the end of his reach */
 var LASER_W = 23;
-function beamKind(p){ var B = p && p.c && p.c.body && PAL_BODIES[p.c.body]; return B && (B.beam === 'laser' || B.beam === 'flame') ? B.beam : 'cone'; }
+function beamKind(p){ var B = p && p.c && p.c.body && PAL_BODIES[p.c.body]; return B && (B.beam === 'laser' || B.beam === 'flame' || B.beam === 'ray') ? B.beam : 'cone'; }
+/* how long a beam can be held: Tiki Shaman's ray ('ray') never runs out, it lasts until you let go; the others BEAM_MAX */
+function beamMax(p){ return beamKind(p) === 'ray' ? 1e9 : BEAM_MAX; }
+/* Tiki Shaman's ray: one magic beam from his staff toward the cursor, out to BEAM_L, that stops at the first monster it touches */
+function rayEnds(p, ang){ var gk = p.giant ? 1.3 : 1, ox = p.x + Math.cos(ang) * 16 * gk, oy = p.y - 26 * gk + Math.sin(ang) * 16 * gk; return { o: [ox, oy], m: [ox + Math.cos(ang) * BEAM_L, oy + Math.sin(ang) * BEAM_L] }; }
 /* Lava Golem's flamethrower (beam: 'flame'): a straight band of fire FLAME_W wide (half each side) out to BEAM_L, through everything */
 var FLAME_W = 46;
 function flameIn(p, ang, x, y, r){
@@ -4817,8 +4821,8 @@ function triIn(x, y, a, b, c){ function sd(p, q, r){ return (x - r[0]) * (q[1] -
 /* each laser stops at the first monster in its way (list: [x, middle y, radius, monster]); returns for both lasers the monster hit
    (or null) and how far along the laser it stops (0..1) */
 function laserTrace(p, ang, list){
-  var E = laserEnds(p, ang);
-  return [E.a, E.b].map(function(o){
+  var E = beamKind(p) === 'ray' ? (function(R){ return { a: R.o, m: R.m, one: true }; })(rayEnds(p, ang)) : laserEnds(p, ang);
+  return (E.one ? [E.a] : [E.a, E.b]).map(function(o){
     var vx = E.m[0] - o[0], vy = E.m[1] - o[1], L2 = vx * vx + vy * vy || 1, best = null, bt = 1;
     list.forEach(function(q){
       for (var k = -1; k <= 1; k++){
@@ -4832,6 +4836,7 @@ function laserTrace(p, ang, list){
 function beamIn(p, ang, x, y, r){ if (beamKind(p) === 'flame') return flameIn(p, ang, x, y, r); if (beamKind(p) === 'laser'){ var E = laserEnds(p, ang); for (var k = -1; k <= 1; k++){ var yy = y + k * r * 0.8; if (triIn(x, yy, E.a, E.b, E.m) || Math.min(segDist(x, yy, E.a, E.m), segDist(x, yy, E.b, E.m)) < r * 0.6 + 9) return true; } return false; }      /* checked over the monster's whole height, top to feet */      /* the lasers burn everything between them too, so nothing slips through the V */
   var gk = p.giant ? 1.3 : 1, ox = p.x, oy = p.y - 22 * gk, dx = x - ox, dy = y - oy, d = Math.hypot(dx, dy); if (d - r > BEAM_L) return false; if (d < r + 14) return true; var da = Math.abs(Math.atan2(dy, dx) - ang); if (da > Math.PI) da = 2 * Math.PI - da; return da < BEAM_A + Math.atan2(r * 0.7, d); }
 function beamGuide(g, x, y, a, p){
+  if (p && beamKind(p) === 'ray'){ var R = rayEnds(p, a); g.save(); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.moveTo(R.o[0], R.o[1]); g.lineTo(R.m[0], R.m[1]); g.stroke(); g.restore(); return; }
   if (p && beamKind(p) === 'flame'){ var gk = p.giant ? 1.3 : 1, H = FLAME_W * gk / 2, L = BEAM_L * gk; g.save(); g.translate(x, y); g.rotate(a); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.strokeRect(18 * gk, -H, L, H * 2); g.restore(); return; }
   if (p && beamKind(p) === 'laser'){ var E = laserEnds(p, a); g.save(); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(E.a[0], E.a[1]); g.lineTo(E.m[0], E.m[1]); g.lineTo(E.b[0], E.b[1]); g.stroke(); g.restore(); return; }
   g.save(); g.translate(x, y); g.rotate(a); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(14, 0); g.lineTo(BEAM_L, -Math.tan(BEAM_A) * BEAM_L); g.quadraticCurveTo(BEAM_L * 1.06, 0, BEAM_L, Math.tan(BEAM_A) * BEAM_L); g.closePath(); g.stroke(); g.restore(); }
@@ -4851,7 +4856,19 @@ function drawLasers(g, p, t, list){
   });
   g.restore();
 }
+function drawRay(g, p, t, list){
+  var L = laserTrace(p, p.beamA, list || [])[0], o = L.o, ex = o[0] + (L.m[0] - o[0]) * L.t, ey = o[1] + (L.m[1] - o[1]) * L.t, w = 1 + Math.sin(t * 45) * 0.18, i;
+  g.save(); g.lineCap = 'round';
+  g.strokeStyle = 'rgba(200,110,255,.3)'; g.lineWidth = 16 * w; g.beginPath(); g.moveTo(o[0], o[1]); g.lineTo(ex, ey); g.stroke();
+  g.strokeStyle = '#c46aff'; g.lineWidth = 7 * w; g.stroke();
+  g.strokeStyle = '#ffe85a'; g.lineWidth = 2.6; g.stroke();
+  var dx = ex - o[0], dy = ey - o[1], len = Math.hypot(dx, dy) || 1;
+  for (i = 0; i < 4; i++){ var u = (t * 3 + i * 0.25) % 1; g.fillStyle = '#fff6b0'; g.beginPath(); g.arc(o[0] + dx * u + (-dy / len) * Math.sin(t * 20 + i) * 5, o[1] + dy * u + (dx / len) * Math.sin(t * 20 + i) * 5, 2.4, 0, 7); g.fill(); }
+  [[o, 9], [[ex, ey], L.f ? 15 : 10]].forEach(function(q){ var gl = g.createRadialGradient(q[0][0], q[0][1], 1, q[0][0], q[0][1], q[1] * w); gl.addColorStop(0, '#ffffff'); gl.addColorStop(0.45, 'rgba(210,140,255,.85)'); gl.addColorStop(1, 'rgba(180,90,255,0)'); g.fillStyle = gl; g.beginPath(); g.arc(q[0][0], q[0][1], q[1] * w, 0, 7); g.fill(); });
+  g.restore();
+}
 function drawBeam(g, p, t, list){
+  if (beamKind(p) === 'ray') return drawRay(g, p, t, list);
   if (beamKind(p) === 'laser') return drawLasers(g, p, t, list);
   if (beamKind(p) === 'flame') return drawFlame(g, p, t);
   var gk = p.giant ? 1.3 : 1, ox = p.x + Math.cos(p.beamA) * 16 * gk, oy = p.y - 22 * gk + Math.sin(p.beamA) * 16 * gk, a = p.beamA, L = BEAM_L, i, j;
@@ -11037,7 +11054,7 @@ function dfGuestUpdate(dt){
     if (p.stunN > 0){ p.mv = null; p.buf = 0; p.bob += dt * 30; }
     else if (!(p.ko > 0)){
       if (p.buf > 0){ p.buf -= dt; if (p.cool <= 0) dfAimAttack(p); }
-      if (p.beam && df.beamHold){ df.beamHold.t += dt; if (df.beamHold.t >= BEAM_MAX) df.beamHold = null; else if (p.cool <= 0) dfAimAttack(p); }
+      if (p.beam && df.beamHold){ df.beamHold.t += dt; if (df.beamHold.t >= beamMax(p)) df.beamHold = null; else if (p.cool <= 0) dfAimAttack(p); }
       var K = df.keys || {}, kx = (K.r ? 1 : 0) - (K.l ? 1 : 0), ky = (K.d ? 1 : 0) - (K.u ? 1 : 0);
       if (kx || ky){ var kl = Math.hypot(kx, ky); p.mv = { x: p.x + kx / kl * 60, y: p.y + ky / kl * 60, key: true }; }
       else if (p.mv && p.mv.key) p.mv = null;
@@ -11589,7 +11606,7 @@ function dfAttack(p, f){
   if (p.beam){
     var gb = p.giant ? 1.3 : 1, ab = Math.atan2(f.y - f.T.r * 0.5 - (p.y - 22 * gb), f.x - p.x);
     p.zapT = Math.max(p.zapT || 0, 0.15); p.beamT = 0.15; p.beamA = ab;
-    if (beamKind(p) === 'laser'){ laserTrace(p, ab, dfLaserList()).forEach(function(L){ if (L.f && !L.f.dead){ var rl = dfRoll(p); dfHurt(L.f, rl.d * 0.5, p, rl.c); } }); return; }
+    if (beamKind(p) === 'laser' || beamKind(p) === 'ray'){ var lm2 = beamKind(p) === 'ray' ? 1 : 0.5; laserTrace(p, ab, dfLaserList()).forEach(function(L){ if (L.f && !L.f.dead){ var rl = dfRoll(p); dfHurt(L.f, rl.d * lm2, p, rl.c); } }); return; }
     df.foes.forEach(function(fq){ if (!fq.dead && beamIn(p, ab, fq.x, fq.y - fq.T.r * 0.5, fq.T.r)){ var rb = dfRoll(p); dfHurt(fq, rb.d, p, rb.c); } });
     return;
   }
@@ -11632,7 +11649,7 @@ function dfAimAttack(p){
   }
   if (p.beam){
     p.zapT = Math.max(p.zapT || 0, 0.15); p.beamT = 0.15; p.beamA = ang;
-    if (beamKind(p) === 'laser'){ laserTrace(p, ang, dfLaserList()).forEach(function(L){ if (L.f && !L.f.dead){ var rl = dfRoll(p); dfHurt(L.f, rl.d * 0.5, p, rl.c); } }); return; }
+    if (beamKind(p) === 'laser' || beamKind(p) === 'ray'){ var lm = beamKind(p) === 'ray' ? 1 : 0.5; laserTrace(p, ang, dfLaserList()).forEach(function(L){ if (L.f && !L.f.dead){ var rl = dfRoll(p); dfHurt(L.f, rl.d * lm, p, rl.c); } }); return; }
     df.foes.forEach(function(fq){ if (!fq.dead && beamIn(p, ang, fq.x, fq.y - fq.T.r * 0.5, fq.T.r)){ var rb = dfRoll(p); dfHurt(fq, rb.d, p, rb.c); } });
     return;
   }
@@ -11815,7 +11832,7 @@ function dfUpdate(dt){
     if (p.foe && p.foe.dead) p.foe = null;
     if (p === df.hero){
       if (p.buf > 0){ p.buf -= dt; if (p.cool <= 0) dfAimAttack(p); }
-      if (p.beam && df.beamHold){ df.beamHold.t += dt; if (df.beamHold.t >= BEAM_MAX || p.stunN > 0) df.beamHold = null; else if (p.cool <= 0) dfAimAttack(p); }
+      if (p.beam && df.beamHold){ df.beamHold.t += dt; if (df.beamHold.t >= beamMax(p) || p.stunN > 0) df.beamHold = null; else if (p.cool <= 0) dfAimAttack(p); }
       var K = df.keys || {}, kx = (K.r ? 1 : 0) - (K.l ? 1 : 0), ky = (K.d ? 1 : 0) - (K.u ? 1 : 0);
       if (kx || ky){ p.mv = null; p.foe = null; var kl = Math.hypot(kx, ky); p.mv = { x: p.x + kx / kl * 60, y: p.y + ky / kl * 60, key: true }; }
       else if (p.mv && p.mv.key) p.mv = null;
@@ -14750,7 +14767,7 @@ function quTryAttack(){
 function quStrike(p, ang){
   var gk = p.giant ? 1.3 : 1, bx = p.x, by = p.y - 22 * gk, ca = Math.cos(ang), sa = Math.sin(ang);
   if (Math.abs(ca) > 0.15) p.face = ca > 0 ? 1 : -1;
-  if (p.beam && beamKind(p) === 'laser'){ p.zap = Math.max(p.zap || 0, 0.15); p.beamT = 0.15; p.beamA = ang; laserTrace(p, ang, quLaserList()).forEach(function(L){ if (L.f && qu.L.foes.indexOf(L.f) >= 0) quHitFoe(L.f, p, 0.5); }); return; }
+  if (p.beam && (beamKind(p) === 'laser' || beamKind(p) === 'ray')){ p.zap = Math.max(p.zap || 0, 0.15); p.beamT = 0.15; p.beamA = ang; laserTrace(p, ang, quLaserList()).forEach(function(L){ if (L.f && qu.L.foes.indexOf(L.f) >= 0) quHitFoe(L.f, p, beamKind(p) === 'ray' ? 1 : 0.5); }); return; }
   if (p.beam){ p.zap = Math.max(p.zap || 0, 0.15); p.beamT = 0.15; p.beamA = ang; qu.L.foes.slice().forEach(function(f){ var r = QU_FOES[f.k].r; if (beamIn(p, ang, f.x, f.y - r * 0.5, r)) quHitFoe(f, p); }); return; }
   if (p.ranged && p.twin){ var tw = palTwinShot(p, ca, sa); bx += tw.x; by += tw.y; p.zap = 0.1; }
   if (p.ranged && lobLook(p.c)){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: lobLook(p.c) }, bx, by, ca, sa, lobLook(p.c))); return; }
@@ -14977,7 +14994,7 @@ function quUpdate(dt){
     }
     if (K.atk) quTryAttack();
     if (me.buf > 0){ me.buf -= dt; if (me.cool <= 0) quTryAttack(); }
-    if (me.beam && qu.beamHold){ qu.beamHold.t += dt; if (qu.beamHold.t >= BEAM_MAX) qu.beamHold = null; else if (me.cool <= 0) quTryAttack(); }
+    if (me.beam && qu.beamHold){ qu.beamHold.t += dt; if (qu.beamHold.t >= beamMax(me)) qu.beamHold = null; else if (me.cool <= 0) quTryAttack(); }
   }
   qu.P.forEach(function(p){ p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zap = Math.max(0, p.zap - dt); p.beamT = Math.max(0, (p.beamT || 0) - dt); p.walkT = Math.max(0, p.walkT - dt); p.hurt = Math.max(0, p.hurt - dt); });
   if (!C || C.role === 'host'){ if (qu.phase === 'play' || qu.phase === 'ending') quHostTick(dt); }
