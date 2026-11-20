@@ -4738,7 +4738,7 @@ var PAL_BODIES = {
   db:     { label: 'Drill Bot',       el: 'tech',   style: 'melee',  giant: false, art: dbArt,     back: dbBack,     front: dbFront },
   yt:     { label: 'Four-Arm Yeti',   el: 'water',  style: 'melee',  giant: false, art: ytArt,     back: ytBack,     front: ytFront },
   bi:     { label: 'Blast Imp',       el: 'water',  style: 'ranged', giant: false, art: biArt,     back: biBack,     front: biFront },
-  rg:     { label: 'Reef Grunt',      el: 'water',  style: 'ranged', giant: false, art: rgArt,     back: rgBack,     front: rgFront, shot: 'harpoon' },
+  rg:     { label: 'Reef Grunt',      el: 'water',  style: 'ranged', giant: false, art: rgArt,     back: rgBack,     front: rgFront, shot: 'harpoon', snipe: true },
   hh:     { label: 'Hothorn',         el: 'tech',   style: 'ranged', giant: false, art: hhArt,     back: hhBack,     front: hhFront, twin: true },
   fz:     { label: 'Fizzgrin',        el: 'magic',  style: 'ranged', giant: false, art: fzArt,     back: fzBack,     front: fzFront, shot: 'potion' },
   hk:     { label: 'Hive Knight',     el: 'air',    style: 'melee',  giant: true,  art: hkArt,     back: hkBack,     front: hkFront },
@@ -4874,6 +4874,10 @@ function slamHits(p, foes, rOf, hit){
   foes.slice().forEach(function(f){ if (f.dead) return; var r = rOf(f); if (Math.hypot(f.x - p.x, (f.y - p.y) * 1.3) - r * 0.6 <= R){ hit(f); n++; } });
   return n;
 }
+/* long-range shooters (Reef Grunt's harpoon gun): reach SNIPE_RANGE instead of 140, fire every SNIPE_CD s instead of 0.5 and hit
+   SNIPE_DMG times as hard (a little under the same damage per second, paid for by the reach); the shot flies faster */
+var SNIPE_RANGE = 270, SNIPE_CD = 1.2, SNIPE_DMG = 2.3;
+function palSnipe(c){ var B = c && c.body && PAL_BODIES[c.body]; return !!(B && B.snipe && c.style === 'ranged'); }
 function palBody(c){ if (c && c.body && !PAL_BODIES[c.body] && LOOK_RE.test(c.body) && typeof lookNeed === 'function') lookNeed(c.body); return c && c.body && PAL_BODIES[c.body] ? PAL_BODIES[c.body] : null; }
 /* how a pal's shots look: 'zap' = purple lightning (Grave Dragon), 'rainbow' = a little rainbow (Gem Dragon), 'bolt' = yellow lightning (Storm God), 'skull' = glowing skulls (Skull Witch), 'firearrow' = flaming arrows (Goblin Archer), 'harpoon' = harpoons on a rope (Reef Grunt), otherwise the element's own bullet */
 function shotLook(c){ var B = palBody(c); return B && B.shot ? B.shot : ''; }
@@ -10003,8 +10007,8 @@ function dfMakeTeam(){
     var ranged = c.style === 'ranged', lv = Math.max(1, c.level || 1), hh = hatOf(c), hg = hh && hh.kind === 'game' && hh.g === df.mode ? df.mode : '';
     if (dfAr()) homes[i] = [500, 345];
     return { c: c, el: el, x: homes[i][0], y: homes[i][1], hx: homes[i][0], hy: homes[i][1], ranged: ranged, face: -1,
-      giant: !!c.giant, twin: palTwin(c), slam: palSlam(c), beam: palBeam(c), range: ranged ? 140 : 34, dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (hg === 'arena' ? 1.15 : 1) * (palTwin(c) ? 0.5 : 1) * (palBeam(c) ? BEAM_TICK / 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
-      spd: palSpeedMult(c) * (hg === 'defense' ? 1.1 : 1), hp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), maxhp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), ko: 0, cd: palBeam(c) ? BEAM_TICK : palTwin(c) ? 0.25 : 0.5, cool: 0.3 * i, mv: null, foe: null, swing: 0, bob: 0 };
+      giant: !!c.giant, twin: palTwin(c), slam: palSlam(c), beam: palBeam(c), range: palSnipe(c) ? SNIPE_RANGE : ranged ? 140 : 34, dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (hg === 'arena' ? 1.15 : 1) * (palTwin(c) ? 0.5 : 1) * (palBeam(c) ? BEAM_TICK / 0.5 : 1) * (palSnipe(c) ? SNIPE_DMG : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
+      spd: palSpeedMult(c) * (hg === 'defense' ? 1.1 : 1), hp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), maxhp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), ko: 0, cd: palSnipe(c) ? SNIPE_CD : palBeam(c) ? BEAM_TICK : palTwin(c) ? 0.25 : 0.5, cool: 0.3 * i, mv: null, foe: null, swing: 0, bob: 0 };
   });
   df.hero = df.team[0];
   df.mates = df.team.slice(1);
@@ -11599,7 +11603,7 @@ function dfAimAttack(p){
     if (p.ranged && p.twin){ var tg = palTwinShot(p, ca, sa); bx += tg.x; by += tg.y; }
     if (p.beam){ p.zapT = Math.max(p.zapT || 0, 0.15); p.beamT = 0.15; p.beamA = ang; return; }
     if (p.ranged && lobLook(p.c)){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push(shroomInit({ life: 3, el: p.c.element, body: p.c.body || '', hit: [] }, bx, by, ca, sa, lobLook(p.c))); return; }
-    if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else if (p.slam){ p.swing = 0.3; dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R }); } else { var swg = 0; if (p.twin){ palTwinShot(p, 1, 0); swg = p.tw ? 0.3 : -0.3; } p.swing = p.twin ? 0.14 : 0.22; dfFx('slash', bx, by, { life: p.swing, max: p.swing, col: EL[p.c.element].c, ang: ang + swg, R: p.range + 14 }); }
+    if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: palSnipe(p.c) ? 950 : 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else if (p.slam){ p.swing = 0.3; dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R }); } else { var swg = 0; if (p.twin){ palTwinShot(p, 1, 0); swg = p.tw ? 0.3 : -0.3; } p.swing = p.twin ? 0.14 : 0.22; dfFx('slash', bx, by, { life: p.swing, max: p.swing, col: EL[p.c.element].c, ang: ang + swg, R: p.range + 14 }); }
     return;
   }
   if (p.beam){
@@ -11613,7 +11617,7 @@ function dfAimAttack(p){
     if (p.twin){ var tw2 = palTwinShot(p, ca, sa); bx += tw2.x; by += tw2.y; }
     var rr = dfRoll(p);
     if (lobLook(p.c)){ df.shots.push(shroomInit({ p: p, ang: ang, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, bx, by, ca, sa, lobLook(p.c))); return; }
-    df.shots.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, p: p, v: 600, ang: ang, life: 2, dmg: rr.d, crit: rr.c, aimed: true });
+    df.shots.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, p: p, v: p.c && palSnipe(p.c) ? 950 : 600, ang: ang, life: 2, dmg: rr.d, crit: rr.c, aimed: true });
     return;
   }
   if (p.slam){
@@ -14509,8 +14513,8 @@ function quMakePal(c, slot, name, me){
     '<div class="dfp-hp"><i></i></div><div class="qcarry" hidden></div>';
   $('#qu-pals').appendChild(el);
   var ranged = c.style === 'ranged', mh = Math.round(palMaxHp(c) * (quHatOn(c) ? 1.25 : 1));
-  return { c: c, el: el, slot: slot, name: name, me: !!me, mate: !me, x: 0, y: 0, tx: 0, ty: 0, face: 1, ranged: ranged, twin: palTwin(c), slam: palSlam(c), beam: palBeam(c), range: ranged ? 140 : 34, cd: palBeam(c) ? BEAM_TICK : palTwin(c) ? 0.25 : 0.5, buf: 0, giant: !!c.giant,
-    dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (palTwin(c) ? 0.5 : 1) * (palBeam(c) ? BEAM_TICK / 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
+  return { c: c, el: el, slot: slot, name: name, me: !!me, mate: !me, x: 0, y: 0, tx: 0, ty: 0, face: 1, ranged: ranged, twin: palTwin(c), slam: palSlam(c), beam: palBeam(c), range: palSnipe(c) ? SNIPE_RANGE : ranged ? 140 : 34, cd: palSnipe(c) ? SNIPE_CD : palBeam(c) ? BEAM_TICK : palTwin(c) ? 0.25 : 0.5, buf: 0, giant: !!c.giant,
+    dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (palTwin(c) ? 0.5 : 1) * (palBeam(c) ? BEAM_TICK / 0.5 : 1) * (palSnipe(c) ? SNIPE_DMG : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
     spd: palSpeedMult(c), hp: mh, maxhp: mh, ko: 0, cool: 0, swing: 0, zap: 0, walkT: 0, hurt: 0, lastHit: -99, carry: '', atkSeen: 0, lastIn: Date.now(), gone: false, mv: null, carryK: '' };
 }
 function quPlayers(){ return qu.P.filter(function(p){ return !p.gone; }); }
@@ -14724,7 +14728,7 @@ function quStrike(p, ang){
   if (p.beam){ p.zap = Math.max(p.zap || 0, 0.15); p.beamT = 0.15; p.beamA = ang; qu.L.foes.slice().forEach(function(f){ var r = QU_FOES[f.k].r; if (beamIn(p, ang, f.x, f.y - r * 0.5, r)) quHitFoe(f, p); }); return; }
   if (p.ranged && p.twin){ var tw = palTwinShot(p, ca, sa); bx += tw.x; by += tw.y; p.zap = 0.1; }
   if (p.ranged && lobLook(p.c)){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: lobLook(p.c) }, bx, by, ca, sa, lobLook(p.c))); return; }
-  if (p.ranged){ qu.bolts.push({ x: bx, y: by, ox: bx, oy: by, vx: ca * 600, vy: sa * 600, max: p.range + 10, life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
+  if (p.ranged){ var qv = palSnipe(p.c) ? 950 : 600; qu.bolts.push({ x: bx, y: by, ox: bx, oy: by, vx: ca * qv, vy: sa * qv, max: p.range + 10, life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
   if (p.slam){
     p.swing = 0.3;
     quFx({ k: 'quake', x: p.x, y: p.y + 4, R: p.range + SLAM_R, c: EL[p.c.element].c, t: 0.45, T: 0.45 });
