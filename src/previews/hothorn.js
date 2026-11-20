@@ -64,7 +64,7 @@ function hhBack(c){
       hhP('M' + (fx - 8) + ' 103Q' + (fx - 7) + ' 95 ' + fx + ' 94Q' + (fx + 7) + ' 95 ' + (fx + 9) + ' 103L' + (fx + 5) + ' 101.6L' + (fx + 2) + ' 104L' + (fx - 1) + ' 101.6L' + (fx - 4) + ' 104Z', Z.R, Z.RD, 1.8) + '</g>';
   }
   /* the back arm holds the second blaster, pointing out behind him */
-  var back = hhLine('M34 56L20 60', 5, Z.R, Z.RD) + hhGun(15, 61, -1) + hhFist(15, 61, -1);
+  var back = hhLine('M34 56L20 60', 5, Z.R, Z.RD) + '<g class="wpn2">' + hhGun(15, 61, -1) + hhFist(15, 61, -1) + '</g>';      /* the back blaster fires every other shot */
   var front = hhLine('M66 56L80 61', 5, Z.R, Z.RD);
   return '<svg class="limbs" viewBox="0 0 100 100" aria-hidden="true" style="overflow:visible">' + leg('lgL', 44, 41, 39) + leg('lgR', 56, 59, 61) +
     '<g><g class="pump pL">' + back + '</g></g><g><g class="pump pR">' + front + '</g></g></svg>';
