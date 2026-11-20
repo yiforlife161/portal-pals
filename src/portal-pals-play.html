@@ -4735,7 +4735,7 @@ var PAL_BODIES = {
   bi:     { label: 'Blast Imp',       el: 'water',  style: 'ranged', giant: false, art: biArt,     back: biBack,     front: biFront },
   rg:     { label: 'Reef Grunt',      el: 'water',  style: 'ranged', giant: false, art: rgArt,     back: rgBack,     front: rgFront, shot: 'harpoon' },
   hh:     { label: 'Hothorn',         el: 'tech',   style: 'ranged', giant: false, art: hhArt,     back: hhBack,     front: hhFront, twin: true },
-  fz:     { label: 'Fizzgrin',        el: 'magic',  style: 'ranged', giant: false, art: fzArt,     back: fzBack,     front: fzFront },
+  fz:     { label: 'Fizzgrin',        el: 'magic',  style: 'ranged', giant: false, art: fzArt,     back: fzBack,     front: fzFront, shot: 'potion' },
   hk:     { label: 'Hive Knight',     el: 'air',    style: 'melee',  giant: true,  art: hkArt,     back: hkBack,     front: hkFront },
   be:     { label: "Bat's Eye",       el: 'undead', style: 'melee',  giant: true,  art: beArt,     back: beBack,     front: beFront }
 };
@@ -4781,6 +4781,7 @@ function drawShotLook(g, look, x, y, r, ang, t){
   if (look === 'harpoon'){ drawHarpoonShot(g, x, y, r, ang, t); return true; }
   if (look === 'shroom'){ drawShroomShot(g, x, y, r, t); return true; }
   if (look === 'magma'){ drawMagmaShot(g, x, y, r, t); return true; }
+  if (look === 'potion'){ drawPotionShot(g, x, y, r, t); return true; }
   return false;
 }
 /* Mushroom Guy's bouncing mushroom: it hops along the ground SHROOM_HOPS times (each hop shorter and lower) and blows up when it
@@ -4789,7 +4790,9 @@ function drawShotLook(g, look, x, y, r, ang, t){
 /* Magma Brute's lava rock uses the same machinery with one long, high arc to full range ('magma' in LOB): it bursts on the first
    monster it touches or where it lands. lobLook(c) = 'shroom' / 'magma' / '' */
 var SHROOM_HOPS = 3, SHROOM_R = 58, SHROOM_HOP = [62, 52, 44], SHROOM_H = [42, 30, 20], SHROOM_V = 300;
-var LOB = { shroom: { hops: 3, L: SHROOM_HOP, H: SHROOM_H, v: SHROOM_V, col: '#e8302a', ring: '#ffd0c8' }, magma: { hops: 1, L: [150], H: [62], v: 320, col: '#ff6a1a', ring: '#ffd23a' } };
+var LOB = { shroom: { hops: 3, L: SHROOM_HOP, H: SHROOM_H, v: SHROOM_V, col: '#e8302a', ring: '#ffd0c8' }, magma: { hops: 1, L: [150], H: [62], v: 320, col: '#ff6a1a', ring: '#ffd23a' },
+  /* Fizzgrin's potion: the same arc, but a bigger splash (r) that does less to each monster (dm) */
+  potion: { hops: 1, L: [150], H: [58], v: 310, col: '#a03ae8', ring: '#e8c4ff', r: 92, dm: 0.6 } };
 function lobLook(c){ var k = shotLook(c); return LOB[k] ? k : ''; }
 function shroomInit(s, x, y, dx, dy, kind){ s.shroom = true; s.kind = LOB[kind] ? kind : 'shroom'; s.gx = x; s.gy = y + 18; s.dx = dx; s.dy = dy; s.hop = 0; s.ht = 0; s.z = 18; s.v = LOB[s.kind].v; s.x = x; s.y = y; return s; }
 function lobDone(s){ return s.hop >= LOB[s.kind || 'shroom'].hops; }
@@ -4801,6 +4804,21 @@ function shroomStep(s, dt){
   s.x = s.gx; s.y = s.gy - s.z; s.spin = (s.spin || 0) + dt * 9 * (s.dx >= 0 ? 1 : -1);
   if (u >= 1){ s.hop++; s.ht = 0; return true; }
   return false;
+}
+function drawPotionShot(g, x, y, r, t, z){
+  var k = r / 11;
+  if (z !== undefined){ g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(x, y + z, 10 * k * (1 - Math.min(0.5, z / 120)), 4 * k, 0, 0, 7); g.fill(); }
+  var gl = g.createRadialGradient(x, y, 2, x, y, 17 * k); gl.addColorStop(0, 'rgba(210,140,255,.7)'); gl.addColorStop(1, 'rgba(160,60,232,0)');
+  g.fillStyle = gl; g.beginPath(); g.arc(x, y, 17 * k, 0, 7); g.fill();
+  g.save(); g.translate(x, y); g.rotate(t * 7); g.scale(k, k); g.lineJoin = 'round';
+  g.strokeStyle = '#2a2e38'; g.lineWidth = 1.8;
+  g.fillStyle = '#d8ecff'; g.beginPath(); g.arc(0, 2, 8, 0, 7); g.fill();
+  g.fillStyle = '#a03ae8'; g.beginPath(); g.moveTo(-7.6, 3); g.quadraticCurveTo(0, 0, 7.6, 3); g.arc(0, 2, 8, 0.12, Math.PI - 0.12); g.closePath(); g.fill();
+  g.beginPath(); g.arc(0, 2, 8, 0, 7); g.stroke();
+  g.fillStyle = '#d8ecff'; g.fillRect(-2.8, -9, 5.6, 4); g.strokeRect(-2.8, -9, 5.6, 4);
+  g.fillStyle = '#8a5a30'; g.fillRect(-2.2, -12.4, 4.4, 3.6); g.strokeRect(-2.2, -12.4, 4.4, 3.6);
+  g.strokeStyle = '#fff'; g.lineWidth = 1.4; g.beginPath(); g.arc(-2.6, -0.6, 3.6, 3.4, 4.4); g.stroke();
+  g.restore();
 }
 function drawMagmaShot(g, x, y, r, t, z){
   var k = r / 11;
@@ -10689,7 +10707,7 @@ function netStep(o, dt){
   o.x += (tx - o.x) * k; o.y += (ty - o.y) * k;
   return true;
 }
-var coopFxKeep = { pop: 1, boom: 1, ring: 1, slash: 1, puff: 1, gem: 1 };
+var coopFxKeep = { pop: 1, boom: 1, ring: 1, slash: 1, puff: 1, gem: 1, splash: 1 };
 function coopNum(v){ return Math.round(v * 10) / 10; }
 var coopIds = 0;
 /* guest smoothing: snapshots are kept with the host's clock and drawn a short moment behind,
@@ -10733,7 +10751,7 @@ function coopInterp(dt){
     if (sh[7] && sh[7] === C.slot) return;      /* my own shots are already drawn here the moment I fire */
     var nx = s1 && find(s1.shots, sh[4], 4), x, y;
     if (nx){ x = sh[0] + (nx[0] - sh[0]) * a; y = sh[1] + (nx[1] - sh[1]) * a; } else { x = sh[0] + (sh[5] || 0) * tt; y = sh[1] + (sh[6] || 0) * tt; }
-    df.shots.push({ x: x, y: y, z: sh[8] === undefined || sh[8] === null ? undefined : sh[8], ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : sh[3] === 'shroom' ? { element: 'life', body: 'sh' } : sh[3] === 'magma' ? { element: 'fire', body: 'mr' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
+    df.shots.push({ x: x, y: y, z: sh[8] === undefined || sh[8] === null ? undefined : sh[8], ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : sh[3] === 'shroom' ? { element: 'life', body: 'sh' } : sh[3] === 'magma' ? { element: 'fire', body: 'mr' } : sh[3] === 'potion' ? { element: 'magic', body: 'fz' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
   });
   df.eshots = [];
   base.es.forEach(function(e){
@@ -11665,7 +11683,9 @@ function dfUpdate(dt){
       if (landed && !hitM && !lobDone(s)) dfFx('puff', s.gx, s.gy + 8, { life: 0.2, max: 0.2, col: 'rgba(255,255,255,.7)' });
       if (hitM || (landed && lobDone(s)) || s.life <= 0){
         var bx0 = hitM ? s.x : s.gx, by0 = hitM ? s.y + 10 : s.gy;
-        df.foes.forEach(function(fq){ if (!fq.dead && Math.hypot(fq.x - bx0, (fq.y - by0) * 1.3) < SHROOM_R + fq.T.r * 0.6) dfHurt(fq, s.dmg, s.p, s.crit); });
+        var LK = LOB[s.kind] || LOB.shroom, LR = LK.r || SHROOM_R;
+        df.foes.forEach(function(fq){ if (!fq.dead && Math.hypot(fq.x - bx0, (fq.y - by0) * 1.3) < LR + fq.T.r * 0.6) dfHurt(fq, s.dmg * (LK.dm || 1), s.p, s.crit); });
+        if (LK.r) dfFx('splash', bx0, by0, { life: 0.45, max: 0.45, col: LK.col, R: LR });
         dfFx('boom', bx0, by0 + 6, { life: 0.4, max: 0.4, col: LOB[s.kind].col });
         dfFx('ring', bx0, by0, { life: 0.35, max: 0.35, col: LOB[s.kind].ring });
         df.shots.splice(i, 1);
@@ -12551,6 +12571,9 @@ function dfDrawFx(g){
     } else if (f.k === 'ring'){
       g.globalAlpha = 1 - u; g.strokeStyle = f.col; g.lineWidth = 5;
       g.beginPath(); g.arc(f.x, f.y, 20 + u * 70, 0, 7); g.stroke();
+    } else if (f.k === 'splash'){      /* a potion splash: a flat puddle the size of the blast */
+      g.globalAlpha = 0.55 * (1 - u); g.fillStyle = f.col; g.beginPath(); g.ellipse(f.x, f.y, f.R * (0.6 + u * 0.4), f.R * (0.6 + u * 0.4) / 1.3, 0, 0, 7); g.fill();
+      g.globalAlpha = 1 - u; g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.ellipse(f.x, f.y, f.R, f.R / 1.3, 0, 0, 7); g.stroke();
     } else if (f.k === 'puff'){
       g.globalAlpha = 0.6 * (1 - u); g.fillStyle = f.col; g.beginPath(); g.arc(f.x, f.y - 10, 16 + u * 26, 0, 7); g.fill();
     } else if (f.k === 'gem'){
@@ -12666,7 +12689,7 @@ function dfDraw(){
   }
   for (i = 0; i < df.shots.length; i++){
     var s = df.shots[i];
-    if (s.z !== undefined && lobLook(s.p.c)){ (lobLook(s.p.c) === 'magma' ? drawMagmaShot : drawShroomShot)(g, s.x, s.y, 13, df.t, s.z); continue; }
+    if (s.z !== undefined && lobLook(s.p.c)){ ({ magma: drawMagmaShot, potion: drawPotionShot }[lobLook(s.p.c)] || drawShroomShot)(g, s.x, s.y, 13, df.t, s.z); continue; }
     if (!drawShotLook(g, shotLook(s.p.c), s.x, s.y, 13, s.ang, df.t)) cnDrawBullet(g, s.p.c.element, s.x, s.y, 13, s.ang, df.t, false);
   }
   dfDrawFx(g);
@@ -14554,8 +14577,8 @@ function quStrike(p, ang){
   });
   if (!hit) quFx({ k: 'puff', x: bx + ca * 30, y: by + sa * 30 + 10, t: 0.25, T: 0.25, c: 'rgba(255,255,255,.8)' });
 }
-function quHitFoe(f, p){
-  var crit = Math.random() < p.crit, dmg = Math.round(p.dmg * (crit ? 2 : 1));
+function quHitFoe(f, p, mul){
+  var crit = Math.random() < p.crit, dmg = Math.round(p.dmg * (crit ? 2 : 1) * (mul || 1));
   f.hp -= dmg; f.hit = 0.15;
   var a = Math.atan2(f.y - p.y, f.x - p.x), I = qu.L.isl[f.isl], nx = f.x + Math.cos(a) * 8, ny = f.y + Math.sin(a) * 6;
   if (!(f.wind > 0) && !(f.dash > 0) && quInIsl(I, nx, ny, 0.82)){ f.x = nx; f.y = ny; }
@@ -14721,7 +14744,9 @@ function quHostTick(dt){
       L.foes.forEach(function(f){ if (!hm && Math.hypot(f.x - Bs.x, f.y - 16 - Bs.y) < QU_FOES[f.k].r + 10) hm = f; });
       if (hm || (lnd && lobDone(Bs)) || Bs.life <= 0){
         var ex = hm ? Bs.x : Bs.gx, ey = hm ? Bs.y + 10 : Bs.gy;
-        L.foes.slice().forEach(function(f){ if (Math.hypot(f.x - ex, (f.y - ey) * 1.3) < SHROOM_R + QU_FOES[f.k].r * 0.6) quHitFoe(f, Bs.p); });
+        var QK = LOB[Bs.kind] || LOB.shroom, QR = QK.r || SHROOM_R;
+        L.foes.slice().forEach(function(f){ if (Math.hypot(f.x - ex, (f.y - ey) * 1.3) < QR + QU_FOES[f.k].r * 0.6) quHitFoe(f, Bs.p, QK.dm); });
+        if (QK.r) quFx({ k: 'ring', x: ex, y: ey, t: 0.45, T: 0.45, c: QK.ring });
         quFx({ k: 'ring', x: ex, y: ey, t: 0.35, T: 0.35, c: LOB[Bs.kind].col }); quFx({ k: 'boom', x: ex, y: ey + 14, t: 0.4, T: 0.4, small: true });
         qu.bolts.splice(i, 1);
       }
