@@ -4720,7 +4720,7 @@ var PAL_BODIES = {
   fd:     { label: 'Fire Pup',        el: 'fire',   style: 'ranged', giant: false, art: fdArt,     back: fdBack,     front: fdFront },
   ss:     { label: 'Shark Suit',      el: 'earth',  style: 'melee',  giant: false, art: ssArt,     back: ssBack,     front: ssFront },
   tr:     { label: 'Tree Giant',      el: 'life',   style: 'melee',  giant: true,  art: trArt,     back: trBack,     front: trFront, slam: true },
-  ik:     { label: 'Ice Knightess',   el: 'water',  style: 'ranged', giant: false, art: ikArt,     back: ikBack,     front: ikFront },
+  ik:     { label: 'Ice Knightess',   el: 'water',  style: 'ranged', giant: false, art: ikArt,     back: ikBack,     front: ikFront, shot: 'glaive' },
   mr:     { label: 'Magma Brute',     el: 'fire',   style: 'ranged', giant: false, art: mrArt,     back: mrBack,     front: mrFront, shot: 'magma' },
   wi:     { label: 'Skull Witch',     el: 'undead', style: 'ranged', giant: false, art: wiArt,     back: wiBack,     front: wiFront, shot: 'skull' },
   bn:     { label: 'Bone Rider',      el: 'undead', style: 'melee',  giant: false, art: bnArt,     back: bnBack,     front: bnFront },
@@ -4892,6 +4892,7 @@ function drawShotLook(g, look, x, y, r, ang, t){
   if (look === 'shroom'){ drawShroomShot(g, x, y, r, t); return true; }
   if (look === 'magma'){ drawMagmaShot(g, x, y, r, t); return true; }
   if (look === 'potion'){ drawPotionShot(g, x, y, r, t); return true; }
+  if (look === 'glaive'){ drawGlaiveShot(g, x, y, r, t); return true; }
   return false;
 }
 /* Mushroom Guy's bouncing mushroom: it hops along the ground SHROOM_HOPS times (each hop shorter and lower) and blows up when it
@@ -4914,6 +4915,24 @@ function shroomStep(s, dt){
   s.x = s.gx; s.y = s.gy - s.z; s.spin = (s.spin || 0) + dt * 9 * (s.dx >= 0 ? 1 : -1);
   if (u >= 1){ s.hop++; s.ht = 0; return true; }
   return false;
+}
+/* Ice Knightess throws her two-sided blade: it spins through the air, cuts every monster within GLAIVE_R of it (once each per throw)
+   and goes through all of them (no pierce limit); slower than a normal shot */
+var GLAIVE_R = 30, GLAIVE_V = 430, GLAIVE_RANGE = 30;
+function drawGlaiveShot(g, x, y, r, t){
+  var k = r / 11;
+  g.save(); g.translate(x, y);
+  g.strokeStyle = 'rgba(160,230,255,.35)'; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, GLAIVE_R + 6, 0, 7); g.stroke();
+  g.rotate(t * 22); g.scale(k, k); g.lineJoin = 'round';
+  for (var s = -1; s <= 1; s += 2){
+    g.fillStyle = 'rgba(180,240,255,.25)'; g.beginPath(); g.arc(0, 0, 24, s > 0 ? -0.2 : Math.PI - 0.2, s > 0 ? 1.2 : Math.PI + 1.2); g.lineTo(0, 0); g.fill();
+    g.fillStyle = '#dff6ff'; g.strokeStyle = '#1a3a6a'; g.lineWidth = 1.6;
+    g.beginPath(); g.moveTo(s * 5, -2.5); g.quadraticCurveTo(s * 15, -7, s * 24, 0); g.quadraticCurveTo(s * 15, 4, s * 5, 2.5); g.closePath(); g.fill(); g.stroke();
+    g.strokeStyle = '#ffffff'; g.lineWidth = 1; g.beginPath(); g.moveTo(s * 8, -1.8); g.quadraticCurveTo(s * 15, -4.4, s * 21, -0.6); g.stroke();
+  }
+  g.fillStyle = '#5a7ab8'; g.strokeStyle = '#1a3a6a'; g.lineWidth = 1.6; g.fillRect(-5, -2.6, 10, 5.2); g.strokeRect(-5, -2.6, 10, 5.2);
+  g.fillStyle = '#7ad8ff'; g.beginPath(); g.arc(0, 0, 2.2, 0, 7); g.fill();
+  g.restore();
 }
 function drawPotionShot(g, x, y, r, t, z){
   var k = r / 11;
@@ -10861,7 +10880,7 @@ function coopInterp(dt){
     if (sh[7] && sh[7] === C.slot) return;      /* my own shots are already drawn here the moment I fire */
     var nx = s1 && find(s1.shots, sh[4], 4), x, y;
     if (nx){ x = sh[0] + (nx[0] - sh[0]) * a; y = sh[1] + (nx[1] - sh[1]) * a; } else { x = sh[0] + (sh[5] || 0) * tt; y = sh[1] + (sh[6] || 0) * tt; }
-    df.shots.push({ x: x, y: y, z: sh[8] === undefined || sh[8] === null ? undefined : sh[8], ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : sh[3] === 'shroom' ? { element: 'life', body: 'sh' } : sh[3] === 'magma' ? { element: 'fire', body: 'mr' } : sh[3] === 'potion' ? { element: 'magic', body: 'fz' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
+    df.shots.push({ x: x, y: y, z: sh[8] === undefined || sh[8] === null ? undefined : sh[8], ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : sh[3] === 'shroom' ? { element: 'life', body: 'sh' } : sh[3] === 'magma' ? { element: 'fire', body: 'mr' } : sh[3] === 'potion' ? { element: 'magic', body: 'fz' } : sh[3] === 'glaive' ? { element: 'water', body: 'ik' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
   });
   df.eshots = [];
   base.es.forEach(function(e){
@@ -10879,7 +10898,7 @@ function coopInterp(dt){
     var st = g.v * dt; g.x += g.dx * st; g.y += g.dy * st; g.life -= dt;
     g.hit = g.hit || [];
     df.foes.forEach(function(f){ if (f.T && g.hit.indexOf(f.id) < 0 && Math.hypot(f.x - g.x, f.y - f.T.r * 0.5 - g.y) < f.T.r + 10) g.hit.push(f.id); });
-    if (g.hit.length >= SHOT_PIERCE || g.life <= 0 || Math.hypot(g.x - g.ox, g.y - g.oy) >= g.max){ C.ghost.splice(j, 1); continue; }
+    if ((g.hit.length >= SHOT_PIERCE && !g.glaive) || g.life <= 0 || Math.hypot(g.x - g.ox, g.y - g.oy) >= g.max){ C.ghost.splice(j, 1); continue; }
     df.shots.push({ x: g.x, y: g.y, ang: g.ang, p: { c: { element: g.el, body: g.body } } });
   }
   /* hits and puffs show up in step with the delayed picture */
@@ -11603,7 +11622,7 @@ function dfAimAttack(p){
     if (p.ranged && p.twin){ var tg = palTwinShot(p, ca, sa); bx += tg.x; by += tg.y; }
     if (p.beam){ p.zapT = Math.max(p.zapT || 0, 0.15); p.beamT = 0.15; p.beamA = ang; return; }
     if (p.ranged && lobLook(p.c)){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push(shroomInit({ life: 3, el: p.c.element, body: p.c.body || '', hit: [] }, bx, by, ca, sa, lobLook(p.c))); return; }
-    if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: palSnipe(p.c) ? 950 : 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else if (p.slam){ p.swing = 0.3; dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R }); } else { var swg = 0; if (p.twin){ palTwinShot(p, 1, 0); swg = p.tw ? 0.3 : -0.3; } p.swing = p.twin ? 0.14 : 0.22; dfFx('slash', bx, by, { life: p.swing, max: p.swing, col: EL[p.c.element].c, ang: ang + swg, R: p.range + 14 }); }
+    if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ glaive: shotLook(p.c) === 'glaive', x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + (shotLook(p.c) === 'glaive' ? GLAIVE_RANGE : 10), v: shotLook(p.c) === 'glaive' ? GLAIVE_V : palSnipe(p.c) ? 950 : 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else if (p.slam){ p.swing = 0.3; dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R }); } else { var swg = 0; if (p.twin){ palTwinShot(p, 1, 0); swg = p.tw ? 0.3 : -0.3; } p.swing = p.twin ? 0.14 : 0.22; dfFx('slash', bx, by, { life: p.swing, max: p.swing, col: EL[p.c.element].c, ang: ang + swg, R: p.range + 14 }); }
     return;
   }
   if (p.beam){
@@ -11617,6 +11636,7 @@ function dfAimAttack(p){
     if (p.twin){ var tw2 = palTwinShot(p, ca, sa); bx += tw2.x; by += tw2.y; }
     var rr = dfRoll(p);
     if (lobLook(p.c)){ df.shots.push(shroomInit({ p: p, ang: ang, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, bx, by, ca, sa, lobLook(p.c))); return; }
+    if (shotLook(p.c) === 'glaive'){ df.shots.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + GLAIVE_RANGE, p: p, v: GLAIVE_V, ang: ang, life: 2, dmg: rr.d, crit: rr.c, aimed: true, glaive: true }); return; }
     df.shots.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, p: p, v: p.c && palSnipe(p.c) ? 950 : 600, ang: ang, life: 2, dmg: rr.d, crit: rr.c, aimed: true });
     return;
   }
@@ -11838,6 +11858,7 @@ function dfUpdate(dt){
       s.hit = s.hit || [];
       for (var fi = 0; fi < df.foes.length; fi++){
         var fq = df.foes[fi]; if (fq.dead || s.hit.indexOf(fq) >= 0) continue;
+        if (s.glaive){ if (Math.hypot(fq.x - s.x, fq.y - fq.T.r * 0.5 - s.y) < fq.T.r + 10 + GLAIVE_R){ s.hit.push(fq); dfHurt(fq, s.dmg, s.p, s.crit); dfFx('slash', fq.x, fq.y - 6, { life: 0.2, max: 0.2, col: '#bff0ff' }); } continue; }      /* the spinning blade cuts everything it passes */
         if (Math.hypot(fq.x - s.x, fq.y - fq.T.r * 0.5 - s.y) < fq.T.r + 10){ hitF = fq; break; }
       }
       if (hitF){      /* the shot goes on through, up to SHOT_PIERCE monsters */
@@ -14728,7 +14749,8 @@ function quStrike(p, ang){
   if (p.beam){ p.zap = Math.max(p.zap || 0, 0.15); p.beamT = 0.15; p.beamA = ang; qu.L.foes.slice().forEach(function(f){ var r = QU_FOES[f.k].r; if (beamIn(p, ang, f.x, f.y - r * 0.5, r)) quHitFoe(f, p); }); return; }
   if (p.ranged && p.twin){ var tw = palTwinShot(p, ca, sa); bx += tw.x; by += tw.y; p.zap = 0.1; }
   if (p.ranged && lobLook(p.c)){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: lobLook(p.c) }, bx, by, ca, sa, lobLook(p.c))); return; }
-  if (p.ranged){ var qv = palSnipe(p.c) ? 950 : 600; qu.bolts.push({ x: bx, y: by, ox: bx, oy: by, vx: ca * qv, vy: sa * qv, max: p.range + 10, life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
+  var qgl = shotLook(p.c) === 'glaive';
+  if (p.ranged){ var qv = qgl ? GLAIVE_V : palSnipe(p.c) ? 950 : 600; qu.bolts.push({ glaive: qgl, x: bx, y: by, ox: bx, oy: by, vx: ca * qv, vy: sa * qv, max: p.range + (qgl ? GLAIVE_RANGE : 10), life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
   if (p.slam){
     p.swing = 0.3;
     quFx({ k: 'quake', x: p.x, y: p.y + 4, R: p.range + SLAM_R, c: EL[p.c.element].c, t: 0.45, T: 0.45 });
@@ -14924,6 +14946,7 @@ function quHostTick(dt){
     }
     var B = qu.bolts[i]; B.life -= dt; B.x += B.vx * dt; B.y += B.vy * dt; if (B.max && Math.hypot(B.x - B.ox, B.y - B.oy) >= B.max) B.life = 0;
     var hit = null; B.hit = B.hit || [];
+    if (B.glaive){ L.foes.slice().forEach(function(f){ if (B.hit.indexOf(f) < 0 && Math.hypot(f.x - B.x, f.y - 16 - B.y) < QU_FOES[f.k].r + 16 + GLAIVE_R){ B.hit.push(f); quHitFoe(f, B.p); } }); if (B.life <= 0) qu.bolts.splice(i, 1); continue; }
     L.foes.forEach(function(f){ if (!hit && B.hit.indexOf(f) < 0 && Math.hypot(f.x - B.x, f.y - 16 - B.y) < QU_FOES[f.k].r + 16) hit = f; });
     if (hit){ B.hit.push(hit); quHitFoe(hit, B.p); quFx({ k: 'ring', x: B.x, y: B.y, t: 0.25, T: 0.25, c: B.col }); }      /* goes on through, up to SHOT_PIERCE monsters */
     if ((hit && B.hit.length >= SHOT_PIERCE) || B.life <= 0) qu.bolts.splice(i, 1);
