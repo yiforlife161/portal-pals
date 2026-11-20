@@ -242,6 +242,9 @@ button{font:inherit;color:inherit}
 .limbs .wpn{transform-origin:86px 64px;transform:rotate(18deg)}
 .limbs .arm{transform-origin:66px 62px}
 .dfp.atk .wpn{animation:swing .22s ease-out}
+.dfp.slamk.atk .dfp-body{animation:slamB .3s ease-out}.dfp.slamk.atk .wpn{animation:slamW .3s ease-out}
+@keyframes slamB{0%{transform:translateY(0)}35%{transform:translateY(-14%) scale(1.04,.97)}60%{transform:translateY(3%) scale(1.08,.9)}100%{transform:none}}
+@keyframes slamW{0%{transform:rotate(18deg)}35%{transform:rotate(-60deg)}60%{transform:rotate(70deg)}100%{transform:rotate(18deg)}}
 @keyframes swing{0%{transform:rotate(-60deg)}55%{transform:rotate(110deg)}100%{transform:rotate(80deg)}}
 .dfp.zap .wpn{animation:zap .2s ease-out}
 .dfp.twin.zap .wpn{animation:twinA .1s ease-out}.dfp.twin.zap.tw2 .wpn{animation:none}.dfp.twin.zap.tw2 .wpn2{animation:twinB .1s ease-out}
@@ -4714,7 +4717,7 @@ var PAL_BODIES = {
   zs:     { label: 'Storm God',       el: 'air',    style: 'ranged', giant: false, art: zsArt,     back: zsBack,     front: zsFront, shot: 'bolt' },
   fd:     { label: 'Fire Pup',        el: 'fire',   style: 'ranged', giant: false, art: fdArt,     back: fdBack,     front: fdFront },
   ss:     { label: 'Shark Suit',      el: 'earth',  style: 'melee',  giant: false, art: ssArt,     back: ssBack,     front: ssFront },
-  tr:     { label: 'Tree Giant',      el: 'life',   style: 'melee',  giant: true,  art: trArt,     back: trBack,     front: trFront },
+  tr:     { label: 'Tree Giant',      el: 'life',   style: 'melee',  giant: true,  art: trArt,     back: trBack,     front: trFront, slam: true },
   ik:     { label: 'Ice Knightess',   el: 'water',  style: 'ranged', giant: false, art: ikArt,     back: ikBack,     front: ikFront },
   mr:     { label: 'Magma Brute',     el: 'fire',   style: 'ranged', giant: false, art: mrArt,     back: mrBack,     front: mrFront, shot: 'magma' },
   wi:     { label: 'Skull Witch',     el: 'undead', style: 'ranged', giant: false, art: wiArt,     back: wiBack,     front: wiFront, shot: 'skull' },
@@ -4767,6 +4770,15 @@ function palTwinShot(p, ca, sa){
   if (p.el && p.el.classList){ p.el.classList.toggle('tw2', p.tw); p.el.classList.remove('zap'); void p.el.offsetWidth; }
   var k = (p.giant ? 1.3 : 1) * 11 * (p.tw ? -1 : 1);
   return { x: -sa * k, y: ca * k };
+}
+/* ground slammers (Tree Giant): a melee pal that pounds the ground instead of swinging, hurting every monster in a circle
+   around itself (SLAM_R past its reach), front and back alike */
+var SLAM_R = 36;
+function palSlam(c){ var B = c && c.body && PAL_BODIES[c.body]; return !!(B && B.slam && c.style !== 'ranged'); }
+function slamHits(p, foes, rOf, hit){
+  var R = p.range + SLAM_R, n = 0;
+  foes.slice().forEach(function(f){ if (f.dead) return; var r = rOf(f); if (Math.hypot(f.x - p.x, (f.y - p.y) * 1.3) - r * 0.6 <= R){ hit(f); n++; } });
+  return n;
 }
 function palBody(c){ if (c && c.body && !PAL_BODIES[c.body] && LOOK_RE.test(c.body) && typeof lookNeed === 'function') lookNeed(c.body); return c && c.body && PAL_BODIES[c.body] ? PAL_BODIES[c.body] : null; }
 /* how a pal's shots look: 'zap' = purple lightning (Grave Dragon), 'rainbow' = a little rainbow (Gem Dragon), 'bolt' = yellow lightning (Storm God), 'skull' = glowing skulls (Skull Witch), 'firearrow' = flaming arrows (Goblin Archer), 'harpoon' = harpoons on a rope (Reef Grunt), otherwise the element's own bullet */
@@ -9890,14 +9902,14 @@ function dfMakeTeam(){
   layer.innerHTML = '';
   df.team = list.map(function(c, i){
     var el = document.createElement('div');
-    el.className = 'dfp' + (i === 0 ? ' me' : '') + (c.style === 'ranged' ? ' ranged' : '') + (palTwin(c) ? ' twin' : '') + (HATS[c.hat] ? ' hat' : '') + (c.img ? ' pimg' : '');
+    el.className = 'dfp' + (i === 0 ? ' me' : '') + (c.style === 'ranged' ? ' ranged' : '') + (palTwin(c) ? ' twin' : '') + (palSlam(c) ? ' slamk' : '') + (HATS[c.hat] ? ' hat' : '') + (c.img ? ' pimg' : '');
     el.setAttribute('style', EL[c.element].vars);
     el.innerHTML = '<div class="dfp-shadow"></div><div class="dfp-body">' + palFigure(c) + '</div>' + (i === 0 ? '<div class="dfp-you">YOU</div>' : '<div class="dfp-you dfp-mate" data-notr>' + esc(CM[i - 1] ? CM[i - 1].name : '') + '</div>') + '<div class="dfp-hp"><i></i></div>';
     layer.appendChild(el);
     var ranged = c.style === 'ranged', lv = Math.max(1, c.level || 1), hh = hatOf(c), hg = hh && hh.kind === 'game' && hh.g === df.mode ? df.mode : '';
     if (dfAr()) homes[i] = [500, 345];
     return { c: c, el: el, x: homes[i][0], y: homes[i][1], hx: homes[i][0], hy: homes[i][1], ranged: ranged, face: -1,
-      giant: !!c.giant, twin: palTwin(c), range: ranged ? 140 : 34, dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (hg === 'arena' ? 1.15 : 1) * (palTwin(c) ? 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
+      giant: !!c.giant, twin: palTwin(c), slam: palSlam(c), range: ranged ? 140 : 34, dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (hg === 'arena' ? 1.15 : 1) * (palTwin(c) ? 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
       spd: palSpeedMult(c) * (hg === 'defense' ? 1.1 : 1), hp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), maxhp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), ko: 0, cd: palTwin(c) ? 0.25 : 0.5, cool: 0.3 * i, mv: null, foe: null, swing: 0, bob: 0 };
   });
   df.hero = df.team[0];
@@ -10707,7 +10719,7 @@ function netStep(o, dt){
   o.x += (tx - o.x) * k; o.y += (ty - o.y) * k;
   return true;
 }
-var coopFxKeep = { pop: 1, boom: 1, ring: 1, slash: 1, puff: 1, gem: 1, splash: 1 };
+var coopFxKeep = { pop: 1, boom: 1, ring: 1, slash: 1, puff: 1, gem: 1, splash: 1, quake: 1 };
 function coopNum(v){ return Math.round(v * 10) / 10; }
 var coopIds = 0;
 /* guest smoothing: snapshots are kept with the host's clock and drawn a short moment behind,
@@ -11456,6 +11468,10 @@ function dfAttack(p, f){
     var gk = p.giant ? 1.3 : 1, tw = p.twin ? palTwinShot(p, p.face, 0) : { x: 0, y: 0 };
     if (lobLook(p.c)){ var sx0 = p.x + p.face * 20, sy0 = p.y - 22 * gk, sdx0 = f.x - sx0, sdy0 = f.y - 10 - sy0, sl0 = Math.hypot(sdx0, sdy0) || 1; df.shots.push(shroomInit({ p: p, ang: 0, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, sx0, sy0, sdx0 / sl0, sdy0 / sl0, lobLook(p.c))); return; }
     df.shots.push({ x: p.x + p.face * 0.47 * 62 * gk + tw.x, y: p.y - (0.86 - 0.34) * 62 * gk + tw.y, f: f, p: p, v: 560, ang: 0, life: 2, dmg: rr.d, crit: rr.c });
+  } else if (p.slam){
+    p.swing = 0.3;
+    dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R });
+    slamHits(p, df.foes, function(q){ return q.T.r; }, function(q){ var rs = dfRoll(p); dfHurt(q, rs.d, p, rs.c); });
   } else {
     p.swing = 0.22;
     dfFx('slash', f.x, f.y - 6, { life: 0.22, max: 0.22, col: EL[p.c.element].c });
@@ -11478,7 +11494,7 @@ function dfAimAttack(p){
     df.coop.atkN++; df.coop.atkOut.push([df.coop.atkN, coopNum(ang)]); if (df.coop.atkOut.length > 12) df.coop.atkOut.shift();
     if (p.ranged && p.twin){ var tg = palTwinShot(p, ca, sa); bx += tg.x; by += tg.y; }
     if (p.ranged && lobLook(p.c)){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push(shroomInit({ life: 3, el: p.c.element, body: p.c.body || '', hit: [] }, bx, by, ca, sa, lobLook(p.c))); return; }
-    if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else { p.swing = 0.22; dfFx('slash', bx, by, { life: 0.22, max: 0.22, col: EL[p.c.element].c, ang: ang, R: p.range + 14 }); }
+    if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else if (p.slam){ p.swing = 0.3; dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R }); } else { p.swing = 0.22; dfFx('slash', bx, by, { life: 0.22, max: 0.22, col: EL[p.c.element].c, ang: ang, R: p.range + 14 }); }
     return;
   }
   if (p.ranged){
@@ -11487,6 +11503,12 @@ function dfAimAttack(p){
     var rr = dfRoll(p);
     if (lobLook(p.c)){ df.shots.push(shroomInit({ p: p, ang: ang, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, bx, by, ca, sa, lobLook(p.c))); return; }
     df.shots.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, p: p, v: 600, ang: ang, life: 2, dmg: rr.d, crit: rr.c, aimed: true });
+    return;
+  }
+  if (p.slam){
+    p.swing = 0.3;
+    dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R });
+    slamHits(p, df.foes, function(q){ return q.T.r; }, function(q){ var rs = dfRoll(p); dfHurt(q, rs.d, p, rs.c); });
     return;
   }
   p.swing = 0.22;
@@ -12571,6 +12593,15 @@ function dfDrawFx(g){
     } else if (f.k === 'ring'){
       g.globalAlpha = 1 - u; g.strokeStyle = f.col; g.lineWidth = 5;
       g.beginPath(); g.arc(f.x, f.y, 20 + u * 70, 0, 7); g.stroke();
+    } else if (f.k === 'quake'){      /* a ground slam: a shockwave ring out to the slam's reach, cracks and flying dirt */
+      var qr = f.R * (0.35 + 0.65 * Math.min(1, u * 1.8));
+      g.globalAlpha = 0.35 * (1 - u); g.fillStyle = f.col; g.beginPath(); g.ellipse(f.x, f.y, qr, qr / 1.3, 0, 0, 7); g.fill();
+      g.globalAlpha = 1 - u; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.ellipse(f.x, f.y, qr, qr / 1.3, 0, 0, 7); g.stroke();
+      g.strokeStyle = 'rgba(70,45,20,' + (0.8 * (1 - u)) + ')'; g.lineWidth = 3; g.beginPath();
+      for (var qi = 0; qi < 7; qi++){ var qa = qi / 7 * 6.283 + 0.4; g.moveTo(f.x + Math.cos(qa) * 12, f.y + Math.sin(qa) * 9); g.lineTo(f.x + Math.cos(qa + 0.15) * qr * 0.55, f.y + Math.sin(qa + 0.15) * qr * 0.42); g.lineTo(f.x + Math.cos(qa - 0.05) * qr * 0.85, f.y + Math.sin(qa - 0.05) * qr * 0.65); }
+      g.stroke();
+      g.fillStyle = 'rgba(140,100,60,' + (1 - u) + ')';
+      for (qi = 0; qi < 9; qi++){ var qb = qi / 9 * 6.283, qd = qr * (0.5 + 0.4 * ((qi * 37) % 10) / 10); g.beginPath(); g.arc(f.x + Math.cos(qb) * qd, f.y + Math.sin(qb) * qd / 1.3 - Math.sin(u * Math.PI) * 22, 3.5, 0, 7); g.fill(); }
     } else if (f.k === 'splash'){      /* a potion splash: a flat puddle the size of the blast */
       g.globalAlpha = 0.55 * (1 - u); g.fillStyle = f.col; g.beginPath(); g.ellipse(f.x, f.y, f.R * (0.6 + u * 0.4), f.R * (0.6 + u * 0.4) / 1.3, 0, 0, 7); g.fill();
       g.globalAlpha = 1 - u; g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.ellipse(f.x, f.y, f.R, f.R / 1.3, 0, 0, 7); g.stroke();
@@ -12617,6 +12648,10 @@ function dfDraw(){
         g.beginPath(); g.moveTo(abx + Math.cos(aa) * 26, aby + Math.sin(aa) * 26); g.lineTo(abx + Math.cos(aa) * L0, aby + Math.sin(aa) * L0); g.stroke();
         g.setLineDash([]); g.strokeStyle = ac; g.lineWidth = 3;
         g.beginPath(); g.arc(abx + Math.cos(aa) * L0, aby + Math.sin(aa) * L0, 7, 0, 7); g.stroke();
+      } else if (h.slam){      /* a ground slam hits all round: show the circle it reaches */
+        var RS = h.range + SLAM_R;
+        g.setLineDash([9, 7]); g.fillStyle = rgba(ac, 0.14); g.strokeStyle = '#fff'; g.lineWidth = 2.5;
+        g.beginPath(); g.ellipse(h.x, h.y + 4, RS, RS / 1.3, 0, 0, 7); g.fill(); g.stroke(); g.setLineDash([]);
       } else {
         var R0 = h.range + 14;
         g.fillStyle = rgba(ac, 0.22); g.strokeStyle = '#fff'; g.lineWidth = 2.5;
@@ -14349,13 +14384,13 @@ var QU_BOMB_SVG = '<svg viewBox="0 0 50 50" aria-hidden="true"><circle cx="23" c
 function quHatOn(c){ return !!(c && c.hat === 'h_quest'); }
 function quMakePal(c, slot, name, me){
   var el = document.createElement('div');
-  el.className = 'dfp' + (me ? ' me' : ' mate') + (c.style === 'ranged' ? ' ranged' : '') + (palTwin(c) ? ' twin' : '') + (HATS[c.hat] ? ' hat' : '') + (c.img ? ' pimg' : '');
+  el.className = 'dfp' + (me ? ' me' : ' mate') + (c.style === 'ranged' ? ' ranged' : '') + (palTwin(c) ? ' twin' : '') + (palSlam(c) ? ' slamk' : '') + (HATS[c.hat] ? ' hat' : '') + (c.img ? ' pimg' : '');
   el.setAttribute('style', EL[c.element].vars);
   el.innerHTML = '<div class="dfp-shadow"></div><div class="dfp-body">' + palFigure(c) + '</div>' + (me ? '<div class="dfp-you">YOU</div>' : '<div class="dfp-you dfp-mate" data-notr>' + esc(name) + '</div>') +
     '<div class="dfp-hp"><i></i></div><div class="qcarry" hidden></div>';
   $('#qu-pals').appendChild(el);
   var ranged = c.style === 'ranged', mh = Math.round(palMaxHp(c) * (quHatOn(c) ? 1.25 : 1));
-  return { c: c, el: el, slot: slot, name: name, me: !!me, mate: !me, x: 0, y: 0, tx: 0, ty: 0, face: 1, ranged: ranged, twin: palTwin(c), range: ranged ? 140 : 34, cd: palTwin(c) ? 0.25 : 0.5, buf: 0, giant: !!c.giant,
+  return { c: c, el: el, slot: slot, name: name, me: !!me, mate: !me, x: 0, y: 0, tx: 0, ty: 0, face: 1, ranged: ranged, twin: palTwin(c), slam: palSlam(c), range: ranged ? 140 : 34, cd: palTwin(c) ? 0.25 : 0.5, buf: 0, giant: !!c.giant,
     dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (palTwin(c) ? 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
     spd: palSpeedMult(c), hp: mh, maxhp: mh, ko: 0, cool: 0, swing: 0, zap: 0, walkT: 0, hurt: 0, lastHit: -99, carry: '', atkSeen: 0, lastIn: Date.now(), gone: false, mv: null, carryK: '' };
 }
@@ -14556,7 +14591,8 @@ function quTryAttack(){
   if (p.twin && C && C.role === 'guest') palTwinShot(p, 1, 0);      /* guests: the host makes the shot, but my guns still take turns */
   if (C && C.role === 'guest'){
     C.atkN++; C.atkOut.push([C.atkN, Math.round(ang * 100) / 100]); if (C.atkOut.length > 6) C.atkOut.shift();
-    if (!p.ranged) quFx({ k: 'slash', x: A.x, y: A.y, a: ang, R: p.range + 14, col: EL[p.c.element].c, t: 0.22, T: 0.22 }, true);
+    if (!p.ranged && p.slam) quFx({ k: 'quake', x: p.x, y: p.y + 4, R: p.range + SLAM_R, c: EL[p.c.element].c, t: 0.45, T: 0.45 }, true);
+    else if (!p.ranged) quFx({ k: 'slash', x: A.x, y: A.y, a: ang, R: p.range + 14, col: EL[p.c.element].c, t: 0.22, T: 0.22 }, true);
   } else quStrike(p, ang);
 }
 /* the arena's hits: a sword sweeps a wide arc right in front, a wand shot flies a set distance */
@@ -14566,6 +14602,12 @@ function quStrike(p, ang){
   if (p.ranged && p.twin){ var tw = palTwinShot(p, ca, sa); bx += tw.x; by += tw.y; p.zap = 0.1; }
   if (p.ranged && lobLook(p.c)){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: lobLook(p.c) }, bx, by, ca, sa, lobLook(p.c))); return; }
   if (p.ranged){ qu.bolts.push({ x: bx, y: by, ox: bx, oy: by, vx: ca * 600, vy: sa * 600, max: p.range + 10, life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
+  if (p.slam){
+    p.swing = 0.3;
+    quFx({ k: 'quake', x: p.x, y: p.y + 4, R: p.range + SLAM_R, c: EL[p.c.element].c, t: 0.45, T: 0.45 });
+    slamHits(p, qu.L.foes, function(q){ return QU_FOES[q.k].r; }, function(q){ quHitFoe(q, p); });
+    return;
+  }
   quFx({ k: 'slash', x: bx, y: by, a: ang, R: p.range + 14, col: EL[p.c.element].c, t: 0.22, T: 0.22 });
   var hit = false;
   qu.L.foes.slice().forEach(function(f){
@@ -14996,6 +15038,10 @@ function quDraw(){
       g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 3;
       g.beginPath(); g.moveTo(AF.x + Math.cos(aa) * 26, AF.y + Math.sin(aa) * 26); g.lineTo(AF.x + Math.cos(aa) * L0, AF.y + Math.sin(aa) * L0); g.stroke();
       g.setLineDash([]); g.strokeStyle = ac; g.lineWidth = 3; g.beginPath(); g.arc(AF.x + Math.cos(aa) * L0, AF.y + Math.sin(aa) * L0, 7, 0, 7); g.stroke();
+    } else if (me.slam){
+      var RS = me.range + SLAM_R;
+      g.setLineDash([9, 7]); g.fillStyle = rgba(ac, 0.14); g.strokeStyle = '#fff'; g.lineWidth = 2.5;
+      g.beginPath(); g.ellipse(me.x, me.y + 4, RS, RS / 1.3, 0, 0, 7); g.fill(); g.stroke(); g.setLineDash([]);
     } else {
       var R0 = me.range + 14;
       g.fillStyle = rgba(ac, 0.22); g.strokeStyle = '#fff'; g.lineWidth = 2.5;
@@ -15010,6 +15056,7 @@ function quDraw(){
     if (f.k === 'coin'){ g.fillStyle = '#ffd23e'; g.strokeStyle = '#a8740a'; g.lineWidth = 2; g.beginPath(); g.ellipse(f.x, f.y, 6 * Math.abs(Math.cos(qu.t * 10 + f.vx)), 6, 0, 0, 7); g.fill(); g.stroke(); }
     else if (f.k === 'ring'){ g.strokeStyle = f.c || '#fff'; g.lineWidth = 4; g.beginPath(); g.ellipse(f.x, f.y, 14 + u * 50, 7 + u * 25, 0, 0, 7); g.stroke(); }
     else if (f.k === 'poof'){ g.fillStyle = f.c || '#fff'; for (var q = 0; q < 6; q++){ var a = q / 6 * 6.28; g.beginPath(); g.arc(f.x + Math.cos(a) * u * 36, f.y + Math.sin(a) * u * 20, 8 * (1 - u) + 2, 0, 7); g.fill(); } }
+    else if (f.k === 'quake'){ var qu2 = f.R * (0.35 + 0.65 * Math.min(1, u * 1.8)); g.globalAlpha = 0.35 * (1 - u); g.fillStyle = f.c; g.beginPath(); g.ellipse(f.x, f.y, qu2, qu2 / 1.3, 0, 0, 7); g.fill(); g.globalAlpha = 1 - u; g.strokeStyle = '#fff'; g.lineWidth = 5; g.beginPath(); g.ellipse(f.x, f.y, qu2, qu2 / 1.3, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }
     else if (f.k === 'slash'){
       var a0 = f.a - 1.15, a1 = a0 + 2.3 * Math.min(1, u * 2.6), sR = f.R || 48;
       g.globalAlpha = 1 - u * 0.8; g.lineCap = 'round';
