@@ -4793,7 +4793,8 @@ function laserEnds(p, ang){
   return { a: [p.x - w, hy], b: [p.x + w, hy], m: [ox + Math.cos(ang) * BEAM_L, oy + Math.sin(ang) * BEAM_L] };
 }
 function segDist(px, py, a, b){ var vx = b[0] - a[0], vy = b[1] - a[1], l = vx * vx + vy * vy || 1, t = Math.max(0, Math.min(1, ((px - a[0]) * vx + (py - a[1]) * vy) / l)); return Math.hypot(px - a[0] - vx * t, py - a[1] - vy * t); }
-function beamIn(p, ang, x, y, r){ if (beamKind(p) === 'laser'){ var E = laserEnds(p, ang); return Math.min(segDist(x, y, E.a, E.m), segDist(x, y, E.b, E.m)) < r * 0.7 + 7; }
+function triIn(x, y, a, b, c){ function sd(p, q, r){ return (x - r[0]) * (q[1] - r[1]) - (q[0] - r[0]) * (y - r[1]); } var d1 = sd(0, a, b), d2 = sd(0, b, c), d3 = sd(0, c, a); return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0)); }
+function beamIn(p, ang, x, y, r){ if (beamKind(p) === 'laser'){ var E = laserEnds(p, ang); for (var k = -1; k <= 1; k++){ var yy = y + k * r * 0.8; if (triIn(x, yy, E.a, E.b, E.m) || Math.min(segDist(x, yy, E.a, E.m), segDist(x, yy, E.b, E.m)) < r * 0.6 + 9) return true; } return false; }      /* checked over the monster's whole height, top to feet */      /* the lasers burn everything between them too, so nothing slips through the V */
   var gk = p.giant ? 1.3 : 1, ox = p.x, oy = p.y - 22 * gk, dx = x - ox, dy = y - oy, d = Math.hypot(dx, dy); if (d - r > BEAM_L) return false; if (d < r + 14) return true; var da = Math.abs(Math.atan2(dy, dx) - ang); if (da > Math.PI) da = 2 * Math.PI - da; return da < BEAM_A + Math.atan2(r * 0.7, d); }
 function beamGuide(g, x, y, a, p){
   if (p && beamKind(p) === 'laser'){ var E = laserEnds(p, a); g.save(); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(E.a[0], E.a[1]); g.lineTo(E.m[0], E.m[1]); g.lineTo(E.b[0], E.b[1]); g.stroke(); g.restore(); return; }
