@@ -4712,7 +4712,7 @@ var PAL_BODIES = {
   sh:     { label: 'Mushroom Guy',    el: 'life',   style: 'ranged', giant: false, art: shArt,     back: shBack,     front: shFront, shot: 'shroom' },
   tk:     { label: 'Technician',      el: 'tech',   style: 'melee',  giant: false, art: tkArt,     back: tkBack,     front: tkFront },
   ar:     { label: 'Arcane Dragon',   el: 'magic',  style: 'ranged', giant: false, art: arArt,     back: arBack,     front: arFront },
-  go:     { label: 'Rock Golem',      el: 'earth',  style: 'ranged', giant: false, art: goArt,     back: goBack,     front: goFront },
+  go:     { label: 'Rock Golem',      el: 'earth',  style: 'ranged', giant: false, art: goArt,     back: goBack,     front: goFront, beam: 'laser' },
   ti:     { label: 'Tiki Shaman',     el: 'magic',  style: 'ranged', giant: false, art: tiArt,     back: tiBack,     front: tiFront },
   gm:     { label: 'Gem Dragon',      el: 'air',    style: 'ranged', giant: false, art: gmArt,     back: gmBack,     front: gmFront, shot: 'rainbow' },
   lv:     { label: 'Lava Golem',      el: 'fire',   style: 'ranged', giant: true,  art: lvArt,     back: lvBack,     front: lvFront },
@@ -4781,9 +4781,35 @@ var SLAM_R = 36;
    BEAM_TICK / 0.5 of a normal shot to every monster in the cone, so the damage per second matches other ranged pals (per monster) */
 var BEAM_MAX = 2, BEAM_TICK = 0.1, BEAM_A = 0.42, BEAM_L = 160;
 function palBeam(c){ var B = c && c.body && PAL_BODIES[c.body]; return !!(B && B.beam && c.style === 'ranged'); }
-function beamIn(p, ang, x, y, r){ var gk = p.giant ? 1.3 : 1, ox = p.x, oy = p.y - 22 * gk, dx = x - ox, dy = y - oy, d = Math.hypot(dx, dy); if (d - r > BEAM_L) return false; if (d < r + 14) return true; var da = Math.abs(Math.atan2(dy, dx) - ang); if (da > Math.PI) da = 2 * Math.PI - da; return da < BEAM_A + Math.atan2(r * 0.7, d); }
-function beamGuide(g, x, y, a){ g.save(); g.translate(x, y); g.rotate(a); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(14, 0); g.lineTo(BEAM_L, -Math.tan(BEAM_A) * BEAM_L); g.quadraticCurveTo(BEAM_L * 1.06, 0, BEAM_L, Math.tan(BEAM_A) * BEAM_L); g.closePath(); g.stroke(); g.restore(); }
+/* Rock Golem's twin lasers (beam: 'laser'): two green beams, one from each hand crystal, that meet at the end of his reach */
+var LASER_W = 23;
+function beamKind(p){ var B = p && p.c && p.c.body && PAL_BODIES[p.c.body]; return B && B.beam === 'laser' ? 'laser' : 'cone'; }
+function laserEnds(p, ang){
+  /* the beams start at the two hand crystals (left and right of him, at hand height) and meet BEAM_L from his middle */
+  var gk = p.giant ? 1.3 : 1, ox = p.x, oy = p.y - 22 * gk, hy = p.y - 25 * gk, w = LASER_W * gk;
+  return { a: [p.x - w, hy], b: [p.x + w, hy], m: [ox + Math.cos(ang) * BEAM_L, oy + Math.sin(ang) * BEAM_L] };
+}
+function segDist(px, py, a, b){ var vx = b[0] - a[0], vy = b[1] - a[1], l = vx * vx + vy * vy || 1, t = Math.max(0, Math.min(1, ((px - a[0]) * vx + (py - a[1]) * vy) / l)); return Math.hypot(px - a[0] - vx * t, py - a[1] - vy * t); }
+function beamIn(p, ang, x, y, r){ if (beamKind(p) === 'laser'){ var E = laserEnds(p, ang); return Math.min(segDist(x, y, E.a, E.m), segDist(x, y, E.b, E.m)) < r * 0.7 + 7; }
+  var gk = p.giant ? 1.3 : 1, ox = p.x, oy = p.y - 22 * gk, dx = x - ox, dy = y - oy, d = Math.hypot(dx, dy); if (d - r > BEAM_L) return false; if (d < r + 14) return true; var da = Math.abs(Math.atan2(dy, dx) - ang); if (da > Math.PI) da = 2 * Math.PI - da; return da < BEAM_A + Math.atan2(r * 0.7, d); }
+function beamGuide(g, x, y, a, p){
+  if (p && beamKind(p) === 'laser'){ var E = laserEnds(p, a); g.save(); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(E.a[0], E.a[1]); g.lineTo(E.m[0], E.m[1]); g.lineTo(E.b[0], E.b[1]); g.stroke(); g.restore(); return; }
+  g.save(); g.translate(x, y); g.rotate(a); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(14, 0); g.lineTo(BEAM_L, -Math.tan(BEAM_A) * BEAM_L); g.quadraticCurveTo(BEAM_L * 1.06, 0, BEAM_L, Math.tan(BEAM_A) * BEAM_L); g.closePath(); g.stroke(); g.restore(); }
+function drawLasers(g, p, t){
+  var E = laserEnds(p, p.beamA), w = 1 + Math.sin(t * 50) * 0.15;
+  g.save(); g.lineCap = 'round';
+  [E.a, E.b].forEach(function(o){
+    g.strokeStyle = 'rgba(70,255,120,.35)'; g.lineWidth = 12 * w; g.beginPath(); g.moveTo(o[0], o[1]); g.lineTo(E.m[0], E.m[1]); g.stroke();
+    g.strokeStyle = '#3aff6a'; g.lineWidth = 5 * w; g.stroke();
+    g.strokeStyle = '#eaffee'; g.lineWidth = 2; g.stroke();
+    g.fillStyle = '#eaffee'; g.beginPath(); g.arc(o[0], o[1], 4.5 * w, 0, 7); g.fill();
+  });
+  var gl = g.createRadialGradient(E.m[0], E.m[1], 1, E.m[0], E.m[1], 20 * w); gl.addColorStop(0, '#ffffff'); gl.addColorStop(0.4, 'rgba(90,255,130,.85)'); gl.addColorStop(1, 'rgba(60,255,110,0)');
+  g.fillStyle = gl; g.beginPath(); g.arc(E.m[0], E.m[1], 20 * w, 0, 7); g.fill();
+  g.restore();
+}
 function drawBeam(g, p, t){
+  if (beamKind(p) === 'laser') return drawLasers(g, p, t);
   var gk = p.giant ? 1.3 : 1, ox = p.x + Math.cos(p.beamA) * 16 * gk, oy = p.y - 22 * gk + Math.sin(p.beamA) * 16 * gk, a = p.beamA, L = BEAM_L, i, j;
   var col = EL[p.c.element] ? EL[p.c.element].c : '#7aff9a';
   g.save(); g.translate(ox, oy); g.rotate(a);
@@ -12687,7 +12713,7 @@ function dfDraw(){
     if (df.aim && !h.ko && (df.phase === 'play' || df.phase === 'between')){
       var AF = dfAimFrom(h), abx = AF.x, aby = AF.y, aa = AF.ang, ac = EL[h.c.element].c;
       g.save(); g.globalAlpha = h.cool > 0 ? 0.35 : 0.8;
-      if (h.beam){ if (!(h.beamT > 0)) beamGuide(g, abx, aby, aa); }
+      if (h.beam){ if (!(h.beamT > 0)) beamGuide(g, abx, aby, aa, h); }
       else if (h.ranged){
         var L0 = h.range + 10;
         g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 3;
@@ -15089,7 +15115,7 @@ function quDraw(){
   if (me && qu.aim && !(me.ko > 0) && qu.phase === 'play'){
     var AF = quAimFrom(me), aa = AF.ang, ac = EL[me.c.element].c;
     g.save(); g.globalAlpha = me.cool > 0 ? 0.35 : 0.8;
-    if (me.beam){ if (!(me.beamT > 0)) beamGuide(g, AF.x, AF.y, aa); }
+    if (me.beam){ if (!(me.beamT > 0)) beamGuide(g, AF.x, AF.y, aa, me); }
     else if (me.ranged){
       var L0 = me.range + 10;
       g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 3;
