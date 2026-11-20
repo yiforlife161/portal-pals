@@ -4704,7 +4704,7 @@ function bnFront(c){
 
 var PAL_BODIES = {
   eagle:  { label: 'Sky Eagle',       el: 'air',    style: 'ranged', giant: false, art: eagleArt,  back: eagleBack,  front: eagleFront },
-  wyrm:   { label: 'Grave Dragon',    el: 'undead', style: 'ranged', giant: false, art: wyrmArt,   back: wyrmBack,   front: wyrmFront, shot: 'zap' },
+  wyrm:   { label: 'Grave Dragon',    el: 'undead', style: 'ranged', giant: false, art: wyrmArt,   back: wyrmBack,   front: wyrmFront, shot: 'zap', beam: true },
   knight: { label: 'Skeleton Knight', el: 'undead', style: 'melee',  giant: false, art: knightArt, back: knightBack, front: knightFront },
   mecha:  { label: 'Wheel Bot',       el: 'tech',   style: 'ranged', giant: true,  art: mechaArt,  back: mechaBack,  front: mechaFront, twin: true },
   rogue:  { label: 'Masked Rogue',    el: 'life',   style: 'melee',  giant: false, art: rogueArt,  back: rogueBack,  front: rogueFront, twin: true },
@@ -4776,6 +4776,31 @@ function palTwinShot(p, ca, sa){
 /* ground slammers (Tree Giant): a melee pal that pounds the ground instead of swinging, hurting every monster in a circle
    around itself (SLAM_R past its reach), front and back alike */
 var SLAM_R = 36;
+/* breath beams (Grave Dragon): holding attack breathes a cone of lightning toward the cursor for up to BEAM_MAX seconds; let go and
+   it stops at once, after BEAM_MAX you have to click again. It is made of quick ticks: the pal's cd is BEAM_TICK and each tick does
+   BEAM_TICK / 0.5 of a normal shot to every monster in the cone, so the damage per second matches other ranged pals (per monster) */
+var BEAM_MAX = 2, BEAM_TICK = 0.1, BEAM_A = 0.42, BEAM_L = 160;
+function palBeam(c){ var B = c && c.body && PAL_BODIES[c.body]; return !!(B && B.beam && c.style === 'ranged'); }
+function beamIn(p, ang, x, y, r){ var gk = p.giant ? 1.3 : 1, ox = p.x, oy = p.y - 22 * gk, dx = x - ox, dy = y - oy, d = Math.hypot(dx, dy); if (d - r > BEAM_L) return false; if (d < r + 14) return true; var da = Math.abs(Math.atan2(dy, dx) - ang); if (da > Math.PI) da = 2 * Math.PI - da; return da < BEAM_A + Math.atan2(r * 0.7, d); }
+function beamGuide(g, x, y, a){ g.save(); g.translate(x, y); g.rotate(a); g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 2.5; g.beginPath(); g.moveTo(14, 0); g.lineTo(BEAM_L, -Math.tan(BEAM_A) * BEAM_L); g.quadraticCurveTo(BEAM_L * 1.06, 0, BEAM_L, Math.tan(BEAM_A) * BEAM_L); g.closePath(); g.stroke(); g.restore(); }
+function drawBeam(g, p, t){
+  var gk = p.giant ? 1.3 : 1, ox = p.x + Math.cos(p.beamA) * 16 * gk, oy = p.y - 22 * gk + Math.sin(p.beamA) * 16 * gk, a = p.beamA, L = BEAM_L, i, j;
+  var col = EL[p.c.element] ? EL[p.c.element].c : '#7aff9a';
+  g.save(); g.translate(ox, oy); g.rotate(a);
+  var gr = g.createLinearGradient(0, 0, L, 0); gr.addColorStop(0, rgba(col, 0.55)); gr.addColorStop(1, rgba(col, 0.08));
+  g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0); g.lineTo(L, -Math.tan(BEAM_A) * L); g.quadraticCurveTo(L * 1.06, 0, L, Math.tan(BEAM_A) * L); g.closePath(); g.fill();
+  g.strokeStyle = rgba('#ffffff', 0.35); g.lineWidth = 2; g.stroke();
+  g.lineCap = 'round'; g.lineJoin = 'round';
+  for (i = 0; i < 6; i++){
+    var ea = (Math.random() * 2 - 1) * BEAM_A * 0.9, el = L * (0.6 + Math.random() * 0.4), x = 0, y = 0;
+    g.beginPath(); g.moveTo(0, 0);
+    for (j = 1; j <= 6; j++){ var u = j / 6; x = Math.cos(ea) * el * u; y = Math.sin(ea) * el * u + (j < 6 ? (Math.random() - 0.5) * 14 * u : 0); g.lineTo(x, y); }
+    g.strokeStyle = rgba(col, 0.9); g.lineWidth = 4; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 1.6; g.stroke();
+  }
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(0, 0, 6 + Math.sin(t * 40) * 1.5, 0, 7); g.fill();
+  g.restore();
+}
+
 function palSlam(c){ var B = c && c.body && PAL_BODIES[c.body]; return !!(B && B.slam && c.style !== 'ranged'); }
 function slamHits(p, foes, rOf, hit){
   var R = p.range + SLAM_R, n = 0;
@@ -9911,8 +9936,8 @@ function dfMakeTeam(){
     var ranged = c.style === 'ranged', lv = Math.max(1, c.level || 1), hh = hatOf(c), hg = hh && hh.kind === 'game' && hh.g === df.mode ? df.mode : '';
     if (dfAr()) homes[i] = [500, 345];
     return { c: c, el: el, x: homes[i][0], y: homes[i][1], hx: homes[i][0], hy: homes[i][1], ranged: ranged, face: -1,
-      giant: !!c.giant, twin: palTwin(c), slam: palSlam(c), range: ranged ? 140 : 34, dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (hg === 'arena' ? 1.15 : 1) * (palTwin(c) ? 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
-      spd: palSpeedMult(c) * (hg === 'defense' ? 1.1 : 1), hp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), maxhp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), ko: 0, cd: palTwin(c) ? 0.25 : 0.5, cool: 0.3 * i, mv: null, foe: null, swing: 0, bob: 0 };
+      giant: !!c.giant, twin: palTwin(c), slam: palSlam(c), beam: palBeam(c), range: ranged ? 140 : 34, dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (hg === 'arena' ? 1.15 : 1) * (palTwin(c) ? 0.5 : 1) * (palBeam(c) ? BEAM_TICK / 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
+      spd: palSpeedMult(c) * (hg === 'defense' ? 1.1 : 1), hp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), maxhp: Math.round(palMaxHp(c) * (hg === 'arena' ? 1.2 : 1)), ko: 0, cd: palBeam(c) ? BEAM_TICK : palTwin(c) ? 0.25 : 0.5, cool: 0.3 * i, mv: null, foe: null, swing: 0, bob: 0 };
   });
   df.hero = df.team[0];
   df.mates = df.team.slice(1);
@@ -10808,7 +10833,7 @@ function coopSnap(){
     food: (df.food || []).map(function(q){ return [q.k, coopNum(q.x), coopNum(q.y), coopNum(q.drop || 0)]; }),
     trap: df.trap ? { ph: df.trap.ph, ang: coopNum(df.trap.ang || 0) } : null,
     /* every pal: [slot, x, y, face, hp, maxhp, ko, swing, zap, walk, knockbacks, kbx, kby, stuns, gone] */
-    P: df.team.map(function(p){ return [p.slot || 0, coopNum(p.x), coopNum(p.y), p.face, Math.round(p.hp), Math.round(p.maxhp), coopNum(p.ko), p.swing > 0 ? 1 : 0, (p.zapT || 0) > 0 ? 1 : 0, (p.walkT || 0) > 0 ? 1 : 0, p.kbN || 0, coopNum(p.kbx || 0), coopNum(p.kby || 0), p.stN || 0, p.mi && p.mi.gone ? 1 : 0]; }),
+    P: df.team.map(function(p){ return [p.slot || 0, coopNum(p.x), coopNum(p.y), p.face, Math.round(p.hp), Math.round(p.maxhp), coopNum(p.ko), p.swing > 0 ? 1 : 0, (p.zapT || 0) > 0 ? 1 : 0, (p.walkT || 0) > 0 ? 1 : 0, p.kbN || 0, coopNum(p.kbx || 0), coopNum(p.kby || 0), p.stN || 0, p.mi && p.mi.gone ? 1 : 0, p.beam && p.beamT > 0 ? coopNum(p.beamA) : null]; }),
     lost: df.lost || 0, rk: (df.rockets || []).map(function(k){ return [coopNum(k.x), coopNum(k.y), coopNum(k.t), k.T0, k.r, k.el || '']; }),
     fx: C.fxOut.splice(0, 40), ban: C.banOut.splice(0, 4), end: C.endOut || null };
   return snap;
@@ -10879,6 +10904,7 @@ function coopApply(S, slot){
     var m = coopMatePal(a[0]); if (!m) return;
     netIn(m, S.t, a[1], a[2]); m.face = a[3]; m.hp = a[4]; m.maxhp = a[5] || m.maxhp; m.ko = a[6]; if (a[7]) m.swing = 0.22; if (a[8]) m.zapT = 0.2; m.walkT = a[9] ? 0.12 : 0;
     if (a[14] && m.mi && !m.mi.gone){ m.mi.gone = true; m.el.classList.add('gone'); }
+    if (typeof a[15] === 'number' && m !== df.hero){ m.beamT = 0.15; m.beamA = a[15]; }
   });
   if (h && mine){
     var Sb = [mine[4], mine[5], mine[6], mine[10], mine[11], mine[12], mine[13]];
@@ -10912,10 +10938,11 @@ function dfGuestUpdate(dt){
   if (df.phase === 'ending'){ df.endT -= dt; if (df.endT <= 0){ var w = df.endWon; df.coopEnded = C; df.coop = null; dfEnd(w); return; } }
   if (C && Date.now() - (C.lastIn || Date.now()) > 9000 && !C.done){ C.done = true; df.coop = null; df.mates = []; dfBanner('Connection lost', '', 2000); dfFinish(false); df.gold = 0; df.xp = 0; return; }
   if (p){
-    p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zapT = Math.max(0, (p.zapT || 0) - dt); p.walkT = Math.max(0, (p.walkT || 0) - dt); p.hurt = Math.max(0, (p.hurt || 0) - dt);
+    p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zapT = Math.max(0, (p.zapT || 0) - dt); p.beamT = Math.max(0, (p.beamT || 0) - dt); p.walkT = Math.max(0, (p.walkT || 0) - dt); p.hurt = Math.max(0, (p.hurt || 0) - dt);
     if (p.stunN > 0){ p.mv = null; p.buf = 0; p.bob += dt * 30; }
     else if (!(p.ko > 0)){
       if (p.buf > 0){ p.buf -= dt; if (p.cool <= 0) dfAimAttack(p); }
+      if (p.beam && df.beamHold){ df.beamHold.t += dt; if (df.beamHold.t >= BEAM_MAX) df.beamHold = null; else if (p.cool <= 0) dfAimAttack(p); }
       var K = df.keys || {}, kx = (K.r ? 1 : 0) - (K.l ? 1 : 0), ky = (K.d ? 1 : 0) - (K.u ? 1 : 0);
       if (kx || ky){ var kl = Math.hypot(kx, ky); p.mv = { x: p.x + kx / kl * 60, y: p.y + ky / kl * 60, key: true }; }
       else if (p.mv && p.mv.key) p.mv = null;
@@ -10930,7 +10957,7 @@ function dfGuestUpdate(dt){
   if (!smooth) df.foes.forEach(function(f){ if (f.tx !== undefined){ f.x += (f.tx - f.x) * k; f.y += (f.ty - f.y) * k; } });
   (df.mates || []).forEach(function(m){
     if (m.tx === undefined) return;
-    var ox = m.x, oy = m.y; if (!smooth && netStep(m, dt) && Math.abs(m.x - ox) + Math.abs(m.y - oy) > 0.3) m.bob += dt * 12; m.swing = Math.max(0, (m.swing || 0) - dt); m.zapT = Math.max(0, (m.zapT || 0) - dt); m.walkT = Math.max(0, (m.walkT || 0) - dt);
+    var ox = m.x, oy = m.y; if (!smooth && netStep(m, dt) && Math.abs(m.x - ox) + Math.abs(m.y - oy) > 0.3) m.bob += dt * 12; m.swing = Math.max(0, (m.swing || 0) - dt); m.zapT = Math.max(0, (m.zapT || 0) - dt); m.beamT = Math.max(0, (m.beamT || 0) - dt); m.walkT = Math.max(0, (m.walkT || 0) - dt);
   });
   for (i = df.fx.length - 1; i >= 0; i--){ df.fx[i].life -= dt; if (df.fx[i].life <= 0) df.fx.splice(i, 1); }
   (df.rockets || []).forEach(function(k){ k.t = Math.max(0, k.t - dt); });
@@ -11464,6 +11491,12 @@ function dfNearest(x, y, maxd, from){
 }
 function dfAttack(p, f){
   p.cool = p.cd; p.face = f.x >= p.x ? 1 : -1;
+  if (p.beam){
+    var gb = p.giant ? 1.3 : 1, ab = Math.atan2(f.y - f.T.r * 0.5 - (p.y - 22 * gb), f.x - p.x);
+    p.zapT = Math.max(p.zapT || 0, 0.15); p.beamT = 0.15; p.beamA = ab;
+    df.foes.forEach(function(fq){ if (!fq.dead && beamIn(p, ab, fq.x, fq.y - fq.T.r * 0.5, fq.T.r)){ var rb = dfRoll(p); dfHurt(fq, rb.d, p, rb.c); } });
+    return;
+  }
   if (p.ranged){
     var rr = dfRoll(p);
     p.zapT = p.twin ? 0.1 : 0.2;
@@ -11496,8 +11529,14 @@ function dfAimAttack(p){
   if (df.coop && df.coop.role === 'guest' && p === df.hero){
     df.coop.atkN++; df.coop.atkOut.push([df.coop.atkN, coopNum(ang)]); if (df.coop.atkOut.length > 12) df.coop.atkOut.shift();
     if (p.ranged && p.twin){ var tg = palTwinShot(p, ca, sa); bx += tg.x; by += tg.y; }
+    if (p.beam){ p.zapT = Math.max(p.zapT || 0, 0.15); p.beamT = 0.15; p.beamA = ang; return; }
     if (p.ranged && lobLook(p.c)){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push(shroomInit({ life: 3, el: p.c.element, body: p.c.body || '', hit: [] }, bx, by, ca, sa, lobLook(p.c))); return; }
     if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else if (p.slam){ p.swing = 0.3; dfFx('quake', p.x, p.y + 4, { life: 0.45, max: 0.45, col: EL[p.c.element].c, R: p.range + SLAM_R }); } else { var swg = 0; if (p.twin){ palTwinShot(p, 1, 0); swg = p.tw ? 0.3 : -0.3; } p.swing = p.twin ? 0.14 : 0.22; dfFx('slash', bx, by, { life: p.swing, max: p.swing, col: EL[p.c.element].c, ang: ang + swg, R: p.range + 14 }); }
+    return;
+  }
+  if (p.beam){
+    p.zapT = Math.max(p.zapT || 0, 0.15); p.beamT = 0.15; p.beamA = ang;
+    df.foes.forEach(function(fq){ if (!fq.dead && beamIn(p, ang, fq.x, fq.y - fq.T.r * 0.5, fq.T.r)){ var rb = dfRoll(p); dfHurt(fq, rb.d, p, rb.c); } });
     return;
   }
   if (p.ranged){
@@ -11663,7 +11702,7 @@ function dfUpdate(dt){
   /* defenders */
   for (i = 0; i < df.team.length; i++){
     p = df.team[i];
-    p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zapT = Math.max(0, (p.zapT || 0) - dt); p.walkT = Math.max(0, (p.walkT || 0) - dt); p.hurt = Math.max(0, (p.hurt || 0) - dt);
+    p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zapT = Math.max(0, (p.zapT || 0) - dt); p.beamT = Math.max(0, (p.beamT || 0) - dt); p.walkT = Math.max(0, (p.walkT || 0) - dt); p.hurt = Math.max(0, (p.hurt || 0) - dt);
     if (p.stunN > 0){ p.bob += dt * 30; continue; }
     if (p.ko > 0){
       p.ko -= dt;
@@ -11678,6 +11717,7 @@ function dfUpdate(dt){
     if (p.foe && p.foe.dead) p.foe = null;
     if (p === df.hero){
       if (p.buf > 0){ p.buf -= dt; if (p.cool <= 0) dfAimAttack(p); }
+      if (p.beam && df.beamHold){ df.beamHold.t += dt; if (df.beamHold.t >= BEAM_MAX || p.stunN > 0) df.beamHold = null; else if (p.cool <= 0) dfAimAttack(p); }
       var K = df.keys || {}, kx = (K.r ? 1 : 0) - (K.l ? 1 : 0), ky = (K.d ? 1 : 0) - (K.u ? 1 : 0);
       if (kx || ky){ p.mv = null; p.foe = null; var kl = Math.hypot(kx, ky); p.mv = { x: p.x + kx / kl * 60, y: p.y + ky / kl * 60, key: true }; }
       else if (p.mv && p.mv.key) p.mv = null;
@@ -12647,7 +12687,8 @@ function dfDraw(){
     if (df.aim && !h.ko && (df.phase === 'play' || df.phase === 'between')){
       var AF = dfAimFrom(h), abx = AF.x, aby = AF.y, aa = AF.ang, ac = EL[h.c.element].c;
       g.save(); g.globalAlpha = h.cool > 0 ? 0.35 : 0.8;
-      if (h.ranged){
+      if (h.beam){ if (!(h.beamT > 0)) beamGuide(g, abx, aby, aa); }
+      else if (h.ranged){
         var L0 = h.range + 10;
         g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 3;
         g.beginPath(); g.moveTo(abx + Math.cos(aa) * 26, aby + Math.sin(aa) * 26); g.lineTo(abx + Math.cos(aa) * L0, aby + Math.sin(aa) * L0); g.stroke();
@@ -12727,6 +12768,7 @@ function dfDraw(){
   if (h && h.foe && !h.foe.dead){
     g.strokeStyle = '#ffd45a'; g.lineWidth = 3; g.beginPath(); g.arc(h.foe.x, h.foe.y, h.foe.T.r + 8, 0, 7); g.stroke();
   }
+  df.team.forEach(function(q){ if (q.beam && q.beamT > 0 && !(q.ko > 0)) drawBeam(g, q, df.t); });
   for (i = 0; i < df.shots.length; i++){
     var s = df.shots[i];
     if (s.z !== undefined && lobLook(s.p.c)){ ({ magma: drawMagmaShot, potion: drawPotionShot }[lobLook(s.p.c)] || drawShroomShot)(g, s.x, s.y, 13, df.t, s.z); continue; }
@@ -12844,8 +12886,11 @@ function dfClose(){
     if (wantMove){ var c = dfClampIsland(x, y + 10); H.mv = { x: c.x, y: c.y }; H.foe = null; return; }
     if (ev.button !== 0 && ev.pointerType !== 'touch') return;
     H.foe = null;
+    if (H.beam){ df.beamHold = { t: 0 }; if (H.cool <= 0) dfAimAttack(H); return; }      /* hold to keep breathing */
     if (H.cool <= 0) dfAimAttack(H); else H.buf = 0.25;
   });
+  window.addEventListener('pointerup', function(){ df.beamHold = null; if (typeof qu !== 'undefined') qu.beamHold = null; });
+  window.addEventListener('blur', function(){ df.beamHold = null; });
   cv.classList.add('df-cv-aim');
   cv.addEventListener('pointermove', function(ev){
     if (!df.open) return;
@@ -14395,8 +14440,8 @@ function quMakePal(c, slot, name, me){
     '<div class="dfp-hp"><i></i></div><div class="qcarry" hidden></div>';
   $('#qu-pals').appendChild(el);
   var ranged = c.style === 'ranged', mh = Math.round(palMaxHp(c) * (quHatOn(c) ? 1.25 : 1));
-  return { c: c, el: el, slot: slot, name: name, me: !!me, mate: !me, x: 0, y: 0, tx: 0, ty: 0, face: 1, ranged: ranged, twin: palTwin(c), slam: palSlam(c), range: ranged ? 140 : 34, cd: palTwin(c) ? 0.25 : 0.5, buf: 0, giant: !!c.giant,
-    dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (palTwin(c) ? 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
+  return { c: c, el: el, slot: slot, name: name, me: !!me, mate: !me, x: 0, y: 0, tx: 0, ty: 0, face: 1, ranged: ranged, twin: palTwin(c), slam: palSlam(c), beam: palBeam(c), range: ranged ? 140 : 34, cd: palBeam(c) ? BEAM_TICK : palTwin(c) ? 0.25 : 0.5, buf: 0, giant: !!c.giant,
+    dmg: (ranged ? RANGED_DMG : 26) * (c.giant ? 1.3 : 1) * (1 + 0.1 * upOf(c).dmg) * (1 + hatSt(c, 'dmg') / 100) * (palTwin(c) ? 0.5 : 1) * (palBeam(c) ? BEAM_TICK / 0.5 : 1), crit: 0.05 * upOf(c).crit + hatSt(c, 'crit') / 100,
     spd: palSpeedMult(c), hp: mh, maxhp: mh, ko: 0, cool: 0, swing: 0, zap: 0, walkT: 0, hurt: 0, lastHit: -99, carry: '', atkSeen: 0, lastIn: Date.now(), gone: false, mv: null, carryK: '' };
 }
 function quPlayers(){ return qu.P.filter(function(p){ return !p.gone; }); }
@@ -14593,6 +14638,7 @@ function quTryAttack(){
   p.cool = p.cd; p.buf = 0; p.face = A.face;
   if (p.ranged) p.zap = p.twin ? 0.1 : 0.2; else p.swing = p.twin ? 0.14 : 0.22;
   var C = qu.coop;
+  if (p.beam){ p.beamT = 0.15; p.beamA = ang; }
   if (p.twin && ((C && C.role === 'guest') || !p.ranged)) palTwinShot(p, 1, 0);      /* guests: the host makes the shot, but my guns still take turns */
   if (C && C.role === 'guest'){
     C.atkN++; C.atkOut.push([C.atkN, Math.round(ang * 100) / 100]); if (C.atkOut.length > 6) C.atkOut.shift();
@@ -14605,6 +14651,7 @@ function quTryAttack(){
 function quStrike(p, ang){
   var gk = p.giant ? 1.3 : 1, bx = p.x, by = p.y - 22 * gk, ca = Math.cos(ang), sa = Math.sin(ang);
   if (Math.abs(ca) > 0.15) p.face = ca > 0 ? 1 : -1;
+  if (p.beam){ p.zap = Math.max(p.zap || 0, 0.15); p.beamT = 0.15; p.beamA = ang; qu.L.foes.slice().forEach(function(f){ var r = QU_FOES[f.k].r; if (beamIn(p, ang, f.x, f.y - r * 0.5, r)) quHitFoe(f, p); }); return; }
   if (p.ranged && p.twin){ var tw = palTwinShot(p, ca, sa); bx += tw.x; by += tw.y; p.zap = 0.1; }
   if (p.ranged && lobLook(p.c)){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: lobLook(p.c) }, bx, by, ca, sa, lobLook(p.c))); return; }
   if (p.ranged){ qu.bolts.push({ x: bx, y: by, ox: bx, oy: by, vx: ca * 600, vy: sa * 600, max: p.range + 10, life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
@@ -14828,8 +14875,9 @@ function quUpdate(dt){
     }
     if (K.atk) quTryAttack();
     if (me.buf > 0){ me.buf -= dt; if (me.cool <= 0) quTryAttack(); }
+    if (me.beam && qu.beamHold){ qu.beamHold.t += dt; if (qu.beamHold.t >= BEAM_MAX) qu.beamHold = null; else if (me.cool <= 0) quTryAttack(); }
   }
-  qu.P.forEach(function(p){ p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zap = Math.max(0, p.zap - dt); p.walkT = Math.max(0, p.walkT - dt); p.hurt = Math.max(0, p.hurt - dt); });
+  qu.P.forEach(function(p){ p.cool = Math.max(0, p.cool - dt); p.swing = Math.max(0, p.swing - dt); p.zap = Math.max(0, p.zap - dt); p.beamT = Math.max(0, (p.beamT || 0) - dt); p.walkT = Math.max(0, p.walkT - dt); p.hurt = Math.max(0, p.hurt - dt); });
   if (!C || C.role === 'host'){ if (qu.phase === 'play' || qu.phase === 'ending') quHostTick(dt); }
   else quGuestTick(dt);
   if (C && C.role === 'host' && !C.endAt) qu.P.forEach(function(p){ if (p.mate && !p.gone && Date.now() - p.lastIn > 12000){ p.gone = true; quDrop(p); p.el.classList.add('gone'); quBanner(p.name + ' left', 'Keep going!', 1600); } });
@@ -15035,12 +15083,14 @@ function quDraw(){
     g.strokeStyle = 'rgba(255,140,60,.5)'; g.lineWidth = 5; g.lineCap = 'round'; g.beginPath(); g.moveTo(e.x, e.y); g.lineTo(e.x - e.vx * 0.06, e.y - e.vy * 0.06); g.stroke();
     g.fillStyle = '#fff6d0'; g.beginPath(); g.arc(e.x, e.y, 5, 0, 7); g.fill();
   });
+  qu.P.forEach(function(q){ if (q.beam && q.beamT > 0 && !(q.ko > 0)) drawBeam(g, q, qu.t); });
   (qu.bolts || []).forEach(function(B){ if (B.zap && drawShotLook(g, B.zap === true ? 'zap' : B.zap, B.x, B.y, 11, B.vx || B.vy ? Math.atan2(B.vy, B.vx) : (B.a || 0), qu.t)) return; g.fillStyle = B.col || '#fff'; g.strokeStyle = '#fff'; g.lineWidth = 2.4; g.beginPath(); g.arc(B.x, B.y, 9, 0, 7); g.fill(); g.stroke(); });
   var me = qu.hero;
   if (me && qu.aim && !(me.ko > 0) && qu.phase === 'play'){
     var AF = quAimFrom(me), aa = AF.ang, ac = EL[me.c.element].c;
     g.save(); g.globalAlpha = me.cool > 0 ? 0.35 : 0.8;
-    if (me.ranged){
+    if (me.beam){ if (!(me.beamT > 0)) beamGuide(g, AF.x, AF.y, aa); }
+    else if (me.ranged){
       var L0 = me.range + 10;
       g.setLineDash([8, 7]); g.strokeStyle = '#fff'; g.lineWidth = 3;
       g.beginPath(); g.moveTo(AF.x + Math.cos(aa) * 26, AF.y + Math.sin(aa) * 26); g.lineTo(AF.x + Math.cos(aa) * L0, AF.y + Math.sin(aa) * L0); g.stroke();
@@ -15224,6 +15274,7 @@ function quToWorld(cx, cy){ var r = qu.cv.getBoundingClientRect(); return { x: q
     if (ev.pointerType === 'touch') wantMove = Math.hypot(p.x - me.x, p.y - (me.y - 22)) > me.range + 60;
     if (wantMove){ me.mv = { x: p.x, y: p.y + 10 }; return; }
     if (ev.button !== 0 && ev.pointerType !== 'touch') return;
+    if (me.beam) qu.beamHold = { t: 0 };
     quTryAttack();
   });
   cv.addEventListener('pointermove', function(ev){ if (!qu.open) return; var p = quToWorld(ev.clientX, ev.clientY); qu.aim = { x: p.x, y: p.y }; });
@@ -21403,6 +21454,7 @@ function tcAct(first){
     if (f) df.aim = { x: f.x, y: f.y - 10 };
     else { var dx = tc.vx || tc.lx || H.face || 1, dy = tc.vx || tc.vy ? tc.vy : tc.ly; df.aim = { x: H.x + dx * 120, y: H.y - 22 + dy * 120 }; }
     H.foe = null;
+    if (H.beam){ if (first) df.beamHold = { t: 0 }; return; }
     if (H.cool <= 0) dfAimAttack(H); else H.buf = 0.25;
   } else if (tc.mode === 'qu'){
     var Q = qu.hero; if (!qu.open || !Q || Q.ko > 0 || qu.phase !== 'play') return;
