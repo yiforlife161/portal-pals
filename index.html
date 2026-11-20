@@ -4719,7 +4719,7 @@ var PAL_BODIES = {
   ss:     { label: 'Shark Suit',      el: 'earth',  style: 'melee',  giant: false, art: ssArt,     back: ssBack,     front: ssFront },
   tr:     { label: 'Tree Giant',      el: 'life',   style: 'melee',  giant: true,  art: trArt,     back: trBack,     front: trFront },
   ik:     { label: 'Ice Knightess',   el: 'water',  style: 'ranged', giant: false, art: ikArt,     back: ikBack,     front: ikFront },
-  mr:     { label: 'Magma Brute',     el: 'fire',   style: 'ranged', giant: false, art: mrArt,     back: mrBack,     front: mrFront },
+  mr:     { label: 'Magma Brute',     el: 'fire',   style: 'ranged', giant: false, art: mrArt,     back: mrBack,     front: mrFront, shot: 'magma' },
   wi:     { label: 'Skull Witch',     el: 'undead', style: 'ranged', giant: false, art: wiArt,     back: wiBack,     front: wiFront, shot: 'skull' },
   bn:     { label: 'Bone Rider',      el: 'undead', style: 'melee',  giant: false, art: bnArt,     back: bnBack,     front: bnFront },
   rv:     { label: 'Night Raven',     el: 'air',    style: 'ranged', giant: false, art: rvArt,     back: rvBack,     front: rvFront },
@@ -4783,21 +4783,38 @@ function drawShotLook(g, look, x, y, r, ang, t){
   if (look === 'firearrow'){ drawFireArrowShot(g, x, y, r, ang, t); return true; }
   if (look === 'harpoon'){ drawHarpoonShot(g, x, y, r, ang, t); return true; }
   if (look === 'shroom'){ drawShroomShot(g, x, y, r, t); return true; }
+  if (look === 'magma'){ drawMagmaShot(g, x, y, r, t); return true; }
   return false;
 }
 /* Mushroom Guy's bouncing mushroom: it hops along the ground SHROOM_HOPS times (each hop shorter and lower) and blows up when it
    touches a monster or lands the last time, hurting everything within SHROOM_R. s.gx/s.gy = where it is on the ground,
    s.x/s.y = where it is drawn (lifted by the hop). shroomStep moves it and returns true when it lands */
+/* Magma Brute's lava rock uses the same machinery with one long, high arc to full range ('magma' in LOB): it bursts on the first
+   monster it touches or where it lands. lobLook(c) = 'shroom' / 'magma' / '' */
 var SHROOM_HOPS = 3, SHROOM_R = 58, SHROOM_HOP = [62, 52, 44], SHROOM_H = [42, 30, 20], SHROOM_V = 300;
-function shroomInit(s, x, y, dx, dy){ s.shroom = true; s.gx = x; s.gy = y + 18; s.dx = dx; s.dy = dy; s.hop = 0; s.ht = 0; s.z = 18; s.v = SHROOM_V; s.x = x; s.y = y; return s; }
+var LOB = { shroom: { hops: 3, L: SHROOM_HOP, H: SHROOM_H, v: SHROOM_V, col: '#e8302a', ring: '#ffd0c8' }, magma: { hops: 1, L: [150], H: [62], v: 320, col: '#ff6a1a', ring: '#ffd23a' } };
+function lobLook(c){ var k = shotLook(c); return LOB[k] ? k : ''; }
+function shroomInit(s, x, y, dx, dy, kind){ s.shroom = true; s.kind = LOB[kind] ? kind : 'shroom'; s.gx = x; s.gy = y + 18; s.dx = dx; s.dy = dy; s.hop = 0; s.ht = 0; s.z = 18; s.v = LOB[s.kind].v; s.x = x; s.y = y; return s; }
+function lobDone(s){ return s.hop >= LOB[s.kind || 'shroom'].hops; }
 function shroomStep(s, dt){
-  var L = SHROOM_HOP[s.hop] || 40, T = L / SHROOM_V, z0 = s.hop === 0 ? 18 : 0;
-  s.ht += dt; s.gx += s.dx * SHROOM_V * dt; s.gy += s.dy * SHROOM_V * dt * 0.8;
+  var K = LOB[s.kind || 'shroom'], V = K.v, L = K.L[s.hop] || 40, T = L / V, z0 = s.hop === 0 ? 18 : 0;
+  s.ht += dt; s.gx += s.dx * V * dt; s.gy += s.dy * V * dt * 0.8;
   var u = Math.min(1, s.ht / T);
-  s.z = z0 * (1 - u) + Math.sin(u * Math.PI) * (SHROOM_H[s.hop] || 16);
+  s.z = z0 * (1 - u) + Math.sin(u * Math.PI) * (K.H[s.hop] || 16);
   s.x = s.gx; s.y = s.gy - s.z; s.spin = (s.spin || 0) + dt * 9 * (s.dx >= 0 ? 1 : -1);
   if (u >= 1){ s.hop++; s.ht = 0; return true; }
   return false;
+}
+function drawMagmaShot(g, x, y, r, t, z){
+  var k = r / 11;
+  if (z !== undefined){ g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(x, y + z, 10 * k * (1 - Math.min(0.5, z / 120)), 4 * k, 0, 0, 7); g.fill(); }
+  var gl = g.createRadialGradient(x, y, 2, x, y, 18 * k); gl.addColorStop(0, 'rgba(255,200,60,.8)'); gl.addColorStop(1, 'rgba(255,80,20,0)');
+  g.fillStyle = gl; g.beginPath(); g.arc(x, y, 18 * k, 0, 7); g.fill();
+  g.save(); g.translate(x, y); g.rotate(t * 6); g.scale(k, k); g.lineJoin = 'round';
+  g.fillStyle = '#4a1a0c'; g.strokeStyle = '#1a0604'; g.lineWidth = 2;
+  g.beginPath(); g.moveTo(-9, -3); g.lineTo(-4, -9); g.lineTo(5, -8); g.lineTo(10, -1); g.lineTo(6, 8); g.lineTo(-4, 9); g.lineTo(-10, 4); g.closePath(); g.fill(); g.stroke();
+  g.strokeStyle = '#ffb02a'; g.lineWidth = 2.2; g.beginPath(); g.moveTo(-6, -2); g.lineTo(-1, 1); g.lineTo(4, -4); g.moveTo(-1, 1); g.lineTo(1, 6); g.stroke();
+  g.restore();
 }
 function drawShroomShot(g, x, y, r, t, z){
   var k = r / 11;
@@ -10719,7 +10736,7 @@ function coopInterp(dt){
     if (sh[7] && sh[7] === C.slot) return;      /* my own shots are already drawn here the moment I fire */
     var nx = s1 && find(s1.shots, sh[4], 4), x, y;
     if (nx){ x = sh[0] + (nx[0] - sh[0]) * a; y = sh[1] + (nx[1] - sh[1]) * a; } else { x = sh[0] + (sh[5] || 0) * tt; y = sh[1] + (sh[6] || 0) * tt; }
-    df.shots.push({ x: x, y: y, z: sh[8] === undefined || sh[8] === null ? undefined : sh[8], ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : sh[3] === 'shroom' ? { element: 'life', body: 'sh' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
+    df.shots.push({ x: x, y: y, z: sh[8] === undefined || sh[8] === null ? undefined : sh[8], ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : sh[3] === 'shroom' ? { element: 'life', body: 'sh' } : sh[3] === 'magma' ? { element: 'fire', body: 'mr' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
   });
   df.eshots = [];
   base.es.forEach(function(e){
@@ -10732,7 +10749,7 @@ function coopInterp(dt){
   for (j = C.ghost.length - 1; j >= 0; j--){
     var g = C.ghost[j];
     if (g.shroom){ g.life -= dt; var gl0 = shroomStep(g, dt), gh = df.foes.some(function(f){ return f.T && Math.hypot(f.x - g.x, f.y - f.T.r * 0.5 - g.y) < f.T.r + 8; });
-      if (gh || (gl0 && g.hop >= SHROOM_HOPS) || g.life <= 0){ C.ghost.splice(j, 1); continue; }
+      if (gh || (gl0 && lobDone(g)) || g.life <= 0){ C.ghost.splice(j, 1); continue; }
       df.shots.push({ x: g.x, y: g.y, z: g.z, ang: 0, p: { c: { element: g.el, body: g.body } } }); continue; }
     var st = g.v * dt; g.x += g.dx * st; g.y += g.dy * st; g.life -= dt;
     g.hit = g.hit || [];
@@ -11422,7 +11439,7 @@ function dfAttack(p, f){
     var rr = dfRoll(p);
     p.zapT = p.twin ? 0.1 : 0.2;
     var gk = p.giant ? 1.3 : 1, tw = p.twin ? palTwinShot(p, p.face, 0) : { x: 0, y: 0 };
-    if (shotLook(p.c) === 'shroom'){ var sx0 = p.x + p.face * 20, sy0 = p.y - 22 * gk, sdx0 = f.x - sx0, sdy0 = f.y - 10 - sy0, sl0 = Math.hypot(sdx0, sdy0) || 1; df.shots.push(shroomInit({ p: p, ang: 0, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, sx0, sy0, sdx0 / sl0, sdy0 / sl0)); return; }
+    if (lobLook(p.c)){ var sx0 = p.x + p.face * 20, sy0 = p.y - 22 * gk, sdx0 = f.x - sx0, sdy0 = f.y - 10 - sy0, sl0 = Math.hypot(sdx0, sdy0) || 1; df.shots.push(shroomInit({ p: p, ang: 0, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, sx0, sy0, sdx0 / sl0, sdy0 / sl0, lobLook(p.c))); return; }
     df.shots.push({ x: p.x + p.face * 0.47 * 62 * gk + tw.x, y: p.y - (0.86 - 0.34) * 62 * gk + tw.y, f: f, p: p, v: 560, ang: 0, life: 2, dmg: rr.d, crit: rr.c });
   } else {
     p.swing = 0.22;
@@ -11445,7 +11462,7 @@ function dfAimAttack(p){
   if (df.coop && df.coop.role === 'guest' && p === df.hero){
     df.coop.atkN++; df.coop.atkOut.push([df.coop.atkN, coopNum(ang)]); if (df.coop.atkOut.length > 12) df.coop.atkOut.shift();
     if (p.ranged && p.twin){ var tg = palTwinShot(p, ca, sa); bx += tg.x; by += tg.y; }
-    if (p.ranged && shotLook(p.c) === 'shroom'){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push(shroomInit({ life: 3, el: p.c.element, body: p.c.body || '', hit: [] }, bx, by, ca, sa)); return; }
+    if (p.ranged && lobLook(p.c)){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push(shroomInit({ life: 3, el: p.c.element, body: p.c.body || '', hit: [] }, bx, by, ca, sa, lobLook(p.c))); return; }
     if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else { p.swing = 0.22; dfFx('slash', bx, by, { life: 0.22, max: 0.22, col: EL[p.c.element].c, ang: ang, R: p.range + 14 }); }
     return;
   }
@@ -11453,7 +11470,7 @@ function dfAimAttack(p){
     p.zapT = p.twin ? 0.1 : 0.2;
     if (p.twin){ var tw2 = palTwinShot(p, ca, sa); bx += tw2.x; by += tw2.y; }
     var rr = dfRoll(p);
-    if (shotLook(p.c) === 'shroom'){ df.shots.push(shroomInit({ p: p, ang: ang, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, bx, by, ca, sa)); return; }
+    if (lobLook(p.c)){ df.shots.push(shroomInit({ p: p, ang: ang, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, bx, by, ca, sa, lobLook(p.c))); return; }
     df.shots.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, p: p, v: 600, ang: ang, life: 2, dmg: rr.d, crit: rr.c, aimed: true });
     return;
   }
@@ -11648,12 +11665,12 @@ function dfUpdate(dt){
     if (s.shroom){
       var landed = shroomStep(s, dt), hitM = null;
       for (var mi = 0; mi < df.foes.length; mi++){ var fm = df.foes[mi]; if (!fm.dead && Math.hypot(fm.x - s.x, fm.y - fm.T.r * 0.5 - s.y) < fm.T.r + 8){ hitM = fm; break; } }
-      if (landed && !hitM && s.hop < SHROOM_HOPS) dfFx('puff', s.gx, s.gy + 8, { life: 0.2, max: 0.2, col: 'rgba(255,255,255,.7)' });
-      if (hitM || (landed && s.hop >= SHROOM_HOPS) || s.life <= 0){
+      if (landed && !hitM && !lobDone(s)) dfFx('puff', s.gx, s.gy + 8, { life: 0.2, max: 0.2, col: 'rgba(255,255,255,.7)' });
+      if (hitM || (landed && lobDone(s)) || s.life <= 0){
         var bx0 = hitM ? s.x : s.gx, by0 = hitM ? s.y + 10 : s.gy;
         df.foes.forEach(function(fq){ if (!fq.dead && Math.hypot(fq.x - bx0, (fq.y - by0) * 1.3) < SHROOM_R + fq.T.r * 0.6) dfHurt(fq, s.dmg, s.p, s.crit); });
-        dfFx('boom', bx0, by0 + 6, { life: 0.4, max: 0.4, col: '#e8302a' });
-        dfFx('ring', bx0, by0, { life: 0.35, max: 0.35, col: '#ffd0c8' });
+        dfFx('boom', bx0, by0 + 6, { life: 0.4, max: 0.4, col: LOB[s.kind].col });
+        dfFx('ring', bx0, by0, { life: 0.35, max: 0.35, col: LOB[s.kind].ring });
         df.shots.splice(i, 1);
       }
       continue;
@@ -12652,7 +12669,7 @@ function dfDraw(){
   }
   for (i = 0; i < df.shots.length; i++){
     var s = df.shots[i];
-    if (s.z !== undefined && shotLook(s.p.c) === 'shroom'){ drawShroomShot(g, s.x, s.y, 13, df.t, s.z); continue; }
+    if (s.z !== undefined && lobLook(s.p.c)){ (lobLook(s.p.c) === 'magma' ? drawMagmaShot : drawShroomShot)(g, s.x, s.y, 13, df.t, s.z); continue; }
     if (!drawShotLook(g, shotLook(s.p.c), s.x, s.y, 13, s.ang, df.t)) cnDrawBullet(g, s.p.c.element, s.x, s.y, 13, s.ang, df.t, false);
   }
   dfDrawFx(g);
@@ -14527,7 +14544,7 @@ function quStrike(p, ang){
   var gk = p.giant ? 1.3 : 1, bx = p.x, by = p.y - 22 * gk, ca = Math.cos(ang), sa = Math.sin(ang);
   if (Math.abs(ca) > 0.15) p.face = ca > 0 ? 1 : -1;
   if (p.ranged && p.twin){ var tw = palTwinShot(p, ca, sa); bx += tw.x; by += tw.y; p.zap = 0.1; }
-  if (p.ranged && shotLook(p.c) === 'shroom'){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: 'shroom' }, bx, by, ca, sa)); return; }
+  if (p.ranged && lobLook(p.c)){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: lobLook(p.c) }, bx, by, ca, sa, lobLook(p.c))); return; }
   if (p.ranged){ qu.bolts.push({ x: bx, y: by, ox: bx, oy: by, vx: ca * 600, vy: sa * 600, max: p.range + 10, life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
   quFx({ k: 'slash', x: bx, y: by, a: ang, R: p.range + 14, col: EL[p.c.element].c, t: 0.22, T: 0.22 });
   var hit = false;
@@ -14705,10 +14722,10 @@ function quHostTick(dt){
       var Bs = qu.bolts[i]; Bs.life -= dt;
       var lnd = shroomStep(Bs, dt), hm = null;
       L.foes.forEach(function(f){ if (!hm && Math.hypot(f.x - Bs.x, f.y - 16 - Bs.y) < QU_FOES[f.k].r + 10) hm = f; });
-      if (hm || (lnd && Bs.hop >= SHROOM_HOPS) || Bs.life <= 0){
+      if (hm || (lnd && lobDone(Bs)) || Bs.life <= 0){
         var ex = hm ? Bs.x : Bs.gx, ey = hm ? Bs.y + 10 : Bs.gy;
         L.foes.slice().forEach(function(f){ if (Math.hypot(f.x - ex, (f.y - ey) * 1.3) < SHROOM_R + QU_FOES[f.k].r * 0.6) quHitFoe(f, Bs.p); });
-        quFx({ k: 'ring', x: ex, y: ey, t: 0.35, T: 0.35, c: '#e8302a' }); quFx({ k: 'boom', x: ex, y: ey + 14, t: 0.4, T: 0.4, small: true });
+        quFx({ k: 'ring', x: ex, y: ey, t: 0.35, T: 0.35, c: LOB[Bs.kind].col }); quFx({ k: 'boom', x: ex, y: ey + 14, t: 0.4, T: 0.4, small: true });
         qu.bolts.splice(i, 1);
       }
       continue;
