@@ -4703,7 +4703,7 @@ function bnFront(c){
 }
 
 var PAL_BODIES = {
-  eagle:  { label: 'Sky Eagle',       el: 'air',    style: 'ranged', giant: false, art: eagleArt,  back: eagleBack,  front: eagleFront },
+  eagle:  { label: 'Sky Eagle',       el: 'air',    style: 'ranged', giant: false, art: eagleArt,  back: eagleBack,  front: eagleFront, pierce: 99 },
   wyrm:   { label: 'Grave Dragon',    el: 'undead', style: 'ranged', giant: false, art: wyrmArt,   back: wyrmBack,   front: wyrmFront, shot: 'zap', beam: true },
   knight: { label: 'Skeleton Knight', el: 'undead', style: 'melee',  giant: false, art: knightArt, back: knightBack, front: knightFront },
   mecha:  { label: 'Wheel Bot',       el: 'tech',   style: 'ranged', giant: true,  art: mechaArt,  back: mechaBack,  front: mechaFront, twin: true },
@@ -6444,6 +6444,8 @@ var RANGE_U = 20; /* ranged pals' max range, in world units */
 /* ranged pals in the combat minigames: a melee swing does 26 to everything in its arc; a wand shot does a bit less, but it
    flies far and goes through up to SHOT_PIERCE monsters in a line (it used to do 11 and stop at the first one) */
 var RANGED_DMG = 19, SHOT_PIERCE = 3;
+/* how many monsters a pal's shot goes through: SHOT_PIERCE, or the body's own `pierce` (Sky Eagle: every monster in the way) */
+function shotPierce(c){ var B = c && c.body && PAL_BODIES[c.body]; return B && B.pierce ? B.pierce : SHOT_PIERCE; }
 var cam = { x:0, y:0, free:false }, UPX = 9;
 var drag = null, ghost = null, dirty = false, flashTimer = 0;
 
@@ -10898,7 +10900,7 @@ function coopInterp(dt){
     var st = g.v * dt; g.x += g.dx * st; g.y += g.dy * st; g.life -= dt;
     g.hit = g.hit || [];
     df.foes.forEach(function(f){ if (f.T && g.hit.indexOf(f.id) < 0 && Math.hypot(f.x - g.x, f.y - f.T.r * 0.5 - g.y) < f.T.r + 10) g.hit.push(f.id); });
-    if ((g.hit.length >= SHOT_PIERCE && !g.glaive) || g.life <= 0 || Math.hypot(g.x - g.ox, g.y - g.oy) >= g.max){ C.ghost.splice(j, 1); continue; }
+    if ((g.hit.length >= shotPierce({ body: g.body }) && !g.glaive) || g.life <= 0 || Math.hypot(g.x - g.ox, g.y - g.oy) >= g.max){ C.ghost.splice(j, 1); continue; }
     df.shots.push({ x: g.x, y: g.y, ang: g.ang, p: { c: { element: g.el, body: g.body } } });
   }
   /* hits and puffs show up in step with the delayed picture */
@@ -11865,7 +11867,7 @@ function dfUpdate(dt){
         s.hit.push(hitF);
         dfHurt(hitF, s.dmg, s.p, s.crit);
         dfFx('boom', s.x, s.y + 8, { life: 0.25, max: 0.25, col: EL[s.p.c.element].c, small: true });
-        if (s.hit.length >= SHOT_PIERCE){ df.shots.splice(i, 1); continue; }
+        if (s.hit.length >= shotPierce(s.p.c)){ df.shots.splice(i, 1); continue; }
       }
       if (Math.hypot(s.x - s.ox, s.y - s.oy) >= s.max || s.life <= 0){
         dfFx('puff', s.x, s.y + 10, { life: 0.25, max: 0.25, col: EL[s.p.c.element].c });
@@ -14949,7 +14951,7 @@ function quHostTick(dt){
     if (B.glaive){ L.foes.slice().forEach(function(f){ if (B.hit.indexOf(f) < 0 && Math.hypot(f.x - B.x, f.y - 16 - B.y) < QU_FOES[f.k].r + 16 + GLAIVE_R){ B.hit.push(f); quHitFoe(f, B.p); } }); if (B.life <= 0) qu.bolts.splice(i, 1); continue; }
     L.foes.forEach(function(f){ if (!hit && B.hit.indexOf(f) < 0 && Math.hypot(f.x - B.x, f.y - 16 - B.y) < QU_FOES[f.k].r + 16) hit = f; });
     if (hit){ B.hit.push(hit); quHitFoe(hit, B.p); quFx({ k: 'ring', x: B.x, y: B.y, t: 0.25, T: 0.25, c: B.col }); }      /* goes on through, up to SHOT_PIERCE monsters */
-    if ((hit && B.hit.length >= SHOT_PIERCE) || B.life <= 0) qu.bolts.splice(i, 1);
+    if ((hit && B.hit.length >= shotPierce(B.p && B.p.c)) || B.life <= 0) qu.bolts.splice(i, 1);
   }
 }
 
