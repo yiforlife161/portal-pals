@@ -4704,7 +4704,7 @@ var PAL_BODIES = {
   mecha:  { label: 'Wheel Bot',       el: 'tech',   style: 'ranged', giant: true,  art: mechaArt,  back: mechaBack,  front: mechaFront, twin: true },
   rogue:  { label: 'Masked Rogue',    el: 'life',   style: 'melee',  giant: false, art: rogueArt,  back: rogueBack,  front: rogueFront },
   md:     { label: 'Mech Dragon',     el: 'tech',   style: 'ranged', giant: false, art: mdArt,     back: mdBack,     front: mdFront },
-  sh:     { label: 'Mushroom Guy',    el: 'life',   style: 'ranged', giant: false, art: shArt,     back: shBack,     front: shFront },
+  sh:     { label: 'Mushroom Guy',    el: 'life',   style: 'ranged', giant: false, art: shArt,     back: shBack,     front: shFront, shot: 'shroom' },
   tk:     { label: 'Technician',      el: 'tech',   style: 'melee',  giant: false, art: tkArt,     back: tkBack,     front: tkFront },
   ar:     { label: 'Arcane Dragon',   el: 'magic',  style: 'ranged', giant: false, art: arArt,     back: arBack,     front: arFront },
   go:     { label: 'Rock Golem',      el: 'earth',  style: 'ranged', giant: false, art: goArt,     back: goBack,     front: goFront },
@@ -4779,7 +4779,33 @@ function drawShotLook(g, look, x, y, r, ang, t){
   if (look === 'skull'){ drawSkullShot(g, x, y, r, ang, t); return true; }
   if (look === 'firearrow'){ drawFireArrowShot(g, x, y, r, ang, t); return true; }
   if (look === 'harpoon'){ drawHarpoonShot(g, x, y, r, ang, t); return true; }
+  if (look === 'shroom'){ drawShroomShot(g, x, y, r, t); return true; }
   return false;
+}
+/* Mushroom Guy's bouncing mushroom: it hops along the ground SHROOM_HOPS times (each hop shorter and lower) and blows up when it
+   touches a monster or lands the last time, hurting everything within SHROOM_R. s.gx/s.gy = where it is on the ground,
+   s.x/s.y = where it is drawn (lifted by the hop). shroomStep moves it and returns true when it lands */
+var SHROOM_HOPS = 3, SHROOM_R = 58, SHROOM_HOP = [62, 52, 44], SHROOM_H = [42, 30, 20], SHROOM_V = 300;
+function shroomInit(s, x, y, dx, dy){ s.shroom = true; s.gx = x; s.gy = y + 18; s.dx = dx; s.dy = dy; s.hop = 0; s.ht = 0; s.z = 18; s.v = SHROOM_V; s.x = x; s.y = y; return s; }
+function shroomStep(s, dt){
+  var L = SHROOM_HOP[s.hop] || 40, T = L / SHROOM_V, z0 = s.hop === 0 ? 18 : 0;
+  s.ht += dt; s.gx += s.dx * SHROOM_V * dt; s.gy += s.dy * SHROOM_V * dt * 0.8;
+  var u = Math.min(1, s.ht / T);
+  s.z = z0 * (1 - u) + Math.sin(u * Math.PI) * (SHROOM_H[s.hop] || 16);
+  s.x = s.gx; s.y = s.gy - s.z; s.spin = (s.spin || 0) + dt * 9 * (s.dx >= 0 ? 1 : -1);
+  if (u >= 1){ s.hop++; s.ht = 0; return true; }
+  return false;
+}
+function drawShroomShot(g, x, y, r, t, z){
+  var k = r / 11;
+  if (z !== undefined){ g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(x, y + z, 10 * k * (1 - Math.min(0.5, z / 90)), 4 * k, 0, 0, 7); g.fill(); }
+  g.save(); g.translate(x, y); g.rotate(Math.sin(t * 14) * 0.25); g.scale(k, k);
+  g.lineJoin = 'round'; g.strokeStyle = '#3a1a0a'; g.lineWidth = 2;
+  g.fillStyle = '#f6ead0'; g.beginPath(); g.moveTo(-4, 0); g.lineTo(-5, 8); g.quadraticCurveTo(0, 10.5, 5, 8); g.lineTo(4, 0); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#e8302a'; g.beginPath(); g.moveTo(-11, 1); g.quadraticCurveTo(-11, -11, 0, -11); g.quadraticCurveTo(11, -11, 11, 1); g.quadraticCurveTo(0, 4, -11, 1); g.closePath(); g.fill(); g.stroke();
+  g.fillStyle = '#fff'; g.beginPath(); g.arc(-5, -5, 2.2, 0, 7); g.arc(3, -7.5, 1.8, 0, 7); g.arc(6, -2, 1.6, 0, 7); g.fill();
+  g.fillStyle = '#3a1a0a'; g.beginPath(); g.arc(-1.8, 4, 0.9, 0, 7); g.arc(1.8, 4, 0.9, 0, 7); g.fill();
+  g.restore();
 }
 /* a barbed harpoon trailing a wavy rope, with a little splash of spray (Reef Grunt) */
 function drawHarpoonShot(g, x, y, r, ang, t){
@@ -10690,7 +10716,7 @@ function coopInterp(dt){
     if (sh[7] && sh[7] === C.slot) return;      /* my own shots are already drawn here the moment I fire */
     var nx = s1 && find(s1.shots, sh[4], 4), x, y;
     if (nx){ x = sh[0] + (nx[0] - sh[0]) * a; y = sh[1] + (nx[1] - sh[1]) * a; } else { x = sh[0] + (sh[5] || 0) * tt; y = sh[1] + (sh[6] || 0) * tt; }
-    df.shots.push({ x: x, y: y, ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
+    df.shots.push({ x: x, y: y, z: sh[8] === undefined || sh[8] === null ? undefined : sh[8], ang: sh[2], p: { c: sh[3] === 'zap' ? { element: 'undead', body: 'wyrm' } : sh[3] === 'rainbow' ? { element: 'air', body: 'gm' } : sh[3] === 'bolt' ? { element: 'air', body: 'zs' } : sh[3] === 'skull' ? { element: 'undead', body: 'wi' } : sh[3] === 'firearrow' ? { element: 'fire', body: 'ga' } : sh[3] === 'harpoon' ? { element: 'water', body: 'rg' } : sh[3] === 'shroom' ? { element: 'life', body: 'sh' } : { element: EL[sh[3]] ? sh[3] : 'fire' } } });
   });
   df.eshots = [];
   base.es.forEach(function(e){
@@ -10701,7 +10727,11 @@ function coopInterp(dt){
   /* my own ranged shots: drawn right away, they go through up to SHOT_PIERCE monsters like the real ones */
   C.ghost = C.ghost || [];
   for (j = C.ghost.length - 1; j >= 0; j--){
-    var g = C.ghost[j], st = g.v * dt; g.x += g.dx * st; g.y += g.dy * st; g.life -= dt;
+    var g = C.ghost[j];
+    if (g.shroom){ g.life -= dt; var gl0 = shroomStep(g, dt), gh = df.foes.some(function(f){ return f.T && Math.hypot(f.x - g.x, f.y - f.T.r * 0.5 - g.y) < f.T.r + 8; });
+      if (gh || (gl0 && g.hop >= SHROOM_HOPS) || g.life <= 0){ C.ghost.splice(j, 1); continue; }
+      df.shots.push({ x: g.x, y: g.y, z: g.z, ang: 0, p: { c: { element: g.el, body: g.body } } }); continue; }
+    var st = g.v * dt; g.x += g.dx * st; g.y += g.dy * st; g.life -= dt;
     g.hit = g.hit || [];
     df.foes.forEach(function(f){ if (f.T && g.hit.indexOf(f.id) < 0 && Math.hypot(f.x - g.x, f.y - f.T.r * 0.5 - g.y) < f.T.r + 10) g.hit.push(f.id); });
     if (g.hit.length >= SHOT_PIERCE || g.life <= 0 || Math.hypot(g.x - g.ox, g.y - g.oy) >= g.max){ C.ghost.splice(j, 1); continue; }
@@ -10724,7 +10754,7 @@ function coopSnap(){
   var snap = { t: Date.now(), ph: df.phase, wave: df.wave, kills: df.kills, left: df.queue.length + df.foes.filter(function(f){ return !f.dead; }).length, lv: df.lv, am: df.amode,
     foes: df.foes.filter(function(f){ return !f.dead; }).map(function(f){ return [f.id, f.k, coopNum(f.x), coopNum(f.y), Math.round(f.hp), Math.round(f.max), f.dir, f.hit > 0 ? 1 : 0, coopNum(f.wind || 0), coopNum(f.windMax || 0), f.atkType || '', coopNum(f.sx || 0), coopNum(f.sy || 0), coopNum(f.sr || 0), coopNum(f.slam || 0), coopNum(f.dash || 0), f.carry ? 1 : 0, f.flee ? 1 : 0, f.bk || '', f.vol || 0]; }),
     shots: df.shots.map(function(q){ if (!q.nid) q.nid = ++coopIds; var sv = q.aimed ? [q.dx * q.v, q.dy * q.v] : [Math.cos(q.ang || 0) * (q.v || 0), Math.sin(q.ang || 0) * (q.v || 0)];
-      return [coopNum(q.x), coopNum(q.y), coopNum(q.ang || 0), q.p && q.p.c ? (shotLook(q.p.c) || q.p.c.element) : 'fire', q.nid, Math.round(sv[0]), Math.round(sv[1]), q.aimed && q.p && q.p.mate ? q.p.slot : 0]; }),
+      return [coopNum(q.x), coopNum(q.y), coopNum(q.ang || 0), q.p && q.p.c ? (shotLook(q.p.c) || q.p.c.element) : 'fire', q.nid, Math.round(sv[0]), Math.round(sv[1]), q.aimed && q.p && q.p.mate ? q.p.slot : 0, q.shroom ? coopNum(q.z) : undefined]; }),
     es: (df.eshots || []).map(function(e){ if (!e.nid) e.nid = ++coopIds; return [coopNum(e.x), coopNum(e.y), coopNum(e.vx), coopNum(e.vy), e.nid, e.el || '']; }),
     food: (df.food || []).map(function(q){ return [q.k, coopNum(q.x), coopNum(q.y), coopNum(q.drop || 0)]; }),
     trap: df.trap ? { ph: df.trap.ph, ang: coopNum(df.trap.ang || 0) } : null,
@@ -11389,6 +11419,7 @@ function dfAttack(p, f){
     var rr = dfRoll(p);
     p.zapT = p.twin ? 0.1 : 0.2;
     var gk = p.giant ? 1.3 : 1, tw = p.twin ? palTwinShot(p, p.face, 0) : { x: 0, y: 0 };
+    if (shotLook(p.c) === 'shroom'){ var sx0 = p.x + p.face * 20, sy0 = p.y - 22 * gk, sdx0 = f.x - sx0, sdy0 = f.y - 10 - sy0, sl0 = Math.hypot(sdx0, sdy0) || 1; df.shots.push(shroomInit({ p: p, ang: 0, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, sx0, sy0, sdx0 / sl0, sdy0 / sl0)); return; }
     df.shots.push({ x: p.x + p.face * 0.47 * 62 * gk + tw.x, y: p.y - (0.86 - 0.34) * 62 * gk + tw.y, f: f, p: p, v: 560, ang: 0, life: 2, dmg: rr.d, crit: rr.c });
   } else {
     p.swing = 0.22;
@@ -11411,6 +11442,7 @@ function dfAimAttack(p){
   if (df.coop && df.coop.role === 'guest' && p === df.hero){
     df.coop.atkN++; df.coop.atkOut.push([df.coop.atkN, coopNum(ang)]); if (df.coop.atkOut.length > 12) df.coop.atkOut.shift();
     if (p.ranged && p.twin){ var tg = palTwinShot(p, ca, sa); bx += tg.x; by += tg.y; }
+    if (p.ranged && shotLook(p.c) === 'shroom'){ p.zapT = 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push(shroomInit({ life: 3, el: p.c.element, body: p.c.body || '', hit: [] }, bx, by, ca, sa)); return; }
     if (p.ranged){ p.zapT = p.twin ? 0.1 : 0.2; df.coop.ghost = df.coop.ghost || []; df.coop.ghost.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, v: 600, ang: ang, life: 2, el: p.c.element, body: p.c.body || '' }); } else { p.swing = 0.22; dfFx('slash', bx, by, { life: 0.22, max: 0.22, col: EL[p.c.element].c, ang: ang, R: p.range + 14 }); }
     return;
   }
@@ -11418,6 +11450,7 @@ function dfAimAttack(p){
     p.zapT = p.twin ? 0.1 : 0.2;
     if (p.twin){ var tw2 = palTwinShot(p, ca, sa); bx += tw2.x; by += tw2.y; }
     var rr = dfRoll(p);
+    if (shotLook(p.c) === 'shroom'){ df.shots.push(shroomInit({ p: p, ang: ang, life: 3, dmg: rr.d, crit: rr.c, aimed: true }, bx, by, ca, sa)); return; }
     df.shots.push({ x: bx, y: by, ox: bx, oy: by, dx: ca, dy: sa, max: p.range + 10, p: p, v: 600, ang: ang, life: 2, dmg: rr.d, crit: rr.c, aimed: true });
     return;
   }
@@ -11609,6 +11642,19 @@ function dfUpdate(dt){
   /* projectiles */
   for (i = df.shots.length - 1; i >= 0; i--){
     s = df.shots[i]; s.life -= dt;
+    if (s.shroom){
+      var landed = shroomStep(s, dt), hitM = null;
+      for (var mi = 0; mi < df.foes.length; mi++){ var fm = df.foes[mi]; if (!fm.dead && Math.hypot(fm.x - s.x, fm.y - fm.T.r * 0.5 - s.y) < fm.T.r + 8){ hitM = fm; break; } }
+      if (landed && !hitM && s.hop < SHROOM_HOPS) dfFx('puff', s.gx, s.gy + 8, { life: 0.2, max: 0.2, col: 'rgba(255,255,255,.7)' });
+      if (hitM || (landed && s.hop >= SHROOM_HOPS) || s.life <= 0){
+        var bx0 = hitM ? s.x : s.gx, by0 = hitM ? s.y + 10 : s.gy;
+        df.foes.forEach(function(fq){ if (!fq.dead && Math.hypot(fq.x - bx0, (fq.y - by0) * 1.3) < SHROOM_R + fq.T.r * 0.6) dfHurt(fq, s.dmg, s.p, s.crit); });
+        dfFx('boom', bx0, by0 + 6, { life: 0.4, max: 0.4, col: '#e8302a' });
+        dfFx('ring', bx0, by0, { life: 0.35, max: 0.35, col: '#ffd0c8' });
+        df.shots.splice(i, 1);
+      }
+      continue;
+    }
     if (s.aimed){
       var stepS = s.v * dt, hitF = null;
       s.x += s.dx * stepS; s.y += s.dy * stepS;
@@ -12603,6 +12649,7 @@ function dfDraw(){
   }
   for (i = 0; i < df.shots.length; i++){
     var s = df.shots[i];
+    if (s.z !== undefined && shotLook(s.p.c) === 'shroom'){ drawShroomShot(g, s.x, s.y, 13, df.t, s.z); continue; }
     if (!drawShotLook(g, shotLook(s.p.c), s.x, s.y, 13, s.ang, df.t)) cnDrawBullet(g, s.p.c.element, s.x, s.y, 13, s.ang, df.t, false);
   }
   dfDrawFx(g);
@@ -14477,6 +14524,7 @@ function quStrike(p, ang){
   var gk = p.giant ? 1.3 : 1, bx = p.x, by = p.y - 22 * gk, ca = Math.cos(ang), sa = Math.sin(ang);
   if (Math.abs(ca) > 0.15) p.face = ca > 0 ? 1 : -1;
   if (p.ranged && p.twin){ var tw = palTwinShot(p, ca, sa); bx += tw.x; by += tw.y; p.zap = 0.1; }
+  if (p.ranged && shotLook(p.c) === 'shroom'){ qu.bolts.push(shroomInit({ life: 3, p: p, col: EL[p.c.element].c, zap: 'shroom' }, bx, by, ca, sa)); return; }
   if (p.ranged){ qu.bolts.push({ x: bx, y: by, ox: bx, oy: by, vx: ca * 600, vy: sa * 600, max: p.range + 10, life: 2, p: p, col: EL[p.c.element].c, zap: shotLook(p.c) }); return; }
   quFx({ k: 'slash', x: bx, y: by, a: ang, R: p.range + 14, col: EL[p.c.element].c, t: 0.22, T: 0.22 });
   var hit = false;
@@ -14650,6 +14698,18 @@ function quHostTick(dt){
   L.foes.slice().forEach(function(f){ quFoeTick(f, dt, P); });
   quShotsTick(dt, P);
   for (var i = qu.bolts.length - 1; i >= 0; i--){
+    if (qu.bolts[i].shroom){
+      var Bs = qu.bolts[i]; Bs.life -= dt;
+      var lnd = shroomStep(Bs, dt), hm = null;
+      L.foes.forEach(function(f){ if (!hm && Math.hypot(f.x - Bs.x, f.y - 16 - Bs.y) < QU_FOES[f.k].r + 10) hm = f; });
+      if (hm || (lnd && Bs.hop >= SHROOM_HOPS) || Bs.life <= 0){
+        var ex = hm ? Bs.x : Bs.gx, ey = hm ? Bs.y + 10 : Bs.gy;
+        L.foes.slice().forEach(function(f){ if (Math.hypot(f.x - ex, (f.y - ey) * 1.3) < SHROOM_R + QU_FOES[f.k].r * 0.6) quHitFoe(f, Bs.p); });
+        quFx({ k: 'ring', x: ex, y: ey, t: 0.35, T: 0.35, c: '#e8302a' }); quFx({ k: 'boom', x: ex, y: ey + 14, t: 0.4, T: 0.4, small: true });
+        qu.bolts.splice(i, 1);
+      }
+      continue;
+    }
     var B = qu.bolts[i]; B.life -= dt; B.x += B.vx * dt; B.y += B.vy * dt; if (B.max && Math.hypot(B.x - B.ox, B.y - B.oy) >= B.max) B.life = 0;
     var hit = null; B.hit = B.hit || [];
     L.foes.forEach(function(f){ if (!hit && B.hit.indexOf(f) < 0 && Math.hypot(f.x - B.x, f.y - 16 - B.y) < QU_FOES[f.k].r + 16) hit = f; });
