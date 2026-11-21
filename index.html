@@ -9199,7 +9199,6 @@ function dfSurvWins(cleared){
   var due = Math.floor((cleared || 0) / (df.mode === 'raid' ? 1 : SURV_EVERY)), n = due - (df.survWon || 0);
   if (n <= 0) return 0;
   df.survWon = due;
-  if (df.mode === 'raid'){ var I0 = achI(); if ((I0.st.rb_cycle || 0) < due) achSet('rb_cycle', due); }      /* how many bosses in a row in one Survival run */
   var wk = df.mode === 'raid' ? 'raidWins' : dfAr() ? 'arenaWins' : 'defWins';
   state.island[wk] = (state.island[wk] || 0) + n; save();
   return n;
@@ -13162,7 +13161,6 @@ var ACH_DEFS = [
   { id: 'r_allhard', g: 'raid', name: 'Gallery Master', desc: 'Defeat all 8 bosses on Hard', gold: 2000, nosurv: true, run: function(r){ return rbAllWon(3); } },
   { id: 'r_weak', g: 'raid', name: 'Weak Spot', desc: 'Defeat a boss on Hard with a pal of its weak element', gold: 400, nosurv: true, run: function(r){ return r.won && r.lv >= 3 && r.weakOnly; } },
   { id: 'r_weakdmg', g: 'raid', name: 'Element Expert', desc: 'Deal 20,000 weak-spot damage', gold: 350, nosurv: true, stat: 'rb_weak', need: 20000 },
-  { id: 'r_cycle', g: 'raid', name: 'Full Circle', desc: 'Beat all 8 bosses in one Survival run', gold: 1200, nosurv: true, stat: 'rb_cycle', need: 8 },
 
   { id: 't_first', g: 'dig', name: 'Fossil Finder', desc: 'Find your first fossil', gold: 100, stat: 'th_fossils', need: 1 },
   { id: 't_half', g: 'dig', name: 'Collector', desc: 'Find 6 different fossils', gold: 300, stat: 'th_fossils', need: 6 },
